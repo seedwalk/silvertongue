@@ -12,11 +12,8 @@ ns.Phrases.TARGET = {
     HELLO = {
         "Strength and honor, {name}.",
         "Well met, {name}.",
-        "Lok'tar, {name}. The road treats you well, I hope.",
-        "{name}. The spirits are quiet today. That is usually good.",
         "Greetings, {name}. You have the look of someone with somewhere to be.",
         "Hail, {name}. May the wind be at your back.",
-        "{name}. Good. Another of the Horde still standing.",
         "{name}. You are still upright. That is worth something these days.",
     },
 
@@ -25,7 +22,6 @@ ns.Phrases.TARGET = {
         "Group with me, {name}. Two blades are better than one, and I have seen yours.",
         "{name}, this goes faster with company. Are you interested?",
         "I could use a second, {name}. Say the word and I will send the invite.",
-        "{name}, join me. The spirits put us on the same road for a reason.",
         "Party up, {name}? I promise to be useful and only occasionally stubborn.",
         "{name}, I am headed the same way you are. We may as well go together.",
     },
@@ -44,7 +40,6 @@ ns.Phrases.TARGET = {
         "Show me what you can do, {name}. Nothing at stake but pride.",
         "{name}, I have been itching for a proper fight. Interested?",
         "Draw on me, {name}. We both walk away from this one.",
-        "A duel, {name}. The ancestors enjoy a good contest.",
         "{name}, let us settle who is better the honest way.",
     },
 
@@ -75,11 +70,11 @@ ns.Phrases.TARGET = {
     },
 
     GOODBYE = {
-        "Walk with the spirits, {name}.",
+        "Safe roads, {name}.",
+        "Until next time, {name}.",
+        "Go well, {name}. Keep your weapon close.",
         "Until the road brings us together again, {name}.",
-        "Go well, {name}. The Horde needs you standing.",
         "Farewell, {name}. Keep your weapon close.",
-        "May the ancestors watch your road, {name}.",
         "{name}. We part. That is all it is.",
     },
 }
@@ -98,12 +93,12 @@ ns.Phrases.ENEMY = {
     },
 
     ENEMY_TAUNT = {
+        "{name}, is that the best you have?",
+        "You are trying very hard, {name}. It shows.",
         "Is that all of it, {name}?",
-        "{name}, my ancestors are watching this and they are embarrassed for you.",
         "You fight like you are afraid of the ground, {name}. You should be.",
         "{name}, I have been struck harder by weather.",
         "Keep swinging, {name}. One of them may land.",
-        "The spirits asked me who you were, {name}. I had nothing to tell them.",
         "{name}, this is the part where you run. Most of them do.",
     },
 
@@ -117,23 +112,22 @@ ns.Phrases.ENEMY = {
     },
 
     ENEMY_RESPECT = {
-        "Well fought, {name}. The spirits favored your blade.",
+        "That was well fought, {name}. I will say so once.",
+        "You did not make that easy, {name}. Good.",
+        "{name}, you fought better than the cause deserved.",
         "{name}. You fight with honor. That is rarer than skill, on either side.",
         "I will not pretend that was easy, {name}. You earned it.",
         "{name}, we are enemies. That does not make you nothing.",
         "You did not run, {name}. I will remember that about you.",
-        "The ancestors saw that, {name}. So did I. Respect.",
-        "{name}, if you were Horde I would buy you a drink. You are not. Still.",
         "A worthy fight, {name}. Go and heal. Then find me again.",
     },
 
     ENEMY_VICTORY = {
+        "It is finished, {name}. Get up when you can.",
         "Stay down, {name}.",
         "It is finished, {name}. Get up when you are able.",
         "The earth held, {name}. You did not.",
-        "{name}, that is what the Horde looks like from the ground.",
         "You fought, {name}. It was not enough. There is no shame in the first part.",
-        "Lok'tar ogar, {name}. It was not death for me.",
         "Tell them who did this, {name}. Say it properly.",
     },
 
@@ -142,7 +136,6 @@ ns.Phrases.ENEMY = {
         "{name}, you are one step from a very short conversation.",
         "I have killed for less, {name}. I try not to. Do not make it harder.",
         "The ground beneath you is listening to me, {name}, not you.",
-        "Leave, {name}, or I will introduce you to my ancestors personally.",
         "Choose carefully, {name}. I am in no mood to be merciful.",
     },
 }

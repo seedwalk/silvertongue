@@ -223,6 +223,23 @@ local asRogue = poolFor("PARTY", "READY")
 if not asRogue[ROGUE_ONLY] then fail("a rogue never got his own READY line") end
 if asRogue[SHAMAN_ONLY] then fail("a rogue was served a shaman line") end
 
+-- No shared pool may carry words belonging to one people. The pool started as
+-- one orc's voice and those lines have been moved to where they belong; this
+-- keeps them from drifting back. A line that needs a people behind it goes in a
+-- race layer, not in the pool everybody draws on.
+local RACIAL = { "ancestor", "spirit", "horde", "orc", "warband", "thrall", "lok'tar", "kodo" }
+for _, category in ipairs({"GENERAL", "PARTY", "ATTITUDE", "PERSON", "TARGET", "ENEMY", "LFG"}) do
+    for intent, lines in pairs(ns.Phrases[category]) do
+        for _, line in ipairs(lines) do
+            for _, word in ipairs(RACIAL) do
+                if line:lower():find(word, 1, true) then
+                    fail("%s.%s is shared but belongs to one people: %s", category, intent, line)
+                end
+            end
+        end
+    end
+end
+
 -- No shared pool may still carry class-specific words for everyone.
 local LEAKS = { "totem", "Totem", "the elements", "The elements" }
 for _, category in ipairs({"GENERAL", "PARTY", "HORDE", "ATTITUDE", "PERSON", "TARGET", "ENEMY"}) do

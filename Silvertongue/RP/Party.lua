@@ -6,9 +6,10 @@ ns.Phrases = ns.Phrases or {}
 
 ns.Phrases.PARTY = {
     HELLO = {
-        "Lok'tar. Let us make this quick and loud.",
+        "Good to have company.",
+        "Right. Let us get to work.",
+        "Well met, all of you.",
         "Good. Strong company.",
-        "The spirits put us together. Let us not waste it.",
         "Well met, all of you. Try to stay alive.",
         "Strength and honor to every one of you.",
     },
@@ -25,12 +26,10 @@ ns.Phrases.PARTY = {
     GOOD_JOB = {
         "Well fought, all of you.",
         "That was clean. Do it again.",
-        "The ancestors saw that. They approved.",
         "Good work. I mean it, which is rare.",
         "We moved as one. That is how it is supposed to feel.",
         "No one fell. That is the highest praise I have.",
         "Strong. Every one of you.",
-        "That is what a Horde warband looks like.",
         "I have fought beside worse. Far worse.",
         "Good. Now do not let it go to your heads.",
     },
@@ -38,8 +37,6 @@ ns.Phrases.PARTY = {
     WIPE = {
         "We fell. We rise. Again.",
         "No shame in falling. Only in refusing to rise.",
-        "The spirits apparently felt we required another lesson.",
-        "Perhaps pulling everything at once was not the wisest offering to the ancestors.",
         "Again.",
         "That went poorly. Let us go poorly in a different direction next time.",
         "Run back. Say nothing. We try again.",
@@ -48,7 +45,6 @@ ns.Phrases.PARTY = {
     },
 
     BOSS = {
-        "Stay together. Trust your weapons. Trust the spirits.",
         "We know what stands ahead. Let us finish it.",
         "Ready yourselves.",
         "This one is worth killing properly. No mistakes.",
@@ -58,8 +54,9 @@ ns.Phrases.PARTY = {
 
     WAIT = {
         "Hold. Not yet.",
+        "Wait for me.",
+        "Hold. Not yet.",
         "Stop. Someone is not with us.",
-        "Patience. The spirits are never in a hurry, and neither should we be.",
         "Hold here. I want a moment to look at this.",
         "Wait. Rushing this would be stupid, and I would rather not be stupid today.",
     },
@@ -83,24 +80,20 @@ ns.Phrases.PARTY = {
     },
 
     VICTORY = {
-        "Victory! Lok'tar ogar!",
         "It is finished. Well fought, all of you.",
         "We stood. It did not. That is the whole story.",
-        "The ancestors will hear of this one.",
         "Good. Take what is yours and let us move.",
-        "That is how the Horde does it.",
         "We won. Do not look so surprised.",
         "A worthy kill. Honor to every one of you.",
-        "For the Horde. And for whatever it was carrying.",
         "Let them remember who stood here.",
     },
 
     GOODBYE = {
+        "That was good company. Not everyone is.",
+        "Until next time, all of you.",
         "Good hunting, all of you.",
-        "Walk with the spirits.",
         "It was an honor. Truly.",
         "Until the next fight. There is always a next fight.",
-        "Go well. The Horde needs you standing.",
         "My thanks for the company. Not everyone is worth fighting beside.",
     },
 }
@@ -109,32 +102,26 @@ ns.Phrases.PERSON = {
     THANK = {
         "{name}, you have my thanks.",
         "Well done, {name}. I will remember that.",
-        "The spirits favored me when they put you beside me, {name}.",
         "My thanks, {name}. That was no small thing.",
         "You saved me some trouble, {name}. And possibly my life.",
         "I owe you one, {name}. I pay my debts.",
         "That was timely, {name}. Timing is half of everything.",
-        "The ancestors saw what you did, {name}. So did I.",
         "Thank you, {name}. I do not say it often, so mark the day.",
         "You have my gratitude, {name}, and my axe if you need it.",
     },
 
     PRAISE = {
-        "Well fought, {name}. The spirits favored your blade.",
         "That was excellent work, {name}.",
-        "You fight like someone the ancestors are watching, {name}.",
         "{name}, that was worth seeing.",
         "Strong, {name}. Very strong.",
         "You know your craft, {name}. That is rarer than courage.",
         "I have fought beside many, {name}. Few like you.",
-        "{name}, the Horde is stronger for having you.",
         "That was no accident, {name}. That was skill.",
         "Keep fighting like that, {name}, and they will sing about you. Badly, but they will sing.",
     },
 
     ENCOURAGE = {
         "Stand, {name}. You are not done.",
-        "{name}, the spirits are not finished with you yet.",
         "Keep your feet, {name}. That is all I ask.",
         "You are stronger than this moment, {name}.",
         "Do not falter now, {name}. Not when we are this close.",
@@ -143,10 +130,11 @@ ns.Phrases.PERSON = {
 
     WARN = {
         "{name}. Careful.",
+        "{name}, think for one second before you do that.",
+        "Stop, {name}. That is a worse idea than it looks.",
         "Watch yourself, {name}. Something is wrong here.",
         "{name}, that is a mistake waiting to happen.",
         "Slow down, {name}. Dead is a long time.",
-        "{name}, do not make me explain this to your ancestors.",
     },
 
     APOLOGIZE = {
@@ -164,13 +152,13 @@ ns.Phrases.PERSON = {
         "I see what you are, {name}. It is worth something.",
         "There is honor in you, {name}. I do not say that lightly.",
         "{name}, you carry yourself well. I notice such things.",
-        "The Horde is better for having you in it, {name}.",
     },
 
     JOKE = {
         "{name}, if you die I am taking your boots.",
+        "{name}, I have decided you are worth keeping alive. Do not test it.",
+        "Stay close, {name}. You are useful and I am lazy.",
         "You fight well, {name}. For someone who moves like that.",
-        "The spirits speak of you, {name}. They are polite about it.",
         "{name}, I have decided you may live. For now.",
         "Do not tell anyone, {name}, but I am glad you are here.",
     },

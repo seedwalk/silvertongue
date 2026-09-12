@@ -471,165 +471,474 @@ ns.Phrases.SELF.RACE = {
     -- stops sounding like an orc, without needing two hundred lines to carry
     -- every intent alone. Mark an intent under `replace` when a race should own
     -- it outright.
+    -- These came out of the shared pool, where they had been sitting because
+    -- the addon started life as one orc's voice. They were never shared: an
+    -- ancestor is an orc's ancestor.
     ORC = {
         GENERAL = {
-            HELLO   = { "Strength and honor." },
-            READY   = { "I have been ready. Orcs usually are." },
-            THANKS  = { "You have my thanks. We remember debts." },
+            AGREE = {
+                "The spirits and I are of one mind on this.",
+            },
+            APOLOGIZE = {
+                "An orc who cannot admit a mistake is only half an orc.",
+            },
+            CONGRATULATE = {
+                "The ancestors saw that. So did I.",
+            },
+            DEFEAT = {
+                "The spirits taught us something today. I did not enjoy the lesson.",
+            },
+            ENCOURAGE = {
+                "The spirits do not abandon those who keep moving.",
+            },
+            GOODBYE = {
+                "Go. The Horde has work for both of us.",
+                "May the ancestors watch your road.",
+                "Walk with the spirits.",
+            },
+            HELLO = {
+                "The spirits guide your path, friend.",
+            },
+            LAUGH = {
+                "The ancestors would have laughed at that. Quietly.",
+            },
+            RESPECT = {
+                "The Horde is better for having you in it.",
+            },
+            THANKS = {
+                "The spirits remember kindness. As do I.",
+            },
+            VICTORY = {
+                "It is done. The spirits favored us.",
+                "Lok'tar ogar. Victory or death, and it was not death.",
+            },
+            WAIT = {
+                "Give me a breath. The spirits are not hurried.",
+                "Patience. Rushing has killed more orcs than any blade.",
+            },
         },
         PARTY = {
-            WIPE    = { "We fell. We rise. Our whole history is that sentence." },
-            VICTORY = { "Lok'tar ogar. It was not death." },
+            BOSS = {
+                "Stay together. Trust your weapons. Trust the spirits.",
+            },
+            GOODBYE = {
+                "Go well. The Horde needs you standing.",
+                "Walk with the spirits.",
+            },
+            GOOD_JOB = {
+                "That is what a Horde warband looks like.",
+                "The ancestors saw that. They approved.",
+            },
+            HELLO = {
+                "Lok'tar. Let us make this quick and loud.",
+                "The spirits put us together. Let us not waste it.",
+            },
+            VICTORY = {
+                "For the Horde. And for whatever it was carrying.",
+                "That is how the Horde does it.",
+                "The ancestors will hear of this one.",
+                "Victory! Lok'tar ogar!",
+            },
+            WAIT = {
+                "Patience. The spirits are never in a hurry, and neither should we be.",
+            },
+            WIPE = {
+                "Perhaps pulling everything at once was not the wisest offering to the ancestors.",
+                "The spirits apparently felt we required another lesson.",
+            },
+        },
+        PERSON = {
+            ENCOURAGE = {
+                "{name}, the spirits are not finished with you yet.",
+            },
+            JOKE = {
+                "The spirits speak of you, {name}. They are polite about it.",
+            },
+            PRAISE = {
+                "{name}, the Horde is stronger for having you.",
+                "Well fought, {name}. The spirits favored your blade.",
+                "You fight like someone the ancestors are watching, {name}.",
+            },
+            RESPECT = {
+                "The Horde is better for having you in it, {name}.",
+            },
+            THANK = {
+                "The ancestors saw what you did, {name}. So did I.",
+                "The spirits favored me when they put you beside me, {name}.",
+            },
+            WARN = {
+                "{name}, do not make me explain this to your ancestors.",
+            },
         },
         ATTITUDE = {
-            ANGRY   = { "I am an orc. You knew what that meant before you started." },
+            CONFUSED = {
+                "The spirits are silent on this. So am I.",
+                "What in the ancestors' name was that?",
+            },
+            DISAPPOINTED = {
+                "The ancestors saw that too. Think about it.",
+            },
+            IMPRESSED = {
+                "The spirits noticed that one.",
+            },
+            MOCK = {
+                "The ancestors are laughing. I am being polite about it.",
+            },
+            RESPECT = {
+                "I would fight beside you. That is the highest thing I can say.",
+            },
+            SUSPICIOUS = {
+                "The spirits are uneasy. That is usually about someone.",
+            },
+            THREATEN = {
+                "Leave, or I will introduce you to my ancestors personally.",
+            },
         },
-        TARGET = { HELLO = { "Strength and honor, {name}." } },
+        TARGET = {
+            DUEL = {
+                "A duel, {name}. The ancestors enjoy a good contest.",
+            },
+            GOODBYE = {
+                "Go well, {name}. The Horde needs you standing.",
+                "May the ancestors watch your road, {name}.",
+                "Walk with the spirits, {name}.",
+            },
+            HELLO = {
+                "Lok'tar, {name}. The road treats you well, I hope.",
+                "{name}. Good. Another of the Horde still standing.",
+                "{name}. The spirits are quiet today. That is usually good.",
+            },
+            PARTY = {
+                "{name}, join me. The spirits put us on the same road for a reason.",
+            },
+        },
+        ENEMY = {
+            ENEMY_RESPECT = {
+                "Well fought, {name}. The spirits favored your blade.",
+                "The ancestors saw that, {name}. So did I. Respect.",
+                "{name}, if you were Horde I would buy you a drink. You are not. Still.",
+            },
+            ENEMY_TAUNT = {
+                "{name}, my ancestors are watching this and they are embarrassed for you.",
+                "The spirits asked me who you were, {name}. I had nothing to tell them.",
+            },
+            ENEMY_VICTORY = {
+                "{name}, that is what the Horde looks like from the ground.",
+                "Lok'tar ogar, {name}. It was not death for me.",
+            },
+            ENEMY_WARNING = {
+                "Leave, {name}, or I will introduce you to my ancestors personally.",
+            },
+        },
     },
 
     TROLL = {
         GENERAL = {
-            HELLO   = { "Hey mon. Da spirits be watchin' you today." },
-            GOODBYE = { "Walk good, mon. Da loa be seein' you." },
+            HELLO   = { "Hey mon. Da spirits be watchin' you today.",
+                        "Ya look like ya seen somethin'. Come, tell me." },
+            GOODBYE = { "Walk good, mon. Da loa be seein' you.",
+                        "Go on den. Don' be steppin' where ya can't see." },
+            THANKS  = { "Ya done right by me, mon. Da loa be notin' dat.",
+                        "I not be forgettin' dis." },
+            RESPECT = { "Ya got somethin' in ya, mon. I be seein' it." },
+            VICTORY = { "Hah! Dat be how da Darkspear do it.",
+                        "Dey fall, we stand. Simple as dat." },
+            DEFEAT  = { "We be down. We not be out. Never been." },
             LAUGH   = { "Hah! Dat one be worth rememberin'." },
         },
         PARTY = {
-            WIPE    = { "Dat went bad. Da loa be laughin' at us, I t'ink." },
+            WIPE    = { "Dat went bad. Da loa be laughin' at us, I t'ink.",
+                        "We been greedy. Da spirits don' reward dat." },
             READY   = { "I be ready, mon. Been ready." },
+            VICTORY = { "Hah! Dat be a good killin'. Da loa be pleased." },
+            GOOD_JOB= { "Good work, all a' ya. I mean dat." },
         },
-        ATTITUDE = {
-            ANNOYED = { "Mon, we be standin' here talkin' while da day be wastin'." },
+        PERSON  = {
+            PRAISE  = { "Ya fight good, {name}. Da loa be watchin' you.",
+                        "Dat was clean, {name}. Real clean." },
+            THANK   = { "Ya saved me somethin' dere, {name}. I remember." },
         },
-        TARGET = { HELLO = { "Hey {name}. Da spirits be kind to you." } },
+        ATTITUDE = { ANNOYED = { "Mon, we be standin' here talkin' while da day be wastin'." } },
+        TARGET  = {
+            HELLO   = { "Hey {name}. Da spirits be kind to you." },
+            GOODBYE = { "Walk good, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "Ya fight well, {name}. Da loa be takin' note a' dat." } },
     },
 
     TAUREN = {
         GENERAL = {
-            HELLO   = { "Well met. The Earth Mother walks this road with you." },
-            GOODBYE = { "Go in peace. There is no hurry that matters." },
+            HELLO   = { "Well met. The Earth Mother walks this road with you.",
+                        "Peace to you. Sit a moment if you have one." },
+            GOODBYE = { "Go in peace. There is no hurry that matters.",
+                        "May the Earth Mother make your road soft." },
+            THANKS  = { "You have done well by me. The Earth Mother sees it.",
+                        "My thanks. I will carry it with me." },
+            RESPECT = { "There is balance in you. That is not common." },
+            VICTORY = { "It is done. We take no more than we needed.",
+                        "The hunt is finished. Let us be grateful and go." },
+            DEFEAT  = { "The Earth Mother teaches through loss as well. I am listening." },
             AGREE   = { "Yes. That is the balanced path." },
         },
         PARTY = {
-            WIPE    = { "We were hasty. The Earth Mother teaches patience and we did not listen." },
+            WIPE    = { "We were hasty. The Earth Mother teaches patience and we did not listen.",
+                        "There is no shame in this. Only a lesson we paid for." },
             READY   = { "I am ready. I have been standing quietly, which is not the same as idle." },
+            VICTORY = { "Well done. Let us take what we need and leave the rest." },
+            GOOD_JOB= { "That was good work, and done without waste." },
         },
-        ATTITUDE = {
-            ANGRY   = { "I am slow to anger. You have managed it, which should worry you." },
+        PERSON  = {
+            PRAISE  = { "You fight with balance, {name}. That is rarer than strength.",
+                        "The Earth Mother saw that, {name}. So did I." },
+            THANK   = { "You have my thanks, {name}. It will be remembered." },
         },
-        TARGET = { HELLO = { "Peace, {name}. The Earth Mother sees you." } },
+        ATTITUDE = { ANGRY = { "I am slow to anger. You have managed it, which should worry you." } },
+        TARGET  = {
+            HELLO   = { "Peace, {name}. The Earth Mother sees you." },
+            GOODBYE = { "Walk softly, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You fought well, {name}. I take no joy in this, but it was well done." } },
     },
 
     SCOURGE = {
         GENERAL = {
-            HELLO   = { "Greetings. I will not pretend to be pleased, but it is true anyway." },
-            GOODBYE = { "Go. Time is precious to those who still have it." },
+            HELLO   = { "Greetings. I will not pretend to be pleased, but it is true anyway.",
+                        "You are alive. I try not to hold it against people." },
+            GOODBYE = { "Go. Time is precious to those who still have it.",
+                        "Farewell. Enjoy the breathing." },
+            THANKS  = { "That was kind. I had almost stopped expecting it.",
+                        "You have my thanks, for whatever the word is worth from me." },
+            RESPECT = { "You did not flinch. Most do. That counts." },
+            VICTORY = { "Dead. Properly this time, which is more than I managed.",
+                        "It is over. I take no pleasure in it, but I take the result." },
+            DEFEAT  = { "I have died before. It is survivable, in my case." },
             LAUGH   = { "Hah. I had almost forgotten how that felt." },
         },
         PARTY = {
-            WIPE    = { "Death again. It gets less interesting each time." },
-            DEFEAT  = { "I have died before. It is survivable, in my case." },
+            WIPE    = { "Death again. It gets less interesting each time.",
+                        "You will all recover from that. I am told it stings." },
+            READY   = { "Ready. I have nothing left to be afraid of." },
+            VICTORY = { "Finished. Let us leave before something notices." },
+            GOOD_JOB= { "That was competent. I do not say that often." },
+        },
+        PERSON  = {
+            PRAISE  = { "That was well done, {name}. I would say so even if you were dead.",
+                        "You are good at this, {name}. Waste it slowly." },
+            THANK   = { "You kept me standing, {name}. Such as I stand." },
         },
         ATTITUDE = {
-            ANGRY   = { "I have nothing left to lose. Consider what that means." },
-            CONFUSED= { "I used to understand things like this. That was some time ago." },
+            ANGRY    = { "I have nothing left to lose. Consider what that means." },
+            CONFUSED = { "I used to understand things like this. That was some time ago." },
         },
-        TARGET = { HELLO = { "{name}. You look alive. Congratulations." } },
+        TARGET  = {
+            HELLO   = { "{name}. You look alive. Congratulations." },
+            GOODBYE = { "Go on, {name}. Use the time." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You fought hard, {name}. I have been on your side of it." } },
     },
 
     BLOODELF = {
         GENERAL = {
-            HELLO   = { "Well met. Try to keep up." },
+            HELLO   = { "Well met. Try to keep up.",
+                        "You have my attention. Briefly." },
+            GOODBYE = { "Until later. Do try to survive it.",
+                        "Farewell. It has been almost interesting." },
+            THANKS  = { "You have my thanks. I do not say it often, so note the date.",
+                        "That was well done. I am not easily impressed." },
             RESPECT = { "You have my respect. I do not hand it out." },
+            VICTORY = { "Finished, and elegantly. Mostly elegantly.",
+                        "We won. Of course we did." },
+            DEFEAT  = { "We have lost worse than this. Far worse. I remember it." },
             DISAGREE= { "No. I have seen the elegant version of that idea and this is not it." },
         },
         PARTY = {
-            WIPE    = { "Inelegant. Let us do it properly this time." },
+            WIPE    = { "Inelegant. Let us do it properly this time.",
+                        "That was avoidable. I will not say by whom." },
             READY   = { "Ready. I have been ready for a while, in fact." },
+            VICTORY = { "Well struck, all of you. Almost graceful." },
+            GOOD_JOB= { "That was competently done. High praise from me." },
         },
-        ATTITUDE = {
-            ANNOYED = { "My people waited ten thousand years. I have less patience than that." },
+        PERSON  = {
+            PRAISE  = { "That was elegant, {name}. I notice such things.",
+                        "You are better than I expected, {name}. Take that as praise." },
+            THANK   = { "My thanks, {name}. You may remind me of it later." },
         },
-        TARGET = { HELLO = { "{name}. A pleasure, presumably." } },
+        ATTITUDE = { ANNOYED = { "My people waited ten thousand years. I have less patience than that." } },
+        TARGET  = {
+            HELLO   = { "{name}. A pleasure, presumably." },
+            GOODBYE = { "Do take care, {name}. Talent is scarce." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "That was well fought, {name}. I will remember your name, which is unusual." } },
     },
 
     HUMAN = {
         GENERAL = {
-            HELLO   = { "Well met, friend." },
+            HELLO   = { "Well met, friend.",
+                        "Good to see you. Long road?" },
+            GOODBYE = { "Take care of yourself.",
+                        "Until next time. Watch the roads." },
+            THANKS  = { "You have my thanks, and I pay what I owe.",
+                        "That was decent of you. I will not forget it." },
+            RESPECT = { "You are worth taking seriously. Not everyone is." },
+            VICTORY = { "Well fought, all of you. For the Alliance.",
+                        "That is that. Good work." },
+            DEFEAT  = { "We lost. We get up, we learn, we go again. That is what we do." },
             ENCOURAGE = { "Stand up. We are shorter-lived than most and we get more done." },
-            READY   = { "Ready when you are." },
         },
         PARTY = {
-            WIPE    = { "Right. That did not work. Again, properly this time." },
-            VICTORY = { "Well fought, all of you. For the Alliance." },
+            WIPE    = { "Right. That did not work. Again, properly this time.",
+                        "My fault as much as anyone's. Let us sort it out." },
+            READY   = { "Ready when you are." },
+            VICTORY = { "Well fought. That is how it should go." },
+            GOOD_JOB= { "Good work, all of you. Genuinely." },
         },
-        ATTITUDE = {
-            ANGRY   = { "I have a temper. I usually keep it somewhere else." },
+        PERSON  = {
+            PRAISE  = { "That was well done, {name}. Credit where it is owed.",
+                        "You held that together, {name}. I noticed." },
+            THANK   = { "I owe you one, {name}. I pay my debts." },
         },
-        TARGET = { HELLO = { "Well met, {name}." } },
+        ATTITUDE = { ANGRY = { "I have a temper. I usually keep it somewhere else." } },
+        TARGET  = {
+            HELLO   = { "Well met, {name}." },
+            GOODBYE = { "Safe roads, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You fought well, {name}. I will not pretend otherwise." } },
     },
 
     DWARF = {
         GENERAL = {
-            HELLO   = { "Ah, there y'are. Good to see ye." },
+            HELLO   = { "Ah, there y'are. Good to see ye.",
+                        "Well met! Ye look like ye could use a drink." },
+            GOODBYE = { "Off with ye then. Mind the road.",
+                        "Away ye go. Keep yer beard on." },
+            THANKS  = { "Aye, ye have me thanks. I'll not forget it.",
+                        "That were decent of ye. I owe ye one." },
+            RESPECT = { "Yer solid. That's about the best thing I can say about anyone." },
+            VICTORY = { "Hah! That'll do nicely.",
+                        "Down they go. Good and proper." },
+            DEFEAT  = { "Ah well. Stone cracks too, and we still build with it." },
             LAUGH   = { "Hah! Now that's worth a drink." },
-            THANKS  = { "Aye, ye have me thanks. I'll not forget it." },
         },
         PARTY = {
-            WIPE    = { "Well. That went about as well as a cave-in." },
+            WIPE    = { "Well. That went about as well as a cave-in.",
+                        "Right. Dust yerselves off. We've dug out of worse." },
             READY   = { "Ready. Been ready since breakfast." },
+            VICTORY = { "Hah! Well struck, the lot of ye." },
+            GOOD_JOB= { "Good work. Solid, all of it." },
         },
-        ATTITUDE = {
-            ANNOYED = { "I've drunk through longer arguments than this." },
+        PERSON  = {
+            PRAISE  = { "Solid work, {name}. Ye don't crack under it.",
+                        "That were proper done, {name}." },
+            THANK   = { "Ye did me a good turn there, {name}. I'll remember." },
         },
-        TARGET = { HELLO = { "Ah, {name}. Good to see ye upright." } },
+        ATTITUDE = { ANNOYED = { "I've drunk through longer arguments than this." } },
+        TARGET  = {
+            HELLO   = { "Ah, {name}. Good to see ye upright." },
+            GOODBYE = { "Mind how ye go, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "Ye fought hard, {name}. I'll grant ye that much." } },
     },
 
     NIGHTELF = {
         GENERAL = {
-            HELLO   = { "Ishnu-alah. The goddess watch over you." },
-            GOODBYE = { "Go quietly. The night is kinder than the day." },
+            HELLO   = { "Ishnu-alah. The goddess watch over you.",
+                        "Well met. You move loudly, but well met." },
+            GOODBYE = { "Go quietly. The night is kinder than the day.",
+                        "Elune-adore. Walk in her light." },
+            THANKS  = { "You have my thanks. I measure such things carefully.",
+                        "That was well done. I will remember it, and I remember for a long time." },
+            RESPECT = { "There is something old in how you carry yourself. I approve." },
+            VICTORY = { "It is finished. Let the forest have it back.",
+                        "Done. We take nothing more than we came for." },
+            DEFEAT  = { "I have watched worse losses than this. We endure. That is the point of us." },
             AGREE   = { "Yes. That is in balance." },
         },
         PARTY = {
-            WIPE    = { "We were careless. I have watched civilisations fall from less." },
+            WIPE    = { "We were careless. I have watched civilisations fall from less.",
+                        "Again, and more quietly this time." },
             READY   = { "Ready. I have waited longer than you have been alive." },
+            VICTORY = { "Well struck. Elune saw it." },
+            GOOD_JOB= { "That was well done, and done cleanly." },
         },
-        ATTITUDE = {
-            ANNOYED = { "I have ten thousand years of patience and you are spending it quickly." },
+        PERSON  = {
+            PRAISE  = { "You fight well, {name}. Quietly, which is better.",
+                        "Elune saw that, {name}. So did I." },
+            THANK   = { "You have my thanks, {name}. I do not forget." },
         },
-        TARGET = { HELLO = { "Ishnu-alah, {name}." } },
+        ATTITUDE = { ANNOYED = { "I have ten thousand years of patience and you are spending it quickly." } },
+        TARGET  = {
+            HELLO   = { "Ishnu-alah, {name}." },
+            GOODBYE = { "Elune guide you, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You fought well, {name}. The goddess witnesses even her enemies." } },
     },
 
     GNOME = {
         GENERAL = {
-            HELLO   = { "Hello! Right, what are we doing?" },
+            HELLO   = { "Hello! Right, what are we doing?",
+                        "Oh, good, someone interesting." },
+            GOODBYE = { "Off you go! Try not to break anything important.",
+                        "Goodbye! Take notes, it helps." },
+            THANKS  = { "Thank you! Genuinely, that was very efficient.",
+                        "Much appreciated. I will factor it in." },
+            RESPECT = { "You are better at this than you look. That is a compliment." },
+            VICTORY = { "Excellent! Did everyone see how that worked?",
+                        "Success! Almost entirely as designed." },
+            DEFEAT  = { "Interesting failure. I have several theories and one of them is good." },
             LAUGH   = { "Ha! Good one. I am writing that down." },
-            READY   = { "Ready! Probably. Yes. Ready." },
         },
         PARTY = {
-            WIPE    = { "Interesting failure. I have several theories." },
-            VICTORY = { "Excellent! Did everyone see how that worked?" },
+            WIPE    = { "Interesting failure. I have several theories.",
+                        "Right! Data gathered. Let us apply it." },
+            READY   = { "Ready! Probably. Yes. Ready." },
+            VICTORY = { "Excellent work, all of you. Very tidy." },
+            GOOD_JOB= { "That was optimal. I am delighted." },
         },
-        ATTITUDE = {
-            ANGRY   = { "I am small and I am very, very clever. Think about that combination." },
+        PERSON  = {
+            PRAISE  = { "Very efficient, {name}. I mean that as high praise.",
+                        "{name}, that was clever. I notice clever." },
+            THANK   = { "Thank you, {name}. That saved a great deal of trouble." },
         },
-        TARGET = { HELLO = { "Hello, {name}! Down here." } },
+        ATTITUDE = { ANGRY = { "I am small and I am very, very clever. Think about that combination." } },
+        TARGET  = {
+            HELLO   = { "Hello, {name}! Down here." },
+            GOODBYE = { "Bye, {name}! Do come back with problems." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You did rather well, {name}. I have recalculated my estimate of you." } },
     },
 
     DRAENEI = {
         GENERAL = {
-            HELLO   = { "Archdruid guide you. Well met, friend." },
-            GOODBYE = { "May the Light of the Naaru be with you." },
+            HELLO   = { "Well met. May the Light illuminate your path.",
+                        "Greetings, friend. You are welcome here." },
+            GOODBYE = { "May the Light of the Naaru be with you.",
+                        "Go in peace. We have all walked far enough." },
+            THANKS  = { "You have my gratitude. Kindness is not a small thing.",
+                        "Thank you. I have learned what it costs to be helped." },
+            RESPECT = { "You carry yourself well. I have seen what wears people down." },
+            VICTORY = { "It is done. One less thing that should not exist.",
+                        "We hold. That is all victory has ever been." },
+            DEFEAT  = { "We lost a world and we are still here. This is nothing." },
             ENCOURAGE = { "We lost a world and we are still standing. So can you." },
         },
         PARTY = {
-            WIPE    = { "We have survived worse than this. Much worse. Rise." },
+            WIPE    = { "We have survived worse than this. Much worse. Rise.",
+                        "We endure. It is the only thing we have always been good at." },
             READY   = { "I am ready. We have been preparing a long time." },
+            VICTORY = { "Well fought. The Light was with us." },
+            GOOD_JOB= { "You did well. All of you. I do not say it lightly." },
         },
-        ATTITUDE = {
-            DISAPPOINTED = { "I have seen what carelessness costs. An entire world of it." },
+        PERSON  = {
+            PRAISE  = { "You fought well, {name}. The Light saw it.",
+                        "That was steady work, {name}. Steadiness wins wars." },
+            THANK   = { "You have my gratitude, {name}. I know what it is worth." },
         },
-        TARGET = { HELLO = { "Well met, {name}. May the Light guide you." } },
+        ATTITUDE = { DISAPPOINTED = { "I have seen what carelessness costs. An entire world of it." } },
+        TARGET  = {
+            HELLO   = { "Well met, {name}. May the Light guide you." },
+            GOODBYE = { "Go with the Light, {name}." },
+        },
+        ENEMY   = { ENEMY_RESPECT = { "You fought with honour, {name}. I have fought things that could not." } },
     },
 }
 
