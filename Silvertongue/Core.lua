@@ -1,0 +1,182 @@
+-- Core.lua -- addon object, slash commands, minimap launcher.
+
+local ADDON, ns = ...
+
+-- One key binding: open and close the panel, under its own heading in
+-- Esc -> Key Bindings. This client's binding UI reads the XML `category`
+-- attribute as a full global name and looks up BINDING_ plus the rest, so the
+-- category there is "BINDING_HEADER_SILVERTONGUE" and the global is this one. The
+-- `header` attribute is not honoured and renders as raw text instead.
+BINDING_HEADER_SILVERTONGUE      = "Silvertongue"
+BINDING_NAME_SILVERTONGUE_TOGGLE = "Open/close the panel"
+
+function Silvertongue_BindingToggle()
+    ns.Window:Toggle()
+end
+
+local Silvertongue = LibStub("AceAddon-3.0"):NewAddon(ADDON, "AceEvent-3.0", "AceConsole-3.0")
+ns.addon = Silvertongue
+
+local ldb = LibStub("LibDataBroker-1.1", true)
+local icon = LibStub("LibDBIcon-1.0", true)
+
+-- The rallying cry and the hold-on button both depend on who you are playing.
+local FACTION_CRY = { HORDE = "FOR_THE_HORDE", ALLIANCE = "FOR_THE_ALLIANCE" }
+
+-- Right-click shortcuts. These fill the preview and open the window.
+-- They never send anything on their own. An entry either names its pool, or
+-- resolves one from the character at click time.
+local QUICK = {
+    {
+        label = "Battle cry", tab = "FACTION",
+        resolve = function()
+            local faction = ns.Engine:GetPlayerFaction()
+            return faction, faction and FACTION_CRY[faction] or nil
+        end,
+    },
+    { label = "Thanks",   category = "GENERAL", intent = "THANKS",   tab = "GENERAL" },
+    { label = "Ready",    category = "PARTY",   intent = "READY",    tab = "PARTY"   },
+    { label = "Wait",     category = "PARTY",   intent = "WAIT",     tab = "PARTY"   },
+    {
+        label = "Hold on", tab = "PARTY",
+        resolve = function()
+            -- A rogue scouts ahead where everyone else drinks.
+            return "PARTY", (ns.Engine:GetPlayerClass() == "ROGUE") and "SCOUT" or "MANA"
+        end,
+    },
+    { label = "Good Job", category = "PARTY",   intent = "GOOD_JOB", tab = "PARTY"   },
+    { label = "Edit phrases...", config = true },
+}
+
+local TAB_ARGS = {
+    general  = "GENERAL",
+    party    = "PARTY",
+    target   = "TARGET",
+    horde    = "FACTION",
+    alliance = "FACTION",
+    faction  = "FACTION",
+    shaman   = "CLASS",
+    rogue    = "CLASS",
+    class    = "CLASS",
+    attitude = "ATTITUDE",
+}
+
+function Silvertongue:OnInitialize()
+    self.db = LibStub("AceDB-3.0"):New("SilvertongueDB", ns.defaults, true)
+    ns.Engine:MigrateCustom(self.db)
+
+    self:RegisterChatCommand("silvertongue", "HandleSlash")
+    self:RegisterChatCommand("silver", "HandleSlash")
+
+    if ldb then
+        self.launcher = ldb:NewDataObject(ADDON, {
+            type = "launcher",
+            text = "Silvertongue",
+            icon = "Interface\\Icons\\Spell_Nature_GroundingTotem",
+            OnClick = function(_, button)
+                if button == "RightButton" then
+                    Silvertongue:ShowQuickMenu()
+                else
+                    ns.Window:Toggle()
+                end
+            end,
+            OnTooltipShow = function(tooltip)
+                tooltip:AddLine("Silvertongue")
+                tooltip:AddLine("Left-click: open the panel.", 1, 1, 1)
+                tooltip:AddLine("Right-click: quick actions.", 1, 1, 1)
+                tooltip:AddLine("/silvertongue config edits the phrases.", 0.7, 0.7, 0.7)
+            end,
+        })
+        if icon then
+            icon:Register(ADDON, self.launcher, self.db.profile.minimap)
+        end
+    end
+end
+
+function Silvertongue:OnEnable()
+    self:RegisterEvent("GROUP_ROSTER_UPDATE", function()
+        ns.PartyUI:Refresh()
+        ns.Anchors:UpdateParty()
+    end)
+    self:RegisterEvent("PLAYER_TARGET_CHANGED", function()
+        ns.TargetUI:Refresh()
+        ns.Anchors:UpdateTarget()
+    end)
+    self:RegisterEvent("PLAYER_ENTERING_WORLD", function() ns.Anchors:Refresh() end)
+    ns.Anchors:Refresh()
+end
+
+function Silvertongue:HandleSlash(input)
+    local arg = (input or ""):lower():match("^%s*(%S*)")
+    if arg == "" then
+        ns.Window:Toggle()
+    elseif arg == "anchors" then
+        ns.Anchors:SetEnabled(not self.db.profile.anchorsEnabled)
+        self:Print(self.db.profile.anchorsEnabled
+            and "Frame controls shown. Right-click and drag to move them."
+            or "Frame controls hidden.")
+    elseif arg == "config" or arg == "phrases" or arg == "library" then
+        ns.Config:Toggle()
+    elseif TAB_ARGS[arg] then
+        ns.Window:Show(TAB_ARGS[arg])
+    elseif arg == "minimap" then
+        local hidden = not self.db.profile.minimap.hide
+        self.db.profile.minimap.hide = hidden
+        if icon then
+            if hidden then icon:Hide(ADDON) else icon:Show(ADDON) end
+        end
+        self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
+    else
+        self:Print("Usage: /silvertongue [config|anchors|general|party|target|faction|class|attitude|minimap]")
+    end
+end
+
+-- A plain frame menu, so quick actions behave exactly like the panel buttons.
+function Silvertongue:ShowQuickMenu()
+    if not self.quickMenu then
+        local menu = ns.MakePanel(UIParent)
+        menu:EnableMouse(true)
+        menu:SetFrameStrata("FULLSCREEN_DIALOG")
+        menu:SetSize(130, #QUICK * 18 + 8)
+        menu:Hide()
+
+        for i, entry in ipairs(QUICK) do
+            local item = CreateFrame("Button", nil, menu)
+            item:SetSize(122, 18)
+            item:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 18)
+            item:SetNormalFontObject("GameFontHighlightSmall")
+            item:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+            item:SetText(entry.label)
+            item:GetFontString():SetPoint("LEFT", 4, 0)
+            item:SetScript("OnClick", function()
+                menu:Hide()
+                if entry.config then
+                    ns.Config:Toggle()
+                    return
+                end
+                ns.Window:Show(entry.tab)
+
+                local category, intent = entry.category, entry.intent
+                if entry.resolve then category, intent = entry.resolve() end
+                if not category or not intent then return end
+
+                ns.Preview:SetRecipient(nil)
+                ns.Preview:RequestOrReroll(category, intent, nil)
+            end)
+        end
+
+        menu:SetScript("OnLeave", function(self)
+            if not self:IsMouseOver() then self:Hide() end
+        end)
+        self.quickMenu = menu
+    end
+
+    local menu = self.quickMenu
+    menu:ClearAllPoints()
+    menu:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    if Minimap then
+        menu:ClearAllPoints()
+        menu:SetPoint("TOPRIGHT", Minimap, "BOTTOMLEFT", 0, 0)
+    end
+    menu:SetShown(not menu:IsShown())
+end

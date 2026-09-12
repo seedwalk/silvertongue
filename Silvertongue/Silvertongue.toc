@@ -1,0 +1,47 @@
+## Interface: 20506
+## Title: Silvertongue
+## Notes: Roleplay phrases for whoever you are playing, on the frames you already watch.
+## Author: fede
+## Version: 0.1
+## SavedVariables: SilvertongueDB
+## IconTexture: Interface\Icons\Spell_Nature_GroundingTotem
+## X-Category: Roleplay
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\AceAddon-3.0\AceAddon-3.0.lua
+Libs\AceEvent-3.0\AceEvent-3.0.lua
+Libs\AceConsole-3.0\AceConsole-3.0.lua
+Libs\AceDB-3.0\AceDB-3.0.lua
+Libs\AceHook-3.0\AceHook-3.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+
+Settings.lua
+
+RP\Engine.lua
+RP\General.lua
+RP\Party.lua
+RP\Horde.lua
+RP\Alliance.lua
+RP\Shaman.lua
+RP\Rogue.lua
+RP\Attitude.lua
+RP\Classes.lua
+RP\Races.lua
+RP\Target.lua
+RP\Self.lua
+RP\Emotes.lua
+
+UI\Window.lua
+UI\Preview.lua
+UI\Tabs.lua
+UI\Party.lua
+UI\Target.lua
+UI\Config.lua
+UI\Board.lua
+UI\Display.lua
+UI\Contexts.lua
+UI\Anchors.lua
+
+Core.lua

@@ -1,0 +1,4 @@
+# Nothing here is built, so this is mostly editor and OS noise.
+*~
+*.swp
+.DS_Store

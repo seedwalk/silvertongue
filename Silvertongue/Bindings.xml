@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding name="SILVERTONGUE_TOGGLE" category="BINDING_HEADER_SILVERTONGUE">
+        if Silvertongue_BindingToggle then Silvertongue_BindingToggle(); end
+    </Binding>
+</Bindings>
