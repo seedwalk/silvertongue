@@ -26,6 +26,13 @@ RP\Horde.lua
 RP\Alliance.lua
 RP\Shaman.lua
 RP\Rogue.lua
+RP\Warrior.lua
+RP\Paladin.lua
+RP\Hunter.lua
+RP\Priest.lua
+RP\Mage.lua
+RP\Warlock.lua
+RP\Druid.lua
 RP\Attitude.lua
 RP\Classes.lua
 RP\Races.lua

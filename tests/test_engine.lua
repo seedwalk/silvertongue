@@ -30,7 +30,7 @@ local function load(file)
 end
 
 load("Settings.lua")
-for _, f in ipairs({"Engine", "General", "Party", "Horde", "Shaman", "Rogue", "Attitude", "Classes", "Races", "Target", "Self", "Alliance", "Dungeons", "Group", "Emotes"}) do
+for _, f in ipairs({"Engine", "General", "Party", "Horde", "Shaman", "Rogue", "Warrior", "Paladin", "Hunter", "Priest", "Mage", "Warlock", "Druid", "Attitude", "Classes", "Races", "Target", "Self", "Alliance", "Dungeons", "Group", "Emotes"}) do
     load("RP/" .. f .. ".lua")
 end
 
@@ -320,6 +320,33 @@ ns.Phrases.SELF.RACE.TAUREN, ns.Phrases.SELF.RACE.TROLL = nil, nil
 playerRace = "Orc"
 Engine:ForgetPlayer()
 
+-- The combination axis. A blood elf paladin says something no other paladin and
+-- no other blood elf says, and nobody else gets it.
+local BLOOD_KNIGHT = "I did not ask the Light for this. I took it."
+playerRace, playerClass, playerFaction = "BloodElf", "PALADIN", "Horde"
+Engine:ForgetPlayer()
+local asBloodKnight = poolFor("PALADIN", "LIGHT")
+if not asBloodKnight[BLOOD_KNIGHT] then fail("a blood elf paladin never got his own line") end
+
+playerRace = "Human"
+playerFaction = "Alliance"
+Engine:ForgetPlayer()
+if poolFor("PALADIN", "LIGHT")[BLOOD_KNIGHT] then fail("a human paladin was given the Blood Knight line") end
+
+playerRace, playerClass, playerFaction = "BloodElf", "MAGE", "Horde"
+Engine:ForgetPlayer()
+if poolFor("PALADIN", "LIGHT")[BLOOD_KNIGHT] then fail("a blood elf mage was given the paladin line") end
+
+-- And the axis stays small on purpose: it is the escape hatch, not the model.
+local combos = 0
+for _ in pairs(ns.Phrases.SELF.COMBO) do combos = combos + 1 end
+if combos > 12 then
+    fail("%d combinations written; layering is meant to avoid needing a table of them", combos)
+end
+
+playerRace, playerClass, playerFaction = "Orc", "SHAMAN", "Horde"
+Engine:ForgetPlayer()
+
 -- Phrases you write yourself, in four scopes that mirror the four layers.
 ns.addon.db.profile.custom = {}
 local MINE = "I have decided to say this instead."
@@ -427,9 +454,11 @@ Engine:AddPhrase("GENERAL", "THANKS", seeded, "ALL")
 if Engine:IsHidden("GENERAL", "THANKS", seeded) then fail("re-adding a hidden line did not restore it") end
 if not poolFor("GENERAL", "THANKS")[seeded] then fail("the restored line never came back") end
 
--- Emptying an intent completely must be survivable.
-for _, line in ipairs(ns.Phrases.GENERAL.THANKS) do
-    Engine:HidePhrase("GENERAL", "THANKS", line, "ALL")
+-- Emptying an intent completely must be survivable. Hiding the shared pool is
+-- no longer enough on its own: a character's race and class contribute too, so
+-- this drops everything the intent can actually reach.
+for _, entry in ipairs(Engine:DescribePool("GENERAL", "THANKS", nil)) do
+    Engine:HidePhrase("GENERAL", "THANKS", entry.text, "ALL")
 end
 if Engine:HasAnyPhrase("GENERAL", "THANKS") then fail("the emptied intent still reports phrases") end
 if Engine:Request("GENERAL", "THANKS", nil) ~= nil then fail("an emptied intent returned a phrase") end

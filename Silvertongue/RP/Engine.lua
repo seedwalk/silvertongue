@@ -73,6 +73,16 @@ local SELF_LAYERS = {
     { "CLASS",   function() return Engine:GetPlayerClass() end },
     { "RACE",    function() return Engine:GetPlayerRace() end },
     { "FACTION", function() return Engine:GetPlayerFaction() end },
+
+    -- A few pairings mean something neither half says alone: a blood elf
+    -- paladin took the Light rather than being given it, a draenei shaman
+    -- adopted a tradition the orcs inherited. Last, so it colours everything
+    -- else, and deliberately small -- there are six of these, not forty-five.
+    { "COMBO", function()
+        local race, class = Engine:GetPlayerRace(), Engine:GetPlayerClass()
+        if not race or not class then return nil end
+        return race .. ":" .. class
+    end },
 }
 
 -- Lines you wrote yourself are stored in one of four scopes, mirroring the four

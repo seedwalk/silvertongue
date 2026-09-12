@@ -235,7 +235,9 @@ libs["LibDBIcon-1.0"] = { Register = function() end, Hide = function() end, Show
 
 local function load(file) return assert(loadfile(DIR .. file))("Silvertongue", ns) end
 load("Settings.lua")
-for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Attitude","Classes","Races","Target","Rogue","Self","Alliance","Dungeons","Group","Emotes"}) do load("RP/"..f..".lua") end
+for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Rogue","Warrior","Paladin",
+                    "Hunter","Priest","Mage","Warlock","Druid","Attitude","Classes","Races",
+                    "Target","Self","Alliance","Dungeons","Group","Emotes"}) do load("RP/"..f..".lua") end
 for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 load("Core.lua")
 
@@ -640,8 +642,10 @@ end
 check(seenReady[ROGUE_READY], "rogue never got his own Ready line")
 check(not seenReady[SHAMAN_READY], "rogue was served the shaman Ready line")
 
--- A class with no tab of its own simply gets none, and nothing breaks.
-_G.__player = { name = "Eldrin", className = "Mage", classToken = "MAGE",
+-- A class with nothing written for it simply gets no tab, and nothing breaks.
+-- Every class playable in this expansion now has one, so this uses a token that
+-- does not exist here.
+_G.__player = { name = "Eldrin", className = "Death Knight", classToken = "DEATHKNIGHT",
                 raceName = "Blood Elf", raceToken = "BloodElf", faction = "Horde" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
@@ -649,12 +653,12 @@ ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
 for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
-check(labelFor("CLASS") == nil, "a mage was given a class tab")
+check(labelFor("CLASS") == nil, "a class with no phrases was given a tab")
 addon.__cmd("shaman")   -- must not land on a tab that does not exist
-check(ns.Tabs.current == "GENERAL", "class tab request on a mage landed on %s", tostring(ns.Tabs.current))
+check(ns.Tabs.current == "GENERAL", "a class tab request with no tab landed on %s", tostring(ns.Tabs.current))
 ns.Tabs:Select("PARTY")
 ns.Preview:RequestOrReroll("PARTY", "MANA", nil)
-check(ns.Preview:GetText() ~= "", "a mage got no OOM line")
+check(ns.Preview:GetText() ~= "", "that character got no OOM line")
 
 -- 13. The key binding. One binding, no header, and it must not be able to put
 --     anything in chat on its own.

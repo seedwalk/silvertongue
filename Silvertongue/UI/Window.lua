@@ -12,8 +12,15 @@ local WIDTH, HEIGHT = 360, 500
 -- by the same token, and a grid in UI/Tabs.lua. Adding a class or a faction is
 -- three table entries and no new code.
 ns.CLASS_TAB_LABEL = {
-    SHAMAN  = "Shaman",
+    WARRIOR = "Warrior",
+    PALADIN = "Paladin",
+    HUNTER  = "Hunter",
     ROGUE   = "Rogue",
+    PRIEST  = "Priest",
+    SHAMAN  = "Shaman",
+    MAGE    = "Mage",
+    WARLOCK = "Warlock",
+    DRUID   = "Druid",
 }
 
 ns.FACTION_TAB_LABEL = {

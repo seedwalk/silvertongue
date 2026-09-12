@@ -61,6 +61,48 @@ ns.CLASS_INTENTS = {
         { "KILL", "Kill" },           { "HONOR", "Honor" },         { "LUCK", "Luck" },
         { "WARNING", "Warning" },
     },
+    WARRIOR = {
+        { "RAGE", "Rage" },           { "SHIELD", "Shield" },       { "WEAPONS", "Weapons" },
+        { "CHARGE", "Charge" },       { "WOUNDS", "Wounds" },       { "DISCIPLINE", "Discipline" },
+        { "HONOR", "Honor" },         { "TAUNT", "Taunt" },         { "LUCK", "Luck" },
+        { "WARNING", "Warning" },
+    },
+    PALADIN = {
+        { "LIGHT", "Light" },         { "OATH", "Oath" },           { "JUDGEMENT", "Judgement" },
+        { "PROTECTION", "Protect" },  { "HEALING", "Healing" },     { "MERCY", "Mercy" },
+        { "HONOR", "Honor" },         { "DOUBT", "Doubt" },         { "BLESSING", "Blessing" },
+        { "WARNING", "Warning" },
+    },
+    HUNTER = {
+        { "BEAST", "Beast" },         { "TRACKING", "Tracking" },   { "THE_SHOT", "The Shot" },
+        { "TRAPS", "Traps" },         { "WILDS", "Wilds" },         { "PATIENCE", "Patience" },
+        { "SCOUT", "Scout" },         { "HONOR", "Honor" },         { "LUCK", "Luck" },
+        { "WARNING", "Warning" },
+    },
+    PRIEST = {
+        { "LIGHT", "Light" },         { "SHADOW", "Shadow" },       { "HEALING", "Healing" },
+        { "FAITH", "Faith" },         { "MERCY", "Mercy" },         { "DOUBT", "Doubt" },
+        { "DEATH", "Death" },         { "PRAYER", "Prayer" },       { "BLESSING", "Blessing" },
+        { "WARNING", "Warning" },
+    },
+    MAGE = {
+        { "ARCANE", "Arcane" },       { "FIRE", "Fire" },           { "FROST", "Frost" },
+        { "PORTALS", "Portals" },     { "FOOD", "Food" },           { "STUDY", "Study" },
+        { "POLYMORPH", "Sheep" },     { "DISDAIN", "Disdain" },     { "BLESSING", "Blessing" },
+        { "WARNING", "Warning" },
+    },
+    WARLOCK = {
+        { "FEL", "Fel" },             { "DEMON", "Demon" },         { "SOULS", "Souls" },
+        { "PACT", "Pact" },           { "PAIN", "Pain" },           { "POWER", "Power" },
+        { "COST", "The Cost" },       { "MOCK", "Mock" },           { "BLESSING", "Blessing" },
+        { "WARNING", "Warning" },
+    },
+    DRUID = {
+        { "SHAPES", "Shapes" },       { "NATURE", "Nature" },       { "BALANCE", "Balance" },
+        { "THE_DREAM", "The Dream" }, { "CLAWS", "Claws" },         { "HEALING", "Healing" },
+        { "PATIENCE", "Patience" },   { "WILD", "The Wild" },       { "BLESSING", "Blessing" },
+        { "WARNING", "Warning" },
+    },
 }
 
 -- The class and faction tabs borrow their key from whoever is logged in.

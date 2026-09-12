@@ -243,7 +243,7 @@ locked out.
 
 ## What you actually get
 
-**801 handwritten lines.** No generator, no AI, no templates stitched together.
+**Around 1,400 handwritten lines.** No generator, no AI, no templates stitched together.
 Somebody wrote all of them.
 
 They adapt to who you are and who you are talking to. An orc shaman praising a
@@ -251,12 +251,16 @@ tauren warrior draws on different lines than a troll rogue doing the same, and
 the same button gives a shaman *"Totems are down. I am set"* where it gives a
 rogue *"Ready. I have been in position for some time."*
 
-**An honest note on the voice.** The shared phrases are written in an orcish
-register — blunt, proud, ancestor-minded. They fit an orc perfectly and every
-other race borrows them, so a troll sounds faintly orcish until someone writes
-troll lines. The Alliance set is a seed rather than a finished voice. Both are
-easy to extend, and the addon is built so that adding them is writing phrases,
-not writing code.
+Every class has a tab of its own, every race has a voice, and a handful of
+race-and-class pairings have a line that belongs to the pairing rather than to
+either half: a blood elf paladin knows his order took the Light by force, and
+says so where no other paladin does.
+
+**An honest note on the voice.** The shared pool underneath it all is written in
+an orcish register — blunt, proud, ancestor-minded. The race layer colours over
+it, but on any intent a race does not touch, a draenei still borrows an orc's
+cadence. Fixing that means giving a race its own lines outright, which the addon
+supports and which is writing phrases rather than writing code.
 
 ---
 
