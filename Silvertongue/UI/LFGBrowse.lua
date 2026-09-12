@@ -323,7 +323,6 @@ function LFGBrowse:DescribeIcons()
         lines[#lines + 1] = "   " .. i .. ": on " .. tostring(name or "?")
             .. (button:IsShown() and " (shown)" or " (hidden)")
     end
-    lines[#lines + 1] = "  header bubble: " .. (LFGBrowse.headerButton and "built" or "no")
     return lines
 end
 
@@ -346,53 +345,17 @@ function LFGBrowse:Explain(resultID)
     end
 end
 
--- A bubble on the window itself, for advertising yourself or recruiting. This
--- lives here rather than on your portrait because it is only ever wanted while
--- you are looking at this window.
-function LFGBrowse:AttachHeader(browse)
-    if self.headerButton then return end
-
-    local button = CreateFrame("Button", "SilvertongueLFGHeader", browse)
-    button:SetSize(18, 18)
-    button:SetFrameStrata("FULLSCREEN_DIALOG")
-
-    local icon = button:CreateTexture(nil, "OVERLAY")
-    icon:SetAllPoints()
-    icon:SetTexture("Interface\\GossipFrame\\GossipGossipIcon")
-    icon:SetAlpha(0.8)
-
-    -- Beside the refresh button, which is the other thing you press here.
-    -- Clear of the controls along that row: beside the refresh button it landed
-    -- on top of the dungeon dropdown.
-    button:ClearAllPoints()
-    if _G.LFGBrowseFrameRefreshButton then
-        button:SetPoint("TOP", _G.LFGBrowseFrameRefreshButton, "BOTTOM", 0, -4)
-    else
-        button:SetPoint("TOPRIGHT", browse, "TOPRIGHT", -14, -60)
-    end
-
-    button:SetScript("OnEnter", function(self)
-        icon:SetAlpha(1)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Say you are looking")
-        GameTooltip:AddLine("Advertise yourself, or recruit for the group you have.", 1, 1, 1, true)
-        GameTooltip:Show()
-    end)
-    button:SetScript("OnLeave", function() icon:SetAlpha(0.8); GameTooltip:Hide() end)
-    button:SetScript("OnClick", function(self)
-        ns.PrepareLookingForGroup()
-        ns.Board:New("Group"):Toggle(self, ns.Contexts:Group())
-    end)
-
-    self.headerButton = button
-end
+-- There is no bubble on the window itself any more.
+--
+-- It advertised you or recruited, and every one of those lines is on your own
+-- listing row already -- where the dungeon comes from the listing rather than
+-- from a picker guessing at your level, which is what made the window one
+-- wrong. Two doors to the same room, one of them with worse information.
 
 function LFGBrowse:Hook()
     if self.hooked then return end
 
     local browse = _G.LFGBrowseFrame
-    if browse then self:AttachHeader(browse) end
-
     local scroll = browse and browse.ScrollBox
     if not scroll or not ScrollUtil or not ScrollUtil.AddAcquiredFrameCallback then
         return          -- a client that does not have this UI simply gets nothing

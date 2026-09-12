@@ -1850,6 +1850,33 @@ do
     check(halfRow.silvertongue == nil, "a frame with only a name got a bubble")
 end
 
+-- The advert names what you are listed for, not what suits your level. The
+-- game publishes your own entry, so there is nothing to guess.
+do
+    C_LFGList.GetActiveEntryInfo = function()
+        return { activityIDs = { 0, 7 } }
+    end
+    check(ns.ListedDungeon() == "Scarlet Monastery",
+          "it did not read your own listing: %s", tostring(ns.ListedDungeon()))
+    addon.db.profile.lfgDungeon = "Razorfen Kraul"
+    check(ns.CurrentDungeon() == "Scarlet Monastery",
+          "a stale setting beat what you are actually listed for: %s",
+          tostring(ns.CurrentDungeon()))
+
+    -- And with a listing there is no dungeon picker: the choice is made, and
+    -- offering it again is an invitation to contradict yourself.
+    local listed = ns.Contexts:Group()
+    for _, entry in ipairs(listed.intents) do
+        check(entry == ns.SEP or entry.setDungeon == nil,
+              "it offered to pick a dungeon while you are listed for one")
+    end
+
+    C_LFGList.GetActiveEntryInfo = function() return nil end
+    check(ns.CurrentDungeon() == "Razorfen Kraul",
+          "without a listing the setting should decide: %s", tostring(ns.CurrentDungeon()))
+    addon.db.profile.lfgDungeon = nil
+end
+
 -- A row that cannot be read says so rather than doing nothing.
 ns.LFGBrowse:Explain(nil)
 ns.LFGBrowse:Explain(999)

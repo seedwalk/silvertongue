@@ -73,7 +73,30 @@ end
 
 -- What the adverts name. Remembered, and seeded from wherever you are standing
 -- if that happens to be an instance.
+-- What your own listing says you are running. The game publishes it, so there
+-- is nothing to guess and nothing to choose: if you are listed for Scarlet
+-- Library, advertising Razorfen Kraul because it happens to suit your level is
+-- simply wrong.
+function ns.ListedDungeon()
+    if not C_LFGList or not C_LFGList.GetActiveEntryInfo then return nil end
+    local entry = C_LFGList.GetActiveEntryInfo()
+    if not entry or not entry.activityIDs then return nil end
+    for _, id in ipairs(entry.activityIDs) do
+        if id and id ~= 0 and C_LFGList.GetActivityInfoTable then
+            local info = C_LFGList.GetActivityInfoTable(id)
+            local name = info and (info.fullName or info.shortName)
+            if name and name ~= "" then return name end
+        end
+    end
+    return nil
+end
+
 function ns.CurrentDungeon()
+    -- Your listing first. It is a statement you already made, and it beats both
+    -- a setting you forgot about and a guess from where you are standing.
+    local listed = ns.ListedDungeon()
+    if listed then return listed end
+
     local db = ns.addon and ns.addon.db
     local chosen = db and db.profile.lfgDungeon
     if chosen and chosen ~= "" then return chosen end

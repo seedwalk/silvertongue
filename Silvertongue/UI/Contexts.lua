@@ -166,6 +166,21 @@ function Contexts:Group()
     -- Which dungeon the advert names. Without one it reads "LFG anything",
     -- which is honest but finds nobody, so the nearest few to your level are
     -- offered right here rather than hidden in a settings panel.
+    --
+    -- Not offered at all when you have a listing: the game already knows what
+    -- you are running, and a picker there is an invitation to contradict
+    -- yourself.
+    if ns.ListedDungeon() then
+        return {
+            key      = "GROUP:" .. tostring(ctx.dungeon) .. ":" .. tostring(inGroup),
+            title    = "Looking for a group",
+            subtitle = ctx.dungeon,
+            intents  = intents,
+            ctx      = ctx,
+            channels = channels,
+        }
+    end
+
     intents[#intents + 1] = ns.SEP
     for _, dungeon in ipairs(ns.NearbyDungeons(ctx.level, 5)) do
         local current = (ctx.dungeon == dungeon.name)
