@@ -28,8 +28,9 @@ local WIDTH      = 260
 local PAD        = 10
 local ICON       = 18
 local CASCADE    = 26       -- each new window sits down and right of the last
-local HEAD_H     = 52       -- name, who they are, and the row of buttons
+local HEAD_H     = 52       -- name and who they are
 local LOG_H      = 118      -- the conversation, when it is showing
+local INPUT_H    = 20
 
 -- Blizzard's own mark for a whisper conversation window: FloatingChatFrame.lua
 -- puts this on the tab when the game opens one. Using anything else for the
@@ -420,7 +421,7 @@ function Whisper:Build(name, bnetID)
     -- The three that act. Speak is ours and always works; the other two are the
     -- game's and are switched off when the game would refuse them.
     frame.speak = iconButton(frame, GOSSIP_ICON, ICON)
-    frame.speak:SetPoint("BOTTOMLEFT", PAD, PAD)
+    frame.speak:SetPoint("BOTTOMLEFT", PAD, PAD + INPUT_H + 5)
     frame.speak.tipTitle = "Say something"
     frame.speak.tipBody = "Answer them in character. Nothing is sent until you press the channel."
     frame.speak:SetScript("OnClick", function(self)
@@ -454,6 +455,29 @@ function Whisper:Build(name, bnetID)
     frame.trade:SetPoint("LEFT", frame.invite, "RIGHT", 6, 0)
     frame.trade.tipTitle = "Trade"
     frame.trade.tipBody = "Only works while they are standing next to you and selected."
+    -- Typing. The one rule this must not break: it never takes the keyboard on
+    -- its own. Autofocus here would mean pressing W to walk and writing a "w"
+    -- into a whisper instead, which is the fastest way to make an addon
+    -- unusable. You click in to type, and Escape or Enter hands the keys back.
+    local input = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    input:SetHeight(INPUT_H)
+    input:SetPoint("BOTTOMLEFT", PAD + 6, PAD)
+    input:SetPoint("BOTTOMRIGHT", -PAD, PAD)
+    input:SetAutoFocus(false)
+    input:SetMaxLetters(ns.MAX_MESSAGE)
+    input:SetFontObject("ChatFontSmall")
+    input:SetScript("OnEscapePressed", function(self)
+        self:SetText("")
+        self:ClearFocus()
+    end)
+    input:SetScript("OnEnterPressed", function(self)
+        local text = self:GetText()
+        self:SetText("")
+        self:ClearFocus()
+        Whisper:Say(frame, text)
+    end)
+    frame.input = input
+
     frame.trade:SetScript("OnClick", function()
         if UnitExists("target") and UnitName("target") == name and InitiateTrade then
             InitiateTrade("target")
@@ -510,14 +534,35 @@ function Whisper:Append(frame, entry)
     frame.log:AddMessage(ns.Log:Format(entry, frame.name, me))
 end
 
+-- Anything typed goes out through the same function every other line in the
+-- addon goes through, which is what keeps "nothing is ever sent without you
+-- asking" true of one place rather than two.
+--
+-- Nothing is written to the transcript here. Sending raises the event that
+-- records it, exactly as it does when you type in the game's own chat, so
+-- recording it again would show every line twice.
+function Whisper:Say(frame, text)
+    text = (text or ""):gsub("^%s+", ""):gsub("%s+$", "")
+    if text == "" then return end
+
+    if frame.bnetID then
+        ns.SendPhrase(text, "BN_WHISPER", frame.bnetID)
+    else
+        ns.SendPhrase(text, "WHISPER", frame.name)
+    end
+end
+
 function Whisper:ApplyFold(frame)
+    -- The input stays whichever way it folds: a folded window is still a
+    -- conversation you are in, it is just one you are not reading back.
+    local base = HEAD_H + ICON + INPUT_H + PAD * 2 + 5
     if frame.collapsed then
         frame.log:Hide()
-        frame:SetHeight(HEAD_H + ICON + PAD * 2)
+        frame:SetHeight(base)
         frame.fold:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up")
     else
         frame.log:Show()
-        frame:SetHeight(HEAD_H + LOG_H + ICON + PAD * 2 + 4)
+        frame:SetHeight(base + LOG_H + 4)
         frame.fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
     end
 end

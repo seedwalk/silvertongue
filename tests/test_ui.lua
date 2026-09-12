@@ -69,6 +69,12 @@ passthrough.SetHeight = function(self, h)
     if type(h) ~= "number" then error("bad argument to SetHeight (" .. tostring(h) .. ")", 2) end
     self.__h = h
 end
+-- An edit box that never focuses itself. Getting this wrong means pressing W to
+-- walk and typing a "w" into somebody's whisper instead.
+passthrough.SetAutoFocus = function(self, value)
+    if value then error("an edit box asked for the keyboard on its own", 2) end
+    self.__autoFocus = false
+end
 passthrough.SetPoint = function(self, point, a, b, c, d)
     self.__point = point
     if not VALID_POINTS[point] then
@@ -1955,6 +1961,46 @@ local hostile = ns.Contexts:Target()
 check(hostile.actions == nil, "a hostile target offered a private conversation")
 target = nil
 ns.TargetUI:Refresh()
+
+-- Typing in it. This is a whisper window, so the line has to be able to come
+-- from you and not only from the addon's own phrases.
+local typedBefore = #sent
+window.input:SetText("see you there")
+window.input:GetScript("OnEnterPressed")(window.input)
+check(#sent == typedBefore + 1, "typing a line and pressing enter sent %d", #sent - typedBefore)
+check(sent[#sent].text == "see you there" and sent[#sent].to == "Grumgar",
+      "it sent %s to %s", tostring(sent[#sent].text), tostring(sent[#sent].to))
+check(window.input:GetText() == "", "the box kept the line after sending it")
+
+-- Nothing goes out from an empty box, or from one you escaped out of.
+local quiet = #sent
+window.input:SetText("   ")
+window.input:GetScript("OnEnterPressed")(window.input)
+window.input:SetText("never mind")
+window.input:GetScript("OnEscapePressed")(window.input)
+check(#sent == quiet, "%d lines escaped from a box nobody sent", #sent - quiet)
+check(window.input:GetText() == "", "escape left the line in the box")
+
+-- A Battle.net window types down the Battle.net route, not as a normal whisper.
+ns.Whisper:Open("Diego", nil, "42")
+local bnAgain = ns.Whisper:Windows()["bn:42"]
+local bnBefore, chatBefore2 = #bnSent, #sent
+bnAgain.input:SetText("hey")
+bnAgain.input:GetScript("OnEnterPressed")(bnAgain.input)
+check(#bnSent == bnBefore + 1, "typing to a Battle.net friend sent nothing")
+check(#sent == chatBefore2, "typing to a Battle.net friend also went out as normal chat")
+ns.Whisper:Close("Diego", "42")
+
+-- What we send is not written down here: the game raises the event that records
+-- it, exactly as it does when you type in its own chat. Recording it again
+-- would show every line twice.
+local linesBefore = #ns.Log:Lines("Grumgar")
+window.input:SetText("twice?")
+window.input:GetScript("OnEnterPressed")(window.input)
+check(#ns.Log:Lines("Grumgar") == linesBefore,
+      "sending wrote the line to the transcript before the event did")
+whisperEvent("CHAT_MSG_WHISPER_INFORM", "twice?", "Grumgar")
+check(#ns.Log:Lines("Grumgar") == linesBefore + 1, "the sent line was never recorded")
 
 -- Closing is the one X in the addon, and it takes its menu with it.
 ns.Whisper:Close("Grumgar")
