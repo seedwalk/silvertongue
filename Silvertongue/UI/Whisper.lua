@@ -362,6 +362,16 @@ function Whisper:Build(name, bnetID)
     end)
     frame.log = log
 
+    -- What the folded window says in place of the conversation. Folded, it used
+    -- to show an empty gap that is indistinguishable from a transcript that
+    -- failed to record -- and since the fold is remembered, every window opened
+    -- looking broken.
+    local folded = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    folded:SetPoint("TOPLEFT", PAD + 2, -HEAD_H + 2)
+    folded:SetJustifyH("LEFT")
+    folded:Hide()
+    frame.folded = folded
+
     -- Three windows open with a transcript each is most of a screen, so the
     -- conversation folds away and the window becomes the strip it used to be.
     local fold = CreateFrame("Button", nil, frame)
@@ -530,9 +540,15 @@ function Whisper:ApplyFold(frame)
     local base = HEAD_H + ICON + INPUT_H + PAD * 2 + 5
     if frame.collapsed then
         frame.log:Hide()
-        frame:SetHeight(base)
+        local kept = #ns.Log:Lines(ns.Log:Key(frame.name, frame.bnetID))
+        frame.folded:SetText(kept == 0
+            and "Nothing said yet"
+            or (kept .. (kept == 1 and " line" or " lines") .. " hidden - press + to read"))
+        frame.folded:Show()
+        frame:SetHeight(base + 14)
         frame.fold:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up")
     else
+        frame.folded:Hide()
         frame.log:Show()
         frame:SetHeight(base + LOG_H + 4)
         frame.fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
@@ -541,8 +557,6 @@ end
 
 function Whisper:ToggleLog(frame)
     frame.collapsed = not frame.collapsed
-    local db = ns.addon and ns.addon.db
-    if db then db.profile.whisperCollapsed = frame.collapsed end
     self:ApplyFold(frame)
 end
 
@@ -580,8 +594,9 @@ function Whisper:Open(name, said, bnetID)
     if not frame then
         openCount = openCount + 1
         frame = self:Build(name, bnetID)
-        local db = ns.addon and ns.addon.db
-        frame.collapsed = db and db.profile.whisperCollapsed or false
+        -- Windows open showing the conversation. Remembering the fold meant one
+        -- press, weeks ago, quietly made every window since look empty.
+        frame.collapsed = false
         windows[key] = frame
         self:PlaceNew(frame, openCount)
     end

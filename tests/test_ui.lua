@@ -2138,9 +2138,26 @@ ns.Whisper:Close("Faranell")
 ns.Whisper:ToggleLog(window)
 check(window.collapsed == true, "the conversation did not fold away")
 check(not window.log:IsShown(), "the conversation is folded but still showing")
-check(addon.db.profile.whisperCollapsed == true, "the fold was not remembered")
+-- A folded window must not look like a broken one. It says how much it is
+-- holding, because an empty gap is indistinguishable from a transcript that
+-- never recorded -- which is exactly how it read in the game.
+check(window.folded:IsShown(), "a folded window shows an empty gap")
+check(window.folded:GetText():find("hidden", 1, true) ~= nil,
+      "a folded window does not say what it is holding: %s",
+      tostring(window.folded:GetText()))
 ns.Whisper:ToggleLog(window)
 check(window.log:IsShown(), "the conversation did not come back")
+check(not window.folded:IsShown(), "the folded notice stayed once it was open")
+
+-- And the fold is not remembered across windows: one press weeks ago should
+-- not quietly make every window since open looking empty.
+ns.Whisper:ToggleLog(window)
+ns.Whisper:Close("Nobody2")
+ns.Whisper:Open("Nobody2")
+check(ns.Whisper:Windows()["Nobody2"].collapsed == false,
+      "a new window opened folded because another one was")
+ns.Whisper:Close("Nobody2")
+ns.Whisper:ToggleLog(window)
 
 -- The bound. Not privacy -- the file is read and written whole at login and
 -- logout, so a store that only grows costs time at both ends forever.
