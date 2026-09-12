@@ -208,6 +208,13 @@ C_FriendList = {
 local now = 1757000000
 time = function() return now end
 
+-- A Battle.net friend. The client simply knows all of this, which is why these
+-- windows need no lookup at all.
+local bnAccounts = {}
+C_BattleNet = { GetAccountInfoByID = function(id) return bnAccounts[tostring(id)] end }
+local bnSent = {}
+BNSendWhisper = function(id, text) bnSent[#bnSent + 1] = { id = id, text = text } end
+
 -- The stock scrolling-list helpers the config window uses.
 local scrollOffset = setmetatable({}, { __mode = "k" })
 function FauxScrollFrame_GetOffset(frame) return scrollOffset[frame] or 0 end
@@ -1779,6 +1786,41 @@ check(ns.Whisper:IsOpen("Grumgar") and ns.Whisper:IsOpen("Kelda"),
 deliver("CHAT_MSG_WHISPER", "still there?", "Grumgar")
 check(window.said:GetText():find("still there?", 1, true) ~= nil,
       "an open window ignored the next whisper")
+
+-- A Battle.net friend coming online. The name there is a link too, but a
+-- different type: it carries an account id, because there may be no character
+-- to whisper -- they can be on the other faction, another realm, or in another
+-- game entirely.
+bnAccounts["42"] = { gameAccountInfo = { isOnline = true, characterName = "Olfer",
+    realmName = "Nethergarde", raceName = "Troll", className = "Shaman",
+    characterLevel = 44 } }
+local toast = deliver("CHAT_MSG_BN_INLINE_TOAST_ALERT",
+    "|HBNplayer:Diego:42:0:0:|h[Diego]|h has come online.", nil)
+check(toast:find("|Hsilvertongue:bn:42:Diego|h", 1, true) ~= nil,
+      "the friend-online line got no mark: %s", tostring(toast))
+
+clickLink("silvertongue:bn:42:Diego")
+check(ns.Whisper:IsOpen("Diego", "42"), "clicking a Battle.net mark opened no window")
+local bnWindow = ns.Whisper:Windows()["bn:42"]
+check(bnWindow.title:GetText() == "Diego", "the window is not titled with their name")
+-- No /who: the client already holds their character, race, class and level.
+check(bnWindow.subtitle:GetText() == "Olfer - Troll Shaman, 44",
+      "a Battle.net friend showed: %s", tostring(bnWindow.subtitle:GetText()))
+
+-- And it goes out through the Battle.net route, not as a normal whisper, which
+-- would simply fail for a friend on the other faction.
+local bnContext = ns.Contexts:Whisper("Diego", "42")
+check(#bnContext.channels == 1 and bnContext.channels[1].key == "BN_WHISPER",
+      "a Battle.net conversation offered the wrong channel")
+local bnBoard = ns.Board:New("WHISPER:bn:42")
+bnBoard:Open(bnWindow.speak, bnContext)
+bnBoard:Pick({ "WHISPER", "HELLO", "Greet" }, nil)
+local chatBefore = #sent
+ns.Display:Send("BN_WHISPER")
+check(#bnSent == 1, "the Battle.net line did not go out: %d sent", #bnSent)
+check(bnSent[1].id == 42, "it was addressed to %s", tostring(bnSent[1].id))
+check(#sent == chatBefore, "a Battle.net line also went out as normal chat")
+ns.Whisper:Close("Diego", "42")
 
 -- Speaking: every intent must produce a line, and none of it may reach chat.
 local whisperContext = ns.Contexts:Whisper("Grumgar")

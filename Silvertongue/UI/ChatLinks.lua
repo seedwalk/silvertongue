@@ -45,7 +45,13 @@ ChatLinks.EVENTS = {
 -- over an escape sequence rather than a guess at a localised sentence, so this
 -- works for every system line that names somebody and keeps working when the
 -- wording changes.
-ChatLinks.SYSTEM_EVENTS = { CHAT_MSG_SYSTEM = "system" }
+ChatLinks.SYSTEM_EVENTS = {
+    CHAT_MSG_SYSTEM                = "system",
+    -- "[Diego Vinas] (Olfer) has come online." A Battle.net friend appearing is
+    -- one of the better moments to say something, and the name there is a link
+    -- too -- a different type, carrying an account id rather than a character.
+    CHAT_MSG_BN_INLINE_TOAST_ALERT = "friends",
+}
 
 -- |Hplayer:Name|h[Name]|h, and the longer form that carries the line id and
 -- chat type after the name.
@@ -53,6 +59,12 @@ ChatLinks.SYSTEM_EVENTS = { CHAT_MSG_SYSTEM = "system" }
 -- read back out of it. With a capture it would hand over the name alone and the
 -- link itself would be lost.
 local PLAYER_LINK = "|Hplayer:[^|]+|h.-|h"
+
+-- |HBNplayer:<display name>:<account id>:...|h[Name]|h. The account id is what
+-- a Battle.net whisper is addressed to: there may be no character to whisper at
+-- all, and if they are on the other faction or another realm there certainly is
+-- not.
+local BN_LINK = "|HBNplayer:[^|]+|h.-|h"
 
 local function enabled(kind)
     local db = ns.addon and ns.addon.db
@@ -67,6 +79,12 @@ end
 -- knows who it was about without looking at anything that may have moved on.
 local function markLink(name)
     return "|H" .. LINK_TYPE .. ":" .. name .. "|h" .. MARK .. "|h"
+end
+
+-- Battle.net conversations are addressed by account, so the mark carries the
+-- id and the name is only there to put in the window's title bar.
+local function markBattleNet(id, display)
+    return "|H" .. LINK_TYPE .. ":bn:" .. id .. ":" .. display .. "|h" .. MARK .. "|h"
 end
 
 -- Ahead of the message, so the icon sits where the name is.
@@ -111,6 +129,14 @@ function ChatLinks:MarkNamesInText(message)
         return link .. " " .. markLink(name)
     end)
 
+    out = out:gsub(BN_LINK, function(link)
+        local display, id = link:match("|HBNplayer:([^:|]*):([^:|]+)")
+        if not id or seen["bn:" .. id] then return link end
+        seen["bn:" .. id] = true
+        changed = true
+        return link .. " " .. markBattleNet(id, display or "")
+    end)
+
     return changed and out or message
 end
 
@@ -119,10 +145,16 @@ function ChatLinks:FilterSystem(event, message, ...)
     return false, self:MarkNamesInText(message), ...
 end
 
-function ChatLinks:OnClick(name)
-    if not name or name == "" then return end
+function ChatLinks:OnClick(payload)
+    if not payload or payload == "" then return end
     if not ns.Whisper then return end
-    ns.Whisper:Open(name)
+
+    local id, display = payload:match("^bn:([^:]+):?(.*)$")
+    if id then
+        ns.Whisper:Open((display ~= "" and display) or ("Battle.net " .. id), nil, id)
+        return
+    end
+    ns.Whisper:Open(payload)
 end
 
 -- The link type is claimed once. Registering the same type twice trips an

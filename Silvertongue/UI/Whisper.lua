@@ -131,6 +131,24 @@ local function fromGuild(name)
     return nil
 end
 
+-- A Battle.net friend is the easy case, and the only one where no lookup is
+-- needed: the client already holds their character, race, class and level, and
+-- hands them over for nothing.
+function ns.IdentifyBattleNet(bnetID)
+    if not bnetID or not C_BattleNet or not C_BattleNet.GetAccountInfoByID then return nil end
+    local account = C_BattleNet.GetAccountInfoByID(bnetID)
+    local game = account and account.gameAccountInfo
+    if not game then return nil end
+    return {
+        className     = game.className,
+        raceName      = game.raceName,
+        level         = game.characterLevel,
+        characterName = game.characterName,
+        realmName     = game.realmName,
+        online        = game.isOnline,
+    }
+end
+
 function ns.IdentifyPlayer(name)
     if not name then return nil end
 
@@ -319,7 +337,7 @@ local function iconButton(parent, texture, size)
     return button
 end
 
-function Whisper:Build(name)
+function Whisper:Build(name, bnetID)
     local frame = CreateFrame("Frame", "SilvertongueWhisper" .. openCount,
         UIParent, "BackdropTemplate")
     frame:SetWidth(WIDTH)
@@ -367,7 +385,7 @@ function Whisper:Build(name)
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetSize(24, 24)
     close:SetPoint("TOPRIGHT", 2, 2)
-    close:SetScript("OnClick", function() Whisper:Close(name) end)
+    close:SetScript("OnClick", function() Whisper:Close(name, bnetID) end)
 
     -- The three that act. Speak is ours and always works; the other two are the
     -- game's and are switched off when the game would refuse them.
@@ -376,7 +394,8 @@ function Whisper:Build(name)
     frame.speak.tipTitle = "Say something"
     frame.speak.tipBody = "Answer them in character. Nothing is sent until you press the channel."
     frame.speak:SetScript("OnClick", function(self)
-        ns.Board:New("WHISPER:" .. name):Toggle(self, ns.Contexts:Whisper(name))
+        ns.Board:New("WHISPER:" .. Whisper:Key(name, bnetID))
+            :Toggle(self, ns.Contexts:Whisper(name, bnetID))
     end)
 
     frame.invite = iconButton(frame, INVITE_ICON, ICON)
@@ -388,8 +407,17 @@ function Whisper:Build(name)
     frame.invite.tipTitle = "Invite them"
     frame.invite.tipBody = "Invites " .. name .. " to your group. They still have to accept."
     frame.invite:SetScript("OnClick", function()
-        if InviteToGroup then InviteToGroup(name)
-        elseif InviteUnit then InviteUnit(name) end
+        -- An account has no name to invite; the character behind it does, and
+        -- it needs its realm because they may not be on yours.
+        local who = name
+        if bnetID then
+            local info = ns.IdentifyBattleNet(bnetID)
+            if not info or not info.characterName then return end
+            who = info.realmName and (info.characterName .. "-" .. info.realmName)
+                or info.characterName
+        end
+        if InviteToGroup then InviteToGroup(who)
+        elseif InviteUnit then InviteUnit(who) end
     end)
 
     frame.trade = iconButton(frame, TRADE_ICON, ICON)
@@ -403,6 +431,7 @@ function Whisper:Build(name)
     end)
 
     frame.name = name
+    frame.bnetID = bnetID
     return frame
 end
 
@@ -431,19 +460,42 @@ end
 
 function Whisper:RefreshHeader(frame)
     frame.title:SetText(frame.name)
+
+    if frame.bnetID then
+        local info = ns.IdentifyBattleNet(frame.bnetID)
+        if not info then
+            frame.subtitle:SetText("Battle.net friend")
+        elseif info.characterName then
+            -- Who they are playing right now, which is the useful half.
+            frame.subtitle:SetText(info.characterName .. " - " .. describe(frame.name, info))
+        else
+            frame.subtitle:SetText(info.online and "Online" or "Offline")
+        end
+        return
+    end
+
     frame.subtitle:SetText(describe(frame.name, ns.IdentifyPlayer(frame.name)))
 end
 
-function Whisper:Open(name, said)
+-- Windows are keyed by who they are about. A Battle.net conversation is about
+-- an account, not a character: the same person may be on a different character
+-- tomorrow, and the whisper still reaches them.
+function Whisper:Key(name, bnetID)
+    return bnetID and ("bn:" .. bnetID) or name
+end
+
+function Whisper:Open(name, said, bnetID)
     if not name or name == "" then return nil end
 
-    local frame = windows[name]
+    local key = self:Key(name, bnetID)
+    local frame = windows[key]
     if not frame then
         openCount = openCount + 1
-        frame = self:Build(name)
-        windows[name] = frame
+        frame = self:Build(name, bnetID)
+        windows[key] = frame
         self:PlaceNew(frame, openCount)
-        ns.AskWho(name)
+        -- Nothing to ask about an account: the client already knows.
+        if not bnetID then ns.AskWho(name) end
     end
 
     self:RefreshHeader(frame)
@@ -457,6 +509,18 @@ end
 -- selected and beside you, which in a whisper is the exception rather than the
 -- rule; invite is off once they are already with you.
 function Whisper:UpdateActions(frame)
+    if frame.bnetID then
+        -- Trade needs someone standing beside you, which an account is not, and
+        -- inviting needs them to be playing something right now.
+        local info = ns.IdentifyBattleNet(frame.bnetID)
+        local invitable = info ~= nil and info.characterName ~= nil and info.online == true
+        frame.trade:SetEnabled(false)
+        frame.trade.icon:SetAlpha(0.3)
+        frame.invite:SetEnabled(invitable)
+        frame.invite.icon:SetAlpha(invitable and 0.85 or 0.3)
+        return
+    end
+
     local targeted = UnitExists("target") and UnitName("target") == frame.name
     frame.trade:SetEnabled(targeted and true or false)
     frame.trade.icon:SetAlpha(targeted and 0.85 or 0.3)
@@ -487,16 +551,17 @@ function Whisper:Heard(name, message)
     return true
 end
 
-function Whisper:Close(name)
-    local frame = windows[name]
+function Whisper:Close(name, bnetID)
+    local key = self:Key(name, bnetID)
+    local frame = windows[key]
     if not frame then return end
     frame:Hide()
-    local board = ns.Board and ns.Board:New("WHISPER:" .. name)
+    local board = ns.Board and ns.Board:New("WHISPER:" .. key)
     if board then board:Close() end
 end
 
-function Whisper:IsOpen(name)
-    local frame = windows[name]
+function Whisper:IsOpen(name, bnetID)
+    local frame = windows[self:Key(name, bnetID)]
     return frame ~= nil and frame:IsShown()
 end
 

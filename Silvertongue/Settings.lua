@@ -68,6 +68,17 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
     -- A named recipient is enough on its own. The target-based check below is
     -- for lines aimed at whoever you have selected; this name came from a
     -- group listing, where there is no unit to inspect.
+    -- Addressed to a Battle.net account rather than a character. There may be
+    -- no character to whisper at all -- they can be on the other faction, on
+    -- another realm, or in a different game entirely.
+    if channel == "BN_WHISPER" then
+        if recipient and BNSendWhisper then
+            BNSendWhisper(tonumber(recipient) or recipient, text)
+            return "BN_WHISPER"
+        end
+        return nil
+    end
+
     if channel == "WHISPER" and recipient then
         SendChatMessage(text, "WHISPER", nil, recipient)
         return "WHISPER"

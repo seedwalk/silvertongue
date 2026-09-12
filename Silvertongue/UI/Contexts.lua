@@ -170,7 +170,7 @@ local IN_GUILD = { key = "GUILD", label = "Guild",
 -- own room reaches nobody who matters. And there is no gesture -- a bow aimed
 -- at someone who is not on your screen plays to an empty room, so the whole
 -- emote row is switched off rather than left on to mislead.
-function Contexts:Whisper(name)
+function Contexts:Whisper(name, bnetID)
     if not name or name == "" then return nil end
 
     local list = {}
@@ -182,12 +182,18 @@ function Contexts:Whisper(name)
         end
     end
 
-    local channels = { { key = "WHISPER", label = "Whisper",
-                         hint = "Only " .. name .. " reads it." } }
+    local channels
+    if bnetID then
+        channels = { { key = "BN_WHISPER", label = "Whisper",
+                       hint = "Reaches " .. name .. " wherever they are, on any character." } }
+    else
+        channels = { { key = "WHISPER", label = "Whisper",
+                       hint = "Only " .. name .. " reads it." } }
+    end
     -- Addressing a guildmate by name in guild chat is a normal thing to do, and
     -- the line already carries their name either way. The channel only decides
-    -- who else hears it.
-    if isGuildmate(name) then channels[#channels + 1] = IN_GUILD end
+    -- who else hears it. A Battle.net account is nobody's guildmate.
+    if not bnetID and isGuildmate(name) then channels[#channels + 1] = IN_GUILD end
 
     local info = ns.IdentifyPlayer and ns.IdentifyPlayer(name)
     local subtitle
@@ -197,12 +203,12 @@ function Contexts:Whisper(name)
     end
 
     return {
-        key       = "WHISPER:" .. name,
+        key       = "WHISPER:" .. (bnetID and ("bn:" .. bnetID) or name),
         title     = name,
         subtitle  = subtitle,
         intents   = list,
         ctx       = { name = name },
-        recipient = name,
+        recipient = bnetID or name,
         channels  = channels,
         noEmote   = true,
     }
