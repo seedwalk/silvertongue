@@ -1815,7 +1815,7 @@ check(_G.SilvertongueAnchorPARTY_ALL.__point ~= nil, "the group control has no a
 -- person for them; this one floats above the block with nothing around it.
 check(_G.SilvertongueAnchorPARTY_ALL.label ~= nil,
       "the group control is a bare icon with nothing to say what it is")
-check(_G.SilvertongueAnchorPARTY_ALL.label:GetText() == "Everyone",
+check(_G.SilvertongueAnchorPARTY_ALL.label:GetText() == "Party",
       "the group control is labelled: %s",
       tostring(_G.SilvertongueAnchorPARTY_ALL.label:GetText()))
 

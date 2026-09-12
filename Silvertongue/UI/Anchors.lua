@@ -466,7 +466,7 @@ function Anchors:CreateParty()
     -- name the person for them; this one hangs above the block with nothing
     -- around it, and a 16-pixel icon alone up there reads as a smudge.
     local control = createLabel("PARTY_ALL", first or UIParent, allDefault,
-        nil, "Everyone",
+        nil, "Party",
         function(self)
             partyBoard():Toggle(self, ns.Contexts:PartyAll())
         end, true)
