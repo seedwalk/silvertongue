@@ -9,7 +9,7 @@
 <meta property="og:description" content="Roleplay for Burning Crusade Classic that lives on the frames you already watch. Nothing reaches chat until you click to send it.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#07090c">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307090c'/%3E%3Cpath d='M8 9h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z' fill='%23e8c77a'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307090c'/%3E%3Cpath d='M8 9h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z' fill='%23dbe3ec'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,9 +22,8 @@ tailwind.config = {
     extend: {
       colors: {
         night:  { 950: '#05070a', 900: '#07090c', 850: '#0b0e13', 800: '#111620' },
-        gold:   { 200: '#f6e6be', 300: '#eed79c', 400: '#e8c77a', 500: '#d4ac57', 600: '#a8842f' },
-        ember:  { 500: '#c8552f', 600: '#a33f21' },
-        arcane: { 400: '#6f9fd8', 500: '#4a7cb8' },
+        silver: { 200: '#f4f7fa', 300: '#dce3ec', 400: '#bcc7d4', 500: '#8e9bab', 600: '#5d6a7a' },
+        arcane: { 400: '#8fb4de', 500: '#5f88b8', 600: '#3f608a' },
       },
       fontFamily: {
         display: ['Cinzel', 'Georgia', 'serif'],
@@ -50,14 +49,15 @@ tailwind.config = {
 <style>
   body { background:#05070a; }
 
-  /* Engraved gold, the way the game sets a title. */
-  .goldtext {
-    background: linear-gradient(180deg,#fbf0d2 0%,#e8c77a 42%,#b98f36 58%,#e8c77a 100%);
+  /* Brushed silver. The hard stop at the midpoint is what makes it read as
+     metal rather than as a grey gradient. */
+  .silvertext {
+    background: linear-gradient(180deg,#ffffff 0%,#dbe3ec 40%,#8593a4 52%,#c8d2dd 70%,#eef3f8 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 2px 0 rgba(0,0,0,.55));
   }
 
-  .hairline { background: linear-gradient(90deg,transparent,rgba(232,199,122,.35),transparent); }
+  .hairline { background: linear-gradient(90deg,transparent,rgba(220,227,236,.30),transparent); }
 
   /* A slow grain over the hero so the gradients do not read as plastic. */
   .grain::after {
@@ -65,8 +65,8 @@ tailwind.config = {
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
   }
 
-  .ember { position:absolute; bottom:-10px; width:2px; height:2px; border-radius:9999px;
-           background:#e8a24a; box-shadow:0 0 8px 2px rgba(232,162,74,.45); }
+  .mote { position:absolute; bottom:-10px; width:2px; height:2px; border-radius:9999px;
+          background:#dfe8f2; box-shadow:0 0 8px 2px rgba(180,205,235,.40); }
 
   /* Reveal-on-scroll, but never hide anything if the script does not run. */
   .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s ease-out, transform .7s ease-out; }
@@ -77,7 +77,7 @@ tailwind.config = {
   }
   .no-js .reveal { opacity:1; transform:none; }
 
-  ::selection { background: rgba(232,199,122,.28); }
+  ::selection { background: rgba(143,180,222,.30); }
 </style>
 </head>
 
@@ -86,12 +86,12 @@ tailwind.config = {
 
 <!-- The mark, defined once. -->
 <svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
-  <linearGradient id="au" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#fbf0d2"/><stop offset="45%" stop-color="#e8c77a"/>
-    <stop offset="55%" stop-color="#b98f36"/><stop offset="100%" stop-color="#e8c77a"/>
+  <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#cfd8e3"/>
+    <stop offset="55%" stop-color="#7d8a9b"/><stop offset="100%" stop-color="#dfe6ee"/>
   </linearGradient>
   <symbol id="bubble" viewBox="0 0 40 40">
-    <path d="M6 7h28a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H19l-8 6v-6H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z" fill="url(#au)"/>
+    <path d="M6 7h28a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H19l-8 6v-6H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z" fill="url(#ag)"/>
   </symbol>
 </defs></svg>
 
@@ -101,14 +101,14 @@ tailwind.config = {
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
     <a href="#top" class="flex items-center gap-2.5">
       <svg class="h-5 w-5" viewBox="0 0 40 40"><use href="#bubble"/></svg>
-      <span class="font-display text-sm tracking-[0.2em] text-gold-300">SILVERTONGUE</span>
+      <span class="font-display text-sm tracking-[0.2em] text-silver-300">SILVERTONGUE</span>
     </a>
     <div class="flex items-center gap-6 text-sm">
-      <a href="#features" class="hidden text-slate-400 transition hover:text-gold-300 sm:block">Features</a>
-      <a href="#install"  class="hidden text-slate-400 transition hover:text-gold-300 sm:block">Install</a>
+      <a href="#features" class="hidden text-slate-400 transition hover:text-silver-300 sm:block">Features</a>
+      <a href="#install"  class="hidden text-slate-400 transition hover:text-silver-300 sm:block">Install</a>
       <a id="nav-dl" href="https://github.com/seedwalk/silvertongue/releases"
-         class="rounded-md border border-gold-600/60 bg-gold-400/10 px-4 py-1.5 font-medium text-gold-300
-                transition hover:bg-gold-400/20">Download</a>
+         class="rounded-md border border-silver-600/60 bg-silver-400/10 px-4 py-1.5 font-medium text-silver-300
+                transition hover:bg-silver-400/20">Download</a>
     </div>
   </div>
 </nav>
@@ -119,8 +119,8 @@ tailwind.config = {
   <!-- Original artwork: a ridgeline under a cold sky, with something burning behind it. -->
   <div class="pointer-events-none absolute inset-0">
     <div class="absolute inset-0" style="background:
-      radial-gradient(120% 80% at 50% 108%, rgba(200,85,47,.30) 0%, transparent 58%),
-      radial-gradient(90% 60% at 50% -10%, rgba(74,124,184,.16) 0%, transparent 60%),
+      radial-gradient(120% 80% at 50% 108%, rgba(143,180,222,.22) 0%, transparent 58%),
+      radial-gradient(90% 60% at 50% -12%, rgba(220,227,236,.13) 0%, transparent 62%),
       linear-gradient(#05070a, #07090c 45%, #0b0e13)"></div>
 
     <svg class="absolute inset-x-0 bottom-0 h-[46vh] w-full" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -137,7 +137,7 @@ tailwind.config = {
          style="background-image:url('img/hero.jpg')"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-night-950/70 via-night-950/45 to-night-950"></div>
 
-    <div id="embers" class="absolute inset-x-0 bottom-0 h-1/2"></div>
+    <div id="motes" class="absolute inset-x-0 bottom-0 h-1/2"></div>
     <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night-950 to-transparent"></div>
   </div>
 
@@ -148,12 +148,17 @@ tailwind.config = {
 
     <svg class="mb-8 h-14 w-14 animate-fade" viewBox="0 0 40 40" role="img" aria-label="Silvertongue"><use href="#bubble"/></svg>
 
-    <h1 class="goldtext font-display text-[clamp(2.9rem,11vw,6.5rem)] font-700 leading-[0.95] tracking-tight animate-fade">
+    <h1 class="silvertext font-display text-[clamp(2.9rem,11vw,6.5rem)] font-700 leading-[0.95] tracking-tight animate-fade">
       Silvertongue
     </h1>
 
     <p class="mt-6 max-w-xl text-[clamp(1.1rem,3.6vw,1.5rem)] leading-snug text-slate-200 animate-fade" style="animation-delay:.1s">
       Add a voice to your character.
+    </p>
+
+    <p class="mt-3 max-w-md text-[15px] leading-relaxed text-slate-400 animate-fade" style="animation-delay:.13s">
+      Around 1,500 lines written for your race and class — and every one of them
+      yours to rewrite.
     </p>
 
     <p class="mt-4 text-[11px] uppercase tracking-[0.28em] text-slate-500 animate-fade" style="animation-delay:.16s">
@@ -162,9 +167,9 @@ tailwind.config = {
 
     <div class="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade" style="animation-delay:.22s">
       <a id="download" href="https://github.com/seedwalk/silvertongue/releases"
-         class="group rounded-lg border border-gold-500/70 bg-gradient-to-b from-gold-400/25 to-gold-600/10
-                px-8 py-3.5 font-medium text-gold-200 shadow-[0_0_30px_-8px_rgba(232,199,122,.5)]
-                transition hover:from-gold-400/35 hover:text-gold-100">
+         class="group rounded-lg border border-silver-500/70 bg-gradient-to-b from-silver-400/25 to-silver-600/10
+                px-8 py-3.5 font-medium text-silver-200 shadow-[0_0_34px_-8px_rgba(196,212,232,.45)]
+                transition hover:from-silver-400/35 hover:text-silver-100">
         Download the addon
         <span class="ml-1 inline-block transition group-hover:translate-x-0.5">→</span>
       </a>
@@ -177,7 +182,7 @@ tailwind.config = {
     <p id="version" class="mt-4 h-5 text-xs tracking-wide text-slate-500"></p>
   </div>
 
-  <a href="#features" class="absolute bottom-8 z-10 flex flex-col items-center gap-2 text-slate-500 transition hover:text-gold-300">
+  <a href="#features" class="absolute bottom-8 z-10 flex flex-col items-center gap-2 text-slate-500 transition hover:text-silver-300">
     <span class="text-[10px] uppercase tracking-[0.25em]">Features</span>
     <svg class="h-5 w-5 animate-bob" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -188,13 +193,13 @@ tailwind.config = {
 <!-- ══════════════════ the pitch ══════════════════ -->
 <section id="features" class="relative px-6 py-28 sm:py-36">
   <div class="mx-auto max-w-3xl text-center">
-    <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">The problem</p>
+    <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">The problem</p>
     <h2 class="reveal mt-5 font-display text-[clamp(1.9rem,5.5vw,3rem)] leading-tight text-white">
       Your character has been silent this whole time
     </h2>
     <p class="reveal mt-6 text-lg leading-relaxed text-slate-400">
       You know exactly what is happening. The warrior held the line, the group wiped, a stranger
-      helped you on a quest. And then you type <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">ty</code>
+      helped you on a quest. And then you type <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-silver-300">ty</code>
       and move on, because stopping to write something in character costs more than the moment is worth.
     </p>
     <p class="reveal mt-5 text-lg leading-relaxed text-slate-400">
@@ -203,9 +208,9 @@ tailwind.config = {
     </p>
   </div>
 
-  <div class="reveal mx-auto mt-16 max-w-3xl rounded-xl border border-gold-500/25 bg-gradient-to-b from-gold-400/[0.07] to-transparent p-7 text-center">
+  <div class="reveal mx-auto mt-16 max-w-3xl rounded-xl border border-silver-500/25 bg-gradient-to-b from-silver-400/[0.07] to-transparent p-7 text-center">
     <p class="text-lg text-slate-200">
-      <span class="font-medium text-gold-300">Nothing reaches chat until you click to send it.</span>
+      <span class="font-medium text-silver-300">Nothing reaches chat until you click to send it.</span>
       Every button, key and menu fills a box and stops. You read the line first, every time.
     </p>
   </div>
@@ -218,7 +223,7 @@ tailwind.config = {
   <div class="mx-auto max-w-6xl">
     <div class="grid items-center gap-14 lg:grid-cols-2">
       <div>
-        <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">One</p>
+        <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">One</p>
         <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
           It lives on the frames you already watch
         </h2>
@@ -229,11 +234,11 @@ tailwind.config = {
           the game, not like something bolted on top of it.
         </p>
         <ul class="reveal mt-8 space-y-3.5 text-slate-400">
-          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-silver-400"></span>
             <span>Opens beside what you clicked, never on top of it.</span></li>
-          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-silver-400"></span>
             <span>Click away to dismiss, the way a right-click menu behaves.</span></li>
-          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-silver-400"></span>
             <span>Drag any of it wherever you want it. It stays there.</span></li>
         </ul>
       </div>
@@ -247,7 +252,7 @@ tailwind.config = {
         <div id="menu-drawing" class="rounded-xl border border-white/10 bg-night-900 p-5 shadow-2xl">
           <div class="flex flex-wrap items-start gap-3">
             <div class="min-w-[186px] rounded-md border border-white/10 bg-white/[0.03] py-2 text-[13.5px]">
-              <div class="px-3.5 font-medium text-gold-300">Gromkar</div>
+              <div class="px-3.5 font-medium text-silver-300">Gromkar</div>
               <div class="px-3.5 pb-1.5 text-[11.5px] text-slate-500">Orc Warrior</div>
               <div class="mx-2.5 my-1.5 h-px bg-white/10"></div>
               <div class="px-3.5 py-0.5 text-slate-200">Hello</div>
@@ -258,16 +263,16 @@ tailwind.config = {
               <div class="px-3.5 py-0.5 text-slate-200">Warn</div>
               <div class="px-3.5 py-0.5 text-slate-200">Apologize</div>
               <div class="mx-2.5 my-1.5 h-px bg-white/10"></div>
-              <div class="px-3.5 py-0.5 text-gold-300">Invite</div>
-              <div class="px-3.5 py-0.5 text-gold-300">Trade</div>
-              <div class="px-3.5 py-0.5 text-gold-300">Duel</div>
+              <div class="px-3.5 py-0.5 text-silver-300">Invite</div>
+              <div class="px-3.5 py-0.5 text-silver-300">Trade</div>
+              <div class="px-3.5 py-0.5 text-silver-300">Duel</div>
             </div>
 
             <div class="min-w-[240px] flex-1 rounded-md border border-white/10 bg-white/[0.03] p-3.5">
               <p class="text-[14px] leading-snug text-slate-100">“Well fought, Gromkar. The spirits favored your blade.”</p>
               <p class="mt-2 text-[12px] text-slate-500">✓&nbsp; applauds before Gromkar</p>
               <div class="mt-3 flex flex-wrap gap-1.5 text-[11.5px]">
-                <span class="rounded border border-gold-600/50 bg-gold-400/15 px-3 py-1 text-gold-200">Party</span>
+                <span class="rounded border border-silver-600/50 bg-silver-400/15 px-3 py-1 text-silver-200">Party</span>
                 <span class="rounded border border-white/10 bg-white/5 px-3 py-1 text-slate-300">Say</span>
                 <span class="rounded border border-white/10 bg-white/5 px-3 py-1 text-slate-300">Whisper</span>
                 <span class="rounded border border-white/10 bg-white/5 px-2.5 py-1 text-slate-400">↻</span>
@@ -289,9 +294,9 @@ tailwind.config = {
 
   <div class="relative mx-auto max-w-6xl">
     <div class="mx-auto max-w-2xl text-center">
-      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Two</p>
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">Two</p>
       <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
-        It sounds like <em class="text-gold-300">your</em> character
+        It sounds like <em class="text-silver-300">your</em> character
       </h2>
       <p class="reveal mt-6 leading-relaxed text-slate-400">
         A line is assembled in layers: a shared pool, then your class, your race and your faction,
@@ -303,7 +308,7 @@ tailwind.config = {
     <div class="mt-14 grid gap-4 md:grid-cols-3">
       <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6">
         <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
-        <p class="mt-1 font-display text-xl text-gold-300">Ready</p>
+        <p class="mt-1 font-display text-xl text-silver-300">Ready</p>
         <p class="mt-4 text-slate-300">“Totems are down. I am set.”</p>
         <p class="mt-1 text-xs text-slate-600">Shaman</p>
         <p class="mt-4 text-slate-300">“Ready. I have been in position for some time.”</p>
@@ -311,7 +316,7 @@ tailwind.config = {
       </div>
       <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6" style="transition-delay:.08s">
         <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
-        <p class="mt-1 font-display text-xl text-gold-300">Hello</p>
+        <p class="mt-1 font-display text-xl text-silver-300">Hello</p>
         <p class="mt-4 text-slate-300">“Hey mon. Da spirits be watchin' you.”</p>
         <p class="mt-1 text-xs text-slate-600">Troll</p>
         <p class="mt-4 text-slate-300">“Ah, there y'are. Good to see ye.”</p>
@@ -319,7 +324,7 @@ tailwind.config = {
       </div>
       <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6" style="transition-delay:.16s">
         <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
-        <p class="mt-1 font-display text-xl text-gold-300">Wipe</p>
+        <p class="mt-1 font-display text-xl text-silver-300">Wipe</p>
         <p class="mt-4 text-slate-300">“I should have held. Next time I hold.”</p>
         <p class="mt-1 text-xs text-slate-600">Warrior</p>
         <p class="mt-4 text-slate-300">“Interesting failure. I have several theories.”</p>
@@ -327,9 +332,9 @@ tailwind.config = {
       </div>
     </div>
 
-    <div class="reveal mx-auto mt-14 max-w-3xl rounded-xl border border-ember-500/25 bg-ember-500/[0.06] p-8 text-center">
+    <div class="reveal mx-auto mt-14 max-w-3xl rounded-xl border border-arcane-500/25 bg-arcane-500/[0.06] p-8 text-center">
       <p class="text-sm text-slate-400">And a few race-and-class pairings carry what neither half contains.</p>
-      <p class="mt-5 font-display text-[clamp(1.15rem,3.4vw,1.6rem)] leading-snug text-gold-200">
+      <p class="mt-5 font-display text-[clamp(1.15rem,3.4vw,1.6rem)] leading-snug text-silver-200">
         “I did not ask the Light for this. I took it.”
       </p>
       <p class="mt-3 text-sm text-slate-500">A blood elf paladin — a line no other paladin can draw</p>
@@ -337,16 +342,16 @@ tailwind.config = {
 
     <div class="reveal mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 md:grid-cols-4">
       <div class="bg-night-950 px-4 py-8 text-center">
-        <p class="font-display text-4xl text-gold-300">1,500</p>
+        <p class="font-display text-4xl text-silver-300">1,500</p>
         <p class="mt-2 text-xs text-slate-500">handwritten lines</p></div>
       <div class="bg-night-950 px-4 py-8 text-center">
-        <p class="font-display text-4xl text-gold-300">53</p>
+        <p class="font-display text-4xl text-silver-300">53</p>
         <p class="mt-2 text-xs text-slate-500">characters covered</p></div>
       <div class="bg-night-950 px-4 py-8 text-center">
-        <p class="font-display text-4xl text-gold-300">9</p>
+        <p class="font-display text-4xl text-silver-300">9</p>
         <p class="mt-2 text-xs text-slate-500">classes with a voice</p></div>
       <div class="bg-night-950 px-4 py-8 text-center">
-        <p class="font-display text-4xl text-gold-300">10</p>
+        <p class="font-display text-4xl text-silver-300">10</p>
         <p class="mt-2 text-xs text-slate-500">races with a voice</p></div>
     </div>
     <p class="reveal mt-5 text-center text-sm text-slate-500">
@@ -361,7 +366,7 @@ tailwind.config = {
 <section class="px-6 py-28 sm:py-36">
   <div class="mx-auto max-w-6xl">
     <div class="mx-auto max-w-2xl text-center">
-      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Three</p>
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">Three</p>
       <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
         It reaches the rest of the world too
       </h2>
@@ -369,8 +374,8 @@ tailwind.config = {
 
     <div class="mt-14 grid gap-6 md:grid-cols-3">
       <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7">
-        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
-          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-silver-600/40 bg-silver-400/10">
+          <svg class="h-5 w-5 text-silver-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 3v10m0 0l-3.5-3.5M12 13l3.5-3.5M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <h3 class="font-display text-xl text-white">It bows when it thanks you</h3>
@@ -382,8 +387,8 @@ tailwind.config = {
       </article>
 
       <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7" style="transition-delay:.08s">
-        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
-          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-silver-600/40 bg-silver-400/10">
+          <svg class="h-5 w-5 text-silver-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/>
             <path d="M3.5 19c.6-3 2.9-4.5 5.5-4.5S13.9 16 14.5 19M16 15c2 .3 3.6 1.6 4 4" stroke-linecap="round"/></svg>
         </div>
@@ -394,24 +399,79 @@ tailwind.config = {
           are running and <span class="text-slate-200">what they are short of</span>, then offers the
           roles your class could fill.
         </p>
-        <p class="mt-4 rounded-md border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12.5px] text-gold-300">
+        <p class="mt-4 rounded-md border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12.5px] text-silver-300">
           LFG Scarlet Monastery — orc rogue, 36.
         </p>
       </article>
 
       <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7" style="transition-delay:.16s">
-        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
-          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-silver-600/40 bg-silver-400/10">
+          <svg class="h-5 w-5 text-silver-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M4 20l4-1 10-10a2.1 2.1 0 10-3-3L5 16l-1 4z" stroke-linejoin="round"/></svg>
         </div>
-        <h3 class="font-display text-xl text-white">It is yours to edit</h3>
+        <h3 class="font-display text-xl text-white">It stays out of your way</h3>
         <p class="mt-3 leading-relaxed text-slate-400">
-          Every line, and where it came from. Write your own, drop the ones you dislike, change a
-          gesture, rearrange any menu. Changes are stored as a diff — so new phrases in later
-          versions still reach you, underneath your own.
+          Nothing is ever said without you pressing the channel. Drag any bubble where you want
+          it, put the panel on a key, or hide the parts you do not use — including the minimap
+          button.
         </p>
       </article>
     </div>
+  </div>
+</section>
+
+<div class="hairline mx-auto h-px max-w-5xl"></div>
+
+<!-- ══════════════════ 4. configurable ══════════════════ -->
+<section class="relative px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">Four</p>
+      <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
+        Every word of it is yours
+      </h2>
+      <p class="reveal mt-5 leading-relaxed text-slate-400">
+        The library ships full, not finished. Open it in game and the whole thing is an editor:
+        no file to unzip, nothing to reload, no Lua to write.
+      </p>
+    </div>
+
+    <div class="mt-14 grid gap-x-10 gap-y-9 sm:grid-cols-2">
+      <div class="reveal">
+        <h3 class="font-display text-lg text-white">Write, edit, delete</h3>
+        <p class="mt-2 leading-relaxed text-slate-400">
+          Add a line where you missed one, reword one that sounds wrong, hide the ones that are
+          not your character. Favourites float to the top of their menu.
+        </p>
+      </div>
+      <div class="reveal" style="transition-delay:.06s">
+        <h3 class="font-display text-lg text-white">Choose who it belongs to</h3>
+        <p class="mt-2 leading-relaxed text-slate-400">
+          Each edit is scoped: this character only, every orc you roll, every shaman, the whole
+          Horde, or everyone. Write once, and the right character says it.
+        </p>
+      </div>
+      <div class="reveal" style="transition-delay:.12s">
+        <h3 class="font-display text-lg text-white">Arrange the menus</h3>
+        <p class="mt-2 leading-relaxed text-slate-400">
+          Reorder the buttons, drop in separators, and drag every bubble to wherever your unit
+          frames actually are — replacement frames included. Positions are remembered.
+        </p>
+      </div>
+      <div class="reveal" style="transition-delay:.18s">
+        <h3 class="font-display text-lg text-white">Pick the gesture</h3>
+        <p class="mt-2 leading-relaxed text-slate-400">
+          Any line can carry any emote, or none — bow, salute, roar, chosen per line and stored
+          with the same scopes.
+        </p>
+      </div>
+    </div>
+
+    <p class="reveal mx-auto mt-14 max-w-2xl rounded-xl border border-white/10 bg-white/[0.02] px-6 py-5 text-center leading-relaxed text-slate-400">
+      Your changes are kept as a layer <span class="text-slate-200">on top of</span> the shipped
+      library, never as a copy of it — so new phrases in later versions still reach you,
+      underneath your own.
+    </p>
   </div>
 </section>
 
@@ -421,39 +481,39 @@ tailwind.config = {
 <section id="install" class="px-6 py-28 sm:py-36">
   <div class="mx-auto max-w-3xl">
     <div class="text-center">
-      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Install</p>
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">Install</p>
       <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] text-white">Three steps, no setup</h2>
     </div>
 
     <ol class="mt-14 space-y-8">
       <li class="reveal flex gap-5">
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">1</span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-silver-600/50 bg-silver-400/10 font-display text-sm text-silver-300">1</span>
         <div>
           <p class="font-medium text-white">Download and unzip it</p>
-          <p class="mt-1.5 text-slate-400">You should end up with a folder called <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">Silvertongue</code>.</p>
+          <p class="mt-1.5 text-slate-400">You should end up with a folder called <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-silver-300">Silvertongue</code>.</p>
         </div>
       </li>
       <li class="reveal flex gap-5">
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">2</span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-silver-600/50 bg-silver-400/10 font-display text-sm text-silver-300">2</span>
         <div class="min-w-0">
           <p class="font-medium text-white">Put it in your AddOns folder</p>
-          <pre class="mt-2.5 overflow-x-auto rounded-lg border border-white/10 bg-black/50 px-4 py-3 font-mono text-[12.5px] text-gold-300">World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/</pre>
+          <pre class="mt-2.5 overflow-x-auto rounded-lg border border-white/10 bg-black/50 px-4 py-3 font-mono text-[12.5px] text-silver-300">World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/</pre>
         </div>
       </li>
       <li class="reveal flex gap-5">
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">3</span>
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-silver-600/50 bg-silver-400/10 font-display text-sm text-silver-300">3</span>
         <div>
           <p class="font-medium text-white">Restart the game</p>
-          <p class="mt-1.5 text-slate-400">Not <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">/reload</code> — new addons are only found when the client launches.</p>
+          <p class="mt-1.5 text-slate-400">Not <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-silver-300">/reload</code> — new addons are only found when the client launches.</p>
         </div>
       </li>
     </ol>
 
-    <div class="reveal mt-12 rounded-xl border border-ember-500/30 bg-ember-500/[0.07] p-6">
+    <div class="reveal mt-12 rounded-xl border border-arcane-500/30 bg-arcane-500/[0.07] p-6">
       <p class="font-medium text-white">The one thing that goes wrong</p>
       <p class="mt-2 leading-relaxed text-slate-400">
-        You need <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-gold-300">AddOns/Silvertongue/Silvertongue.toc</code>.
-        If unzipping left an extra folder in between — <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-gold-300">AddOns/Silvertongue-rc-0.1.0/Silvertongue/</code> —
+        You need <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-silver-300">AddOns/Silvertongue/Silvertongue.toc</code>.
+        If unzipping left an extra folder in between — <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-silver-300">AddOns/Silvertongue-rc-0.1.0/Silvertongue/</code> —
         the game will never find it. Move the inner folder up one level.
       </p>
     </div>
@@ -462,7 +522,7 @@ tailwind.config = {
       <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
         <p class="font-medium text-white">Which build?</p>
         <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
-          <code class="text-gold-300">v0.1.0</code> is finished. <code class="text-gold-300">rc-0.1.0</code>
+          <code class="text-silver-300">v0.1.0</code> is finished. <code class="text-silver-300">rc-0.1.0</code>
           passes the tests but has had less time in a real game. Both install the same way.</p>
       </div>
       <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
@@ -475,9 +535,9 @@ tailwind.config = {
 
     <div class="reveal mt-14 text-center">
       <a id="download2" href="https://github.com/seedwalk/silvertongue/releases"
-         class="inline-block rounded-lg border border-gold-500/70 bg-gradient-to-b from-gold-400/25 to-gold-600/10
-                px-9 py-4 font-medium text-gold-200 shadow-[0_0_30px_-8px_rgba(232,199,122,.5)]
-                transition hover:from-gold-400/35 hover:text-gold-100">
+         class="inline-block rounded-lg border border-silver-500/70 bg-gradient-to-b from-silver-400/25 to-silver-600/10
+                px-9 py-4 font-medium text-silver-200 shadow-[0_0_34px_-8px_rgba(196,212,232,.45)]
+                transition hover:from-silver-400/35 hover:text-silver-100">
         Download the addon →
       </a>
       <p class="mt-4 text-sm text-slate-500">Free, open source, and it does not phone anywhere.</p>
@@ -494,9 +554,9 @@ tailwind.config = {
         <span class="font-display text-sm tracking-[0.2em] text-slate-400">SILVERTONGUE</span>
       </div>
       <div class="flex gap-7 text-sm">
-        <a href="https://github.com/seedwalk/silvertongue" class="text-slate-400 transition hover:text-gold-300">GitHub</a>
-        <a href="https://github.com/seedwalk/silvertongue/releases" class="text-slate-400 transition hover:text-gold-300">Releases</a>
-        <a href="https://github.com/seedwalk/silvertongue/issues" class="text-slate-400 transition hover:text-gold-300">Issues</a>
+        <a href="https://github.com/seedwalk/silvertongue" class="text-slate-400 transition hover:text-silver-300">GitHub</a>
+        <a href="https://github.com/seedwalk/silvertongue/releases" class="text-slate-400 transition hover:text-silver-300">Releases</a>
+        <a href="https://github.com/seedwalk/silvertongue/issues" class="text-slate-400 transition hover:text-silver-300">Issues</a>
       </div>
     </div>
     <p class="mt-10 text-center text-xs leading-relaxed text-slate-600">
@@ -509,13 +569,13 @@ tailwind.config = {
 </footer>
 
 <script>
-// ── embers drifting up out of the ridgeline ──────────────────────────────────
+// ── motes drifting up out of the ridgeline ──────────────────────────────────
 (function () {
-  var host = document.getElementById("embers");
+  var host = document.getElementById("motes");
   if (!host || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (var i = 0; i < 26; i++) {
     var e = document.createElement("span");
-    e.className = "ember animate-rise";
+    e.className = "mote animate-rise";
     e.style.left = (Math.random() * 100) + "%";
     e.style.animationDuration = (5 + Math.random() * 7) + "s";
     e.style.animationDelay = (Math.random() * 8) + "s";
