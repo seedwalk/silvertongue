@@ -135,7 +135,34 @@ end
 -- A row: the icon, and what it is, beside it. An arc of bare icons looked
 -- ragged and said nothing about which was which; a short stack says both and
 -- takes about as much room.
-local function createLabel(key, parent, default, tabKey, text, onClick)
+-- Paints a fan row's icon. `spec` is either a texture path or { classOf = unit },
+-- which draws that unit's class circle -- the one icon every WoW player reads
+-- without being told.
+local function paintIcon(icon, spec)
+    if type(spec) == "table" and spec.classOf then
+        local _, classToken = UnitClass(spec.classOf)
+        local coords = classToken and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[classToken]
+        if coords then
+            icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+            icon:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
+            return
+        end
+        -- A creature has no class, so it falls back to the speech bubble.
+        icon:SetTexture(SPEAK_ICON)
+        icon:SetTexCoord(0, 1, 0, 1)
+        return
+    end
+
+    local path = spec or SPEAK_ICON
+    icon:SetTexture(path)
+    if path:find("Icons") then
+        icon:SetTexCoord(ICON_TRIM, 1 - ICON_TRIM, ICON_TRIM, 1 - ICON_TRIM)
+    else
+        icon:SetTexCoord(0, 1, 0, 1)
+    end
+end
+
+local function createLabel(key, parent, default, iconSpec, text, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
     control:SetFrameStrata("DIALOG")
     control:SetSize(FAN_WIDTH, PLAYER_ICON_SIZE)
@@ -145,20 +172,9 @@ local function createLabel(key, parent, default, tabKey, text, onClick)
     icon:SetSize(PLAYER_ICON_SIZE, PLAYER_ICON_SIZE)
     icon:SetPoint("LEFT")
 
-    if tabKey == "CLASS" then
-        -- The game's own class circle, and the coordinates that cut this class
-        -- out of the shared sheet.
-        local _, classToken = UnitClass("player")
-        local coords = classToken and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[classToken]
-        icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-        if coords then
-            icon:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
-        end
-    else
-        icon:SetTexture(PLAYER_ICONS[tabKey] or SPEAK_ICON)
-        icon:SetTexCoord(ICON_TRIM, 1 - ICON_TRIM, ICON_TRIM, 1 - ICON_TRIM)
-    end
+    paintIcon(icon, iconSpec)
     icon:SetAlpha(0.75)
+    control.repaint = function(self, spec) paintIcon(icon, spec) end
     control.icon = icon
 
     local label = control:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -200,6 +216,12 @@ local function createLabel(key, parent, default, tabKey, text, onClick)
     return control
 end
 
+-- Straight down from a bubble, evenly spaced. Shared by both fans.
+local function placeInStack(control, hub, index)
+    control:ClearAllPoints()
+    control:SetPoint("TOPLEFT", hub, "BOTTOMLEFT", 0, -2 - (index - 1) * FAN_ROW_H)
+end
+
 local function enabled()
     return ns.addon and ns.addon.db and ns.addon.db.profile.anchorsEnabled
 end
@@ -209,12 +231,6 @@ end
 --------------------------------------------------------------------------------
 
 local PLAYER_TABS = { "GENERAL", "FACTION", "CLASS", "ATTITUDE" }
-
--- Straight down from the bubble, evenly spaced.
-local function placeInStack(control, hub, index)
-    control:ClearAllPoints()
-    control:SetPoint("TOPLEFT", hub, "BOTTOMLEFT", 0, -2 - (index - 1) * FAN_ROW_H)
-end
 
 function Anchors:CreatePlayer()
     if self.playerBuilt then return end
@@ -236,8 +252,10 @@ function Anchors:CreatePlayer()
         -- A character with no class or faction phrases gets no icon for it, and
         -- the arc closes up rather than leaving a gap in the ring.
         if context then
+            local iconSpec = (tabKey == "CLASS") and { classOf = "player" }
+                or PLAYER_ICONS[tabKey]
             local control = createLabel("PLAYER_" .. tabKey, nil,
-                { point = "CENTER", x = 0, y = 0 }, tabKey, context.subtitle,
+                { point = "CENTER", x = 0, y = 0 }, iconSpec, context.subtitle,
                 function(self)
                     local fresh = ns.Contexts:Player(tabKey)
                     if fresh then playerBoard():Toggle(self, fresh) end
@@ -253,39 +271,126 @@ function Anchors:CreatePlayer()
 end
 
 --------------------------------------------------------------------------------
--- The target.
+-- The target: a bubble under their level, fanning out the same way.
 --------------------------------------------------------------------------------
 
-function Anchors:CreateTarget()
-    if self.targetControl then return self.targetControl end
-
-    self.targetControl = createIcon("TARGET", TargetFrame,
-        { point = "TOPLEFT", relPoint = "BOTTOMLEFT", x = 30, y = 8 },
-        function(self)
-            local context = ns.Contexts:Target()
-            if not context then
-                targetBoard():Close()
-                return
+-- Speak leads, because talking is what this addon is for. Invite, Trade and
+-- Duel act the moment you press them -- all three are only requests the other
+-- player still has to accept, and burying them a menu deep made inviting
+-- someone a three-click errand.
+local TARGET_FAN = {
+    {
+        key = "SPEAK", label = "Speak",
+        icon = "Interface\\Icons\\INV_Misc_GroupLooking",
+        applies = function() return true end,
+    },
+    {
+        key = "INVITE", label = "Invite",
+        -- A plain plus rather than a spell icon: it means "add them" with no
+        -- ambiguity, and being flat UI art it sets the rows that act apart from
+        -- the round icons that identify.
+        icon = "Interface\\Buttons\\UI-PlusButton-Up",
+        -- Not offered for someone already in the group, or anything hostile.
+        applies = function(info) return info.isPlayer and not info.hostile and not info.grouped end,
+        run = function(name)
+            if C_PartyInfo and C_PartyInfo.InviteUnit then
+                C_PartyInfo.InviteUnit(name)
+            elseif InviteUnit then
+                InviteUnit(name)
             end
-            targetBoard():Toggle(self, context)
-        end)
-    tooltip(self.targetControl, "Speak to your target", "The phrases that fit whoever you have selected.")
-    return self.targetControl
+        end,
+    },
+    {
+        key = "TRADE", label = "Trade",
+        icon = "Interface\\Icons\\INV_Misc_Coin_01",
+        applies = function(info) return info.isPlayer and not info.hostile end,
+        run = function() if InitiateTrade then InitiateTrade("target") end end,
+    },
+    {
+        key = "DUEL", label = "Duel",
+        icon = "Interface\\Icons\\Ability_DualWield",
+        applies = function(info) return info.isPlayer and not info.hostile end,
+        run = function() if StartDuel then StartDuel("target") end end,
+    },
+}
+
+function Anchors:CreateTarget()
+    if self.targetBuilt then return end
+    self.targetBuilt = true
+
+    -- Under the target's level, mirroring where the player's sits.
+    local parent = _G["TargetFrameTextureFrameLevelText"]
+        or _G["TargetLevelText"] or TargetFrame
+
+    self.targetControl = createIcon("TARGET", parent,
+        { point = "TOPLEFT", relPoint = "BOTTOMLEFT", x = -3, y = -3 },
+        function() Anchors:ToggleTargetFan() end)
+    tooltip(self.targetControl, "Your target",
+        "Opens what you can do with them. Press again to fold it away.")
+
+    self.targetFan = {}
+    for _, entry in ipairs(TARGET_FAN) do
+        local control = createLabel("TARGET_" .. entry.key, nil,
+            { point = "CENTER", x = 0, y = 0 }, entry.icon, entry.label,
+            function(self)
+                if not UnitExists("target") then return end
+                if entry.run then
+                    -- Guarded: a missing or protected API must not break the panel.
+                    pcall(entry.run, UnitName("target"))
+                    return
+                end
+                local context = ns.Contexts:Target()
+                if context then targetBoard():Toggle(self, context) end
+            end)
+        tooltip(control, entry.label, entry.run
+            and "Acts immediately -- they still have to accept."
+            or "The phrases that fit whoever you have selected.")
+        control.entry = entry
+        self.targetFan[#self.targetFan + 1] = control
+    end
 end
 
+function Anchors:ToggleTargetFan()
+    self.targetFanOpen = not self.targetFanOpen
+    self:UpdateTarget()
+end
+
+-- Follows the selection. The fan stays open or folded across targets -- it is
+-- one switch, not one per person -- but which rows it holds is recomputed, and
+-- an open phrase menu is refilled for whoever is selected now, or closed when
+-- there is nobody left to talk to.
 function Anchors:UpdateTarget()
-    local control = self:CreateTarget()
+    self:CreateTarget()
+    local control = self.targetControl
     if not control then return end
 
-    local show = enabled()
-        and UnitExists("target")
-        and not UnitIsUnit("target", "player")
-
-    if show then
-        control:Show()
-    else
+    local info = enabled() and ns.Contexts:Target() or nil
+    if not info then
         control:Hide()
+        for _, row in ipairs(self.targetFan) do row:Hide() end
         targetBoard():Close()
+        return
+    end
+
+    control:Show()
+
+    local shown = 0
+    for _, row in ipairs(self.targetFan) do
+        if self.targetFanOpen and row.entry.applies(info) then
+            shown = shown + 1
+            placeInStack(row, control, shown)
+            row:Show()
+        else
+            row:Hide()
+        end
+    end
+
+    if targetBoard():IsShown() then
+        if self.targetFanOpen then
+            targetBoard():Open(targetBoard().anchorControl, info)
+        else
+            targetBoard():Close()
+        end
     end
 end
 

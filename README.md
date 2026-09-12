@@ -49,8 +49,26 @@ start folded every session: at rest this is meant to be one small icon.
 
 ### On your target
 
-Whenever you have someone selected, a speech bubble appears under their frame.
-What it offers depends on who they are:
+A speech bubble sits under your target's level. Press it and it fans out the
+same way your own does:
+
+```
+ 💬
+ 👥 Invite
+ 🪙 Trade
+ ⚔  Duel
+ 🗡 Speak      ← their class icon, and the phrases
+```
+
+The first three act the moment you press them — all three are requests the
+other player still has to accept. `Speak` opens the phrases.
+
+Rows that make no sense are not there: no invite for someone already in your
+group, and nothing to accept from a creature or an enemy. The fan stays open or
+folded as you change targets, and an open phrase menu refills itself for
+whoever you have selected now.
+
+What the phrases offer depends on who they are:
 
 | Your target | What you get |
 | --- | --- |
@@ -88,6 +106,9 @@ It sits against the row you clicked, and is cut to fit the phrase.
 - **`Reword` says it differently.** Same meaning, new words. So does clicking
   the same menu row again.
 - **The line is editable.** Click the text and change it before sending.
+- **Nothing you click moves.** A longer phrase grows the strip to the right;
+  the buttons chain from the left edge, so rerolling never walks a button out
+  from under your cursor.
 - **Click anywhere else to dismiss it**, menu and all — the way a right-click
   menu behaves. Speaking closes it too.
 

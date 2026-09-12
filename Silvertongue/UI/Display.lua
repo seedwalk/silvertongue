@@ -71,7 +71,6 @@ function Display:Create()
     -- room to say what it actually is.
     local emoteCheck = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
     emoteCheck:SetSize(18, 18)
-    emoteCheck:SetPoint("BOTTOMLEFT", PAD - 2, PAD - 2)
     emoteCheck:SetScript("OnClick", function(button)
         state.emoteOn = button:GetChecked() and true or false
     end)
@@ -86,7 +85,6 @@ function Display:Create()
     -- word took the room two channel buttons needed.
     local reroll = CreateFrame("Button", nil, f)
     reroll:SetSize(BUTTON_H, BUTTON_H)
-    reroll:SetPoint("BOTTOMRIGHT", -PAD, PAD - 2)
     reroll:SetNormalTexture("Interface\\Buttons\\UI-RefreshButton")
     reroll:SetPushedTexture("Interface\\Buttons\\UI-RefreshButton")
     reroll:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
@@ -183,21 +181,29 @@ end
 -- Everything sits on one row. The controls pin to the right edge in a fixed
 -- order, and the strip is then cut to whatever the line needs.
 function Display:Layout(text)
-    local rightmost = self.rerollButton
-    local buttonsWidth = BUTTON_H
-    for i = #self.channelButtons, 1, -1 do
-        local button = self.channelButtons[i]
-        if button:IsShown() then
-            button:ClearAllPoints()
-            button:SetPoint("RIGHT", rightmost, "LEFT", -3, 0)
-            rightmost = button
-            buttonsWidth = buttonsWidth + 61
+    -- Laid out left to right, chained from the edge that stays put. The strip
+    -- grows to the right as phrases change length, and nothing you click moves.
+    local previous, controls = nil, 0
+
+    local function place(control, width, gap)
+        control:ClearAllPoints()
+        if previous then
+            control:SetPoint("LEFT", previous, "RIGHT", gap, 0)
+        else
+            control:SetPoint("BOTTOMLEFT", PAD, PAD - 2)
         end
+        previous = control
+        controls = controls + width + gap
     end
 
-    local emoteWidth = 0
+    for _, button in ipairs(self.channelButtons) do
+        if button:IsShown() then place(button, 58, 3) end
+    end
+    place(self.rerollButton, BUTTON_H, 4)
+
     if self.emoteCheck:IsShown() then
-        emoteWidth = 20 + (self.emoteLabel:GetStringWidth() or 0) + 10
+        place(self.emoteCheck, 18, 6)
+        controls = controls + (self.emoteLabel:GetStringWidth() or 0) + 6
     end
 
     self.ruler:SetText(text or "")
@@ -206,7 +212,7 @@ function Display:Layout(text)
     if textWidth > TEXT_MAX then textWidth = TEXT_MAX end
 
     local width = textWidth
-    if emoteWidth + buttonsWidth > width then width = emoteWidth + buttonsWidth end
+    if controls > width then width = controls end
 
     self.edit:SetWidth(width + 4)
     self.frame:SetWidth(PAD * 2 + width + 4)

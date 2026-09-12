@@ -53,18 +53,6 @@ function Contexts:Target()
         channels[#channels + 1] = WHISPER
     end
 
-    -- Things you do to them rather than say. Only for a real player, and never
-    -- an invite for someone already in the group.
-    local actions = nil
-    if info.isPlayer and not info.hostile then
-        actions = {}
-        for _, action in ipairs(ns.TARGET_ACTIONS) do
-            if not (grouped and action.label == "Invite") then
-                actions[#actions + 1] = action
-            end
-        end
-    end
-
     return {
         key         = "TARGET:" .. info.name,
         title       = info.name,
@@ -74,8 +62,9 @@ function Contexts:Target()
         recipient   = info.name,
         emoteTarget = info.name,
         channels    = channels,
-        actions     = actions,
         grouped     = grouped,
+        isPlayer    = info.isPlayer,
+        hostile     = info.hostile,
         rebuild     = function() return ns.Engine:BuildUnitContext("target") end,
     }
 end

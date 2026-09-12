@@ -70,6 +70,7 @@ passthrough.SetHeight = function(self, h)
     self.__h = h
 end
 passthrough.SetPoint = function(self, point, a, b, c, d)
+    self.__point = point
     if not VALID_POINTS[point] then
         error("bad anchor point to SetPoint (" .. tostring(point) .. ")", 2)
     end
@@ -900,8 +901,12 @@ local shownRows = 0
 for _, row in ipairs(targetBoard.rows) do
     if row:IsShown() then shownRows = shownRows + 1 end
 end
-check(shownRows >= #warlockContext.intents,
-      "the menu showed %d rows for %d intents", shownRows, #warlockContext.intents)
+local clickableIntents = 0
+for _, entry in ipairs(warlockContext.intents) do
+    if entry ~= ns.SEP then clickableIntents = clickableIntents + 1 end
+end
+check(shownRows >= clickableIntents,
+      "the menu showed %d rows for %d intents", shownRows, clickableIntents)
 targetBoard:Close()
 
 -- Channels come from the context, never from the player.
@@ -990,9 +995,14 @@ check(ns.Display.frame.__h and ns.Display.frame.__h <= 56,
 -- Reroll is an icon, not a word: it must carry a texture and a tooltip.
 check(ns.Display.rerollButton.__normalTexture ~= nil, "the reroll button has no icon")
 check(ns.Display.rerollButton:GetScript("OnEnter") ~= nil, "the reroll icon has no tooltip")
+-- Rerolling may widen the strip, but nothing you click may move: the controls
+-- chain from the left edge, which is the edge that stays put.
+local buttonAnchor = ns.Display.channelButtons[1].__point
 local shortWidth = ns.Display.frame.__w
 ns.Display:Layout(string.rep("a very long line indeed ", 8))
 check(ns.Display.frame.__w > shortWidth, "a longer phrase did not widen the strip")
+check(ns.Display.channelButtons[1].__point == buttonAnchor,
+      "a longer phrase moved the channel buttons")
 local cappedWidth = ns.Display.frame.__w
 ns.Display:Layout(string.rep("a very long line indeed ", 40))
 check(ns.Display.frame.__w == cappedWidth, "the strip kept growing past its cap")
@@ -1048,74 +1058,88 @@ targetBoard:Open(ns.Anchors.targetControl, ns.Contexts:Target())
 targetBoard:Pick({ "PERSON", "WARN", "Warn" })
 check(not ns.Display.emoteCheck:IsShown(), "Warn was given a gesture")
 
--- The actions ride on the board, beside the phrases, and act without speaking.
-targetBoard:Open(ns.Anchors.targetControl, ns.Contexts:Target())
+-- The target's bubble fans out the same way the portrait's does: the three
+-- things that act, then the phrases.
+ns.Anchors.targetFanOpen = false
+target = { name = "Gromkar", className = "Warrior", classToken = "WARRIOR", raceName = "Orc", raceToken = "Orc" }
+group = {}
+ns.Anchors:UpdateTarget()
+check(ns.Anchors.targetControl:IsShown(), "the target bubble is hidden with a target selected")
+for _, row in ipairs(ns.Anchors.targetFan) do
+    check(not row:IsShown(), "a target fan row showed while folded away")
+end
+
+ns.Anchors:ToggleTargetFan()
+local fanLabels = {}
+for _, row in ipairs(ns.Anchors.targetFan) do
+    if row:IsShown() then fanLabels[row.entry.key] = true end
+end
+for _, key in ipairs({ "SPEAK", "INVITE", "TRADE", "DUEL" }) do
+    check(fanLabels[key], "a friendly player is missing the %s row", key)
+end
+-- Talking is what this is for, so it leads.
+check(ns.Anchors.targetFan[1].entry.key == "SPEAK",
+      "the fan leads with %s", ns.Anchors.targetFan[1].entry.key)
+for _, row in ipairs(ns.Anchors.targetFan) do
+    check(row.entry.icon ~= nil, "the %s row has no icon", row.entry.key)
+end
+
+-- The three that act fire against the right unit and say nothing.
 acted = {}
 local beforeActions = #sent
-local actionRows = 0
-for _, row in ipairs(targetBoard.rows) do
-    if row:IsShown() and row.action then
-        actionRows = actionRows + 1
-        row:GetScript("OnClick")(row)
-    end
+for _, row in ipairs(ns.Anchors.targetFan) do
+    if row:IsShown() and row.entry.run then row:GetScript("OnClick")(row) end
 end
-check(actionRows == 3, "expected three action rows in the menu, got %d", actionRows)
-check(#acted == 3, "the action rows did not fire, got %d", #acted)
+check(#acted == 3, "expected three actions, got %d", #acted)
+check(acted[1][2] == "Gromkar", "the invite went to %s", tostring(acted[1][2]))
 check(#sent == beforeActions, "an action row spoke")
 
--- Already in the group: no invite offered.
+-- Someone already in the group cannot be invited into it.
 group = { { name = "Gromkar", className = "Warrior", classToken = "WARRIOR", raceName = "Orc", raceToken = "Orc" } }
-local groupedActions = ns.Contexts:Target().actions
-local sawInvite = false
-for _, action in ipairs(groupedActions or {}) do
-    if action.label == "Invite" then sawInvite = true end
+ns.Anchors:UpdateTarget()
+local grouped = {}
+for _, row in ipairs(ns.Anchors.targetFan) do
+    if row:IsShown() then grouped[row.entry.key] = true end
 end
-check(not sawInvite, "someone already in the group was offered an invite")
+check(not grouped["INVITE"], "someone already in the group was offered an invite")
+check(grouped["SPEAK"], "a grouped target lost the speak row")
 group = {}
 
--- A creature gets none at all.
+-- A creature gets only the phrases.
 target = { name = "Ragged Timber Wolf", hostile = true }
-check(ns.Contexts:Target().actions == nil, "a creature was given actions")
+ns.Anchors:UpdateTarget()
+local creature = {}
+for _, row in ipairs(ns.Anchors.targetFan) do
+    if row:IsShown() then creature[row.entry.key] = true end
+end
+check(not creature["TRADE"] and not creature["DUEL"] and not creature["INVITE"],
+      "a hostile creature was offered something to accept")
+check(creature["SPEAK"], "a creature cannot be spoken to")
+
+-- The fan is one switch, not one per person: it stays open across targets.
 target = { name = "Gromkar", className = "Warrior", classToken = "WARRIOR", raceName = "Orc", raceToken = "Orc" }
-targetBoard:Close()
+ns.Anchors:UpdateTarget()
+check(ns.Anchors.targetFan[1]:IsShown(), "the fan folded itself when the target changed")
 
--- The control that opened a menu marks itself, since the menu no longer says
--- which one is open.
-local generalControl = ns.Anchors.fanControls[1]
-playerBoard:Open(generalControl, ns.Contexts:Player("GENERAL"))
-check(generalControl.active, "the open category did not mark itself")
-local hordeControl = ns.Anchors.fanControls[2]
-playerBoard:Open(hordeControl, ns.Contexts:Player("FACTION"))
-check(hordeControl.active, "the newly opened category did not mark itself")
-check(not generalControl.active, "the previous category stayed marked")
-playerBoard:Close()
-check(not hordeControl.active, "closing the menu left the category marked")
+-- An open phrase menu is refilled for whoever is selected now.
+local speakRow
+for _, row in ipairs(ns.Anchors.targetFan) do
+    if row.entry.key == "SPEAK" then speakRow = row end
+end
+speakRow:GetScript("OnClick")(speakRow)
+check(targetBoard:IsShown(), "the speak row did not open the menu")
+target = { name = "Zulko", className = "Rogue", classToken = "ROGUE", raceName = "Troll", raceToken = "Troll" }
+ns.Anchors:UpdateTarget()
+check(targetBoard.context.title == "Zulko",
+      "the open menu still belonged to %s", tostring(targetBoard.context.title))
 
--- Separators draw a line and never become a clickable row.
-targetBoard:Open(ns.Anchors.targetControl, ns.Contexts:Target())
-for _, row in ipairs(targetBoard.rows) do
-    if row:IsShown() and row.entry then
-        check(row.entry ~= ns.SEP, "a separator was rendered as a clickable row")
-    end
-end
-local sepCount = 0
-for _, entry in ipairs(ns.Contexts:Target().intents) do
-    if entry == ns.SEP then sepCount = sepCount + 1 end
-end
-check(sepCount > 0, "the target menu declares no groups")
-targetBoard:Close()
-
--- The panel's grids must ignore them entirely.
-ns.Tabs:Select("GENERAL")
-local generalContext = ns.Contexts:Player("GENERAL")
-local clickable = 0
-for _, entry in ipairs(generalContext.intents) do
-    if entry ~= ns.SEP then
-        clickable = clickable + 1
-        check(type(entry[2]) == "string", "an intent entry has no key")
-    end
-end
-check(clickable == 15, "General offers %d intents instead of fifteen", clickable)
+-- And closed outright when there is nobody to talk to.
+target = nil
+ns.Anchors:UpdateTarget()
+check(not targetBoard:IsShown(), "the menu survived losing the target")
+check(not ns.Anchors.targetControl:IsShown(), "the bubble survived losing the target")
+target = { name = "Gromkar", className = "Warrior", classToken = "WARRIOR", raceName = "Orc", raceToken = "Orc" }
+ns.Anchors:UpdateTarget()
 
 -- Losing the target takes the control and the board with it.
 target = nil
