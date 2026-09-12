@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silvertongue — roleplay phrases for WoW Burning Crusade Classic</title>
+<meta name="description" content="Roleplay phrases for World of Warcraft, on the frames you are already watching. 1,500 handwritten lines that adapt to your class, race and faction.">
+<meta property="og:title" content="Silvertongue">
+<meta property="og:description" content="Give your character a voice. Roleplay phrases for Burning Crusade Classic, on the frames you already watch.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --ink:        #e8e2d4;
+    --ink-dim:    #a9a08c;
+    --ink-faint:  #6f6857;
+    --gold:       #e6c56a;
+    --accent:     #d95940;
+    --stone:      #14120f;
+    --stone-2:    #1c1915;
+    --panel:      #0f0d0b;
+    --rule:       #3a3227;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--stone);
+    color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* A faint vignette so the page reads as lamplit rather than flat black. */
+    background-image:
+      radial-gradient(ellipse at 50% -10%, #2a241c 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 120%, #221d17 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+
+  a { color: var(--gold); }
+
+  /* ---- hero ---- */
+  header { padding: 72px 0 56px; text-align: center; }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(38px, 9vw, 68px);
+    color: var(--gold);
+    text-shadow: 0 2px 0 #000, 0 0 34px rgba(230,197,106,.18);
+  }
+
+  .tagline {
+    margin: 10px 0 4px;
+    font-family: Georgia, serif;
+    font-size: clamp(17px, 3.6vw, 22px);
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+
+  .client { margin: 0; font-size: 13px; color: var(--ink-faint); letter-spacing: .06em; text-transform: uppercase; }
+
+  .rule {
+    height: 1px; margin: 34px 0;
+    background: linear-gradient(90deg, transparent, var(--rule) 18%, var(--rule) 82%, transparent);
+  }
+  .rule.tight { margin: 22px 0; }
+
+  /* ---- download ---- */
+  .get { margin-top: 30px; }
+
+  .button {
+    display: inline-block;
+    padding: 14px 30px;
+    border: 1px solid #6e5a2c;
+    border-radius: 3px;
+    background: linear-gradient(#3a2f18, #241c0f);
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 17px;
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(230,197,106,.18), 0 2px 10px rgba(0,0,0,.5);
+  }
+  .button:hover { background: linear-gradient(#4a3c1e, #2e2413); color: #f6e3a8; }
+
+  .button.plain {
+    background: transparent;
+    border-color: var(--rule);
+    color: var(--ink-dim);
+    font-weight: 400;
+    font-size: 15px;
+    padding: 13px 20px;
+  }
+  .button.plain:hover { color: var(--ink); border-color: #564c3a; background: rgba(255,255,255,.03); }
+
+  .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .version { margin-top: 12px; font-size: 13px; color: var(--ink-faint); min-height: 1.2em; }
+
+  /* ---- sections ---- */
+  section { padding: 10px 0 18px; }
+  h2 { font-size: clamp(24px, 5vw, 31px); color: var(--ink); margin: 46px 0 6px; }
+  h2 .n { color: var(--accent); font-size: .62em; vertical-align: middle; margin-right: .5em; letter-spacing: .12em; }
+  h3 { font-size: 19px; color: var(--gold); margin: 30px 0 6px; }
+  p { margin: 12px 0; }
+  .lead { font-size: 18px; color: var(--ink); }
+  .dim { color: var(--ink-dim); }
+
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 18px 0; }
+  ol.steps li {
+    counter-increment: s;
+    position: relative;
+    padding: 0 0 16px 44px;
+    border-left: 1px solid var(--rule);
+    margin-left: 13px;
+  }
+  ol.steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps li::before {
+    content: counter(s);
+    position: absolute; left: -13px; top: 0;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--stone-2); border: 1px solid #6e5a2c; color: var(--gold);
+    font-size: 13px; font-weight: 700; text-align: center; line-height: 24px;
+  }
+
+  code, .path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .92em;
+    background: #000; border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1px 6px; color: var(--gold);
+  }
+
+  pre.path-block {
+    margin: 10px 0; padding: 12px 14px; overflow-x: auto;
+    background: #000; border: 1px solid var(--rule); border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; color: var(--gold);
+  }
+
+  .note {
+    margin: 18px 0; padding: 13px 16px;
+    border-left: 2px solid var(--accent);
+    background: rgba(217,89,64,.07);
+    font-size: 15px; color: var(--ink-dim);
+  }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  /* ---- the in-game menu mock ---- */
+  .demo { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; margin: 22px 0 8px; }
+
+  .menu {
+    min-width: 190px;
+    background: linear-gradient(#141210, #0b0a08);
+    border: 1px solid #4a3f2d;
+    border-radius: 4px;
+    padding: 7px 0;
+    box-shadow: 0 6px 22px rgba(0,0,0,.6);
+    font-size: 14px;
+  }
+  .menu .head { padding: 3px 13px 1px; color: var(--gold); font-weight: 600; font-family: Georgia, serif; }
+  .menu .sub  { padding: 0 13px 6px; color: var(--ink-faint); font-size: 12px; }
+  .menu .sep  { height: 1px; margin: 6px 10px; background: var(--rule); }
+  .menu .row  { padding: 3px 13px; color: #fff; }
+  .menu .row.on { background: linear-gradient(90deg, rgba(230,197,106,.16), transparent); color: #fff; }
+  .menu .row.act { color: var(--gold); }
+
+  .strip {
+    background: rgba(0,0,0,.92);
+    border: 1px solid #4a3f2d; border-radius: 4px;
+    padding: 10px 12px; min-width: 270px; flex: 1;
+    box-shadow: 0 6px 22px rgba(0,0,0,.6);
+  }
+  .strip .line { color: #fff; font-size: 14px; }
+  .strip .gesture { color: var(--ink-faint); font-size: 12.5px; margin-top: 5px; }
+  .strip .btns { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .strip .btn {
+    border: 1px solid #6e5a2c; border-radius: 3px;
+    background: linear-gradient(#3a2f18, #241c0f); color: var(--gold);
+    font-size: 12px; padding: 4px 12px;
+  }
+  .strip .btn.icon { padding: 4px 8px; color: var(--ink-dim); }
+
+  /* ---- stats ---- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 22px 0; }
+  .stat { padding: 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; text-align: center; }
+  .stat .big { display: block; font-family: Georgia, serif; font-size: 30px; color: var(--gold); line-height: 1.1; }
+  .stat .lbl { font-size: 12.5px; color: var(--ink-dim); }
+
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--gold); font-weight: 600; font-family: Georgia, serif; }
+  td.who { color: var(--ink-dim); white-space: nowrap; }
+
+  blockquote {
+    margin: 14px 0; padding: 2px 0 2px 16px;
+    border-left: 2px solid var(--rule);
+    color: var(--ink); font-family: Georgia, serif; font-style: italic;
+  }
+
+  footer {
+    margin: 70px 0 40px; padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--ink-faint); text-align: center;
+  }
+  footer a { color: var(--ink-dim); }
+
+  @media (max-width: 560px) {
+    header { padding: 48px 0 36px; }
+    .demo { flex-direction: column; }
+    .menu { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>Silvertongue</h1>
+  <p class="tagline">Give your character a voice.</p>
+  <p class="client">World of Warcraft &middot; Burning Crusade Classic</p>
+
+  <div class="get">
+    <div class="buttons">
+      <a class="button" id="download" href="https://github.com/seedwalk/silvertongue/releases">Download</a>
+      <a class="button plain" href="https://github.com/seedwalk/silvertongue">Source on GitHub</a>
+    </div>
+    <p class="version" id="version"></p>
+  </div>
+</header>
+
+<div class="rule"></div>
+
+<section>
+  <p class="lead">You know what is happening. Silvertongue knows how to say it.</p>
+  <p>Click a target, pick <b>Praise</b>, read the line, click <b>Say</b>. Three seconds, and your
+  character said something in character instead of <code>nice heals bro</code>.</p>
+
+  <div class="note">
+    <b>Nothing reaches chat until you click to send it.</b> Every button, key and menu in this
+    addon fills a box and stops. You read the line first, every time.
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">I</span>It lives on the frames you already watch</h2>
+  <p>No window to go and find. A small speech bubble sits on your portrait, on your target, on each
+  party member, and on every row of the group browser. Clicking one opens a menu shaped like the
+  game's own.</p>
+
+  <div class="demo">
+    <div class="menu">
+      <div class="head">Gromkar</div>
+      <div class="sub">Orc Warrior</div>
+      <div class="sep"></div>
+      <div class="row">Hello</div>
+      <div class="row on">Praise</div>
+      <div class="row">Respect</div>
+      <div class="row">Joke</div>
+      <div class="sep"></div>
+      <div class="row">Warn</div>
+      <div class="row">Apologize</div>
+      <div class="sep"></div>
+      <div class="row act">Invite</div>
+      <div class="row act">Trade</div>
+      <div class="row act">Duel</div>
+    </div>
+
+    <div class="strip">
+      <div class="line">&ldquo;Well fought, Gromkar. The spirits favored your blade.&rdquo;</div>
+      <div class="gesture">&#10003; applauds before Gromkar</div>
+      <div class="btns">
+        <span class="btn">Party</span>
+        <span class="btn">Say</span>
+        <span class="btn">Whisper</span>
+        <span class="btn icon">&#8635;</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="dim">The channel buttons <i>are</i> the send &mdash; one click picks how it goes out and
+  says it. You never choose a channel: opening the menu from your party means it goes to party chat.
+  The refresh arrow says the same thing differently.</p>
+
+  <h3>What it offers depends on who they are</h3>
+  <table>
+    <tr><th>Your target</th><th>What you get</th></tr>
+    <tr><td class="who">Another player</td><td>Greetings, thanks, praise, warnings &mdash; and asking to group, trade or duel</td></tr>
+    <tr><td class="who">Already in your group</td><td>The same, minus asking to group. They already are.</td></tr>
+    <tr><td class="who">A warlock</td><td>All of it, plus Distrust, Demon and Fel Magic</td></tr>
+    <tr><td class="who">An innkeeper</td><td>Greetings and courtesies. No NPC is going to accept your duel.</td></tr>
+    <tr><td class="who">Anything hostile</td><td>Challenge, Taunt, Mock, Respect, Victory, Warning</td></tr>
+  </table>
+  <p class="dim">An enemy gets <b>Respect</b> on purpose. A worthy opponent deserves a word.</p>
+</section>
+
+<section>
+  <h2><span class="n">II</span>It sounds like your character</h2>
+  <p>A phrase is built in layers: a shared pool, then your class, your race, your faction, then the
+  class and race of whoever you are talking to. Nobody wrote &ldquo;undead mage&rdquo; &mdash; the undead
+  layer and the mage layer together already read as one.</p>
+
+  <table>
+    <tr><th>The same button</th><th>Different characters</th></tr>
+    <tr><td class="who">Ready</td><td>&ldquo;Totems are down. I am set.&rdquo; &middot; &ldquo;Ready. I have been in position for some time.&rdquo;</td></tr>
+    <tr><td class="who">Hello</td><td>&ldquo;Hey mon. Da spirits be watchin' you.&rdquo; &middot; &ldquo;Ah, there y'are. Good to see ye.&rdquo;</td></tr>
+    <tr><td class="who">Wipe</td><td>&ldquo;I should have held. Next time I hold.&rdquo; &middot; &ldquo;Interesting failure. I have several theories.&rdquo;</td></tr>
+  </table>
+
+  <p>And a handful of race-and-class pairings carry something neither half contains. A blood elf
+  paladin knows how his order came by the Light, and says so where no other paladin does:</p>
+
+  <blockquote>I did not ask the Light for this. I took it.<br>
+  We drained a naaru to learn this. I have not made peace with that.</blockquote>
+
+  <div class="stats">
+    <div class="stat"><span class="big">1,500</span><span class="lbl">handwritten lines</span></div>
+    <div class="stat"><span class="big">53</span><span class="lbl">characters covered</span></div>
+    <div class="stat"><span class="big">9</span><span class="lbl">classes, each with a voice</span></div>
+    <div class="stat"><span class="big">10</span><span class="lbl">races, each with a voice</span></div>
+  </div>
+  <p class="dim">No generator, no AI, no templates stitched together. Somebody wrote all of them.</p>
+</section>
+
+<section>
+  <h2><span class="n">III</span>Gestures, groups and the rest</h2>
+
+  <h3>It bows when it says thank you</h3>
+  <p>Lines carry the matching emote, so your character actually bows, salutes or roars &mdash; and
+  aimed at whoever you are speaking to, so it reads as <i>Shamanolo bows before Gromkar</i>. The
+  checkbox shows you before it happens, because other people see it too.</p>
+
+  <h3>It finds you a group, in character</h3>
+  <p>A bubble in the Looking For Group window advertises you on the channel, opening with the
+  shorthand people actually scan for:</p>
+  <blockquote>LFG Scarlet Monastery &mdash; orc rogue, 36. Ready when you are.</blockquote>
+  <p>Every row of the browser grows a bubble too. It reads the listing &mdash; who posted it, what
+  they are running, what they are short of &mdash; and offers <b>the roles they actually need and
+  your class could fill</b>. There is no &ldquo;ask what they need&rdquo;: the game already published it.</p>
+
+  <h3>It is yours to edit</h3>
+  <p><code>/silvertongue</code> opens the library: every line this character can say, and where each
+  one came from. Write your own, drop the ones you dislike, change a gesture, or rearrange any menu.
+  Changes are stored as a diff, so new phrases in later versions still reach you.</p>
+  <p class="dim">You choose who a change applies to &mdash; all your characters, your race, your class
+  or your faction. Dropping a line uses whichever of those the line already belongs to.</p>
+</section>
+
+<section>
+  <h2><span class="n">IV</span>Install</h2>
+
+  <ol class="steps">
+    <li>Download the zip and unzip it. You should have a folder called <code>Silvertongue</code>.</li>
+    <li>Put that folder in your AddOns directory:
+      <pre class="path-block">World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/</pre>
+    </li>
+    <li><b>Restart the game.</b> Not <code>/reload</code> &mdash; new addons are only found at launch.</li>
+  </ol>
+
+  <div class="note">
+    <b>The one thing that goes wrong:</b> you should end up with
+    <span class="path">AddOns/Silvertongue/Silvertongue.toc</span>. If unzipping left an extra folder
+    in between &mdash; <span class="path">AddOns/Silvertongue-rc-0.1.0/Silvertongue/</span> &mdash;
+    the game will not find it. Move the inner folder up one level.
+  </div>
+
+  <p>There is nothing to configure. It works on any character the moment it loads, and
+  <code>/silvertongue</code> opens it. To put it on a key, use
+  <b>Esc &rarr; Key Bindings &rarr; Silvertongue</b>.</p>
+
+  <h3>Which build to take</h3>
+  <p>Releases tagged <code>v0.1.0</code> are finished. <code>rc-0.1.0</code> are candidates that pass
+  the tests but have had less time in a real game. Both install identically.</p>
+
+  <h3>Updating</h3>
+  <p>Replace the folder. Your own phrases, your menu order and wherever you dragged things live in
+  the game's saved variables rather than in the addon folder, so they survive.</p>
+</section>
+
+<section>
+  <h2><span class="n">V</span>If you want to add to it</h2>
+  <p>The phrases are plain Lua tables in <code>Silvertongue/RP/</code>. Adding lines, a race, a class
+  or a faction is <b>data</b> &mdash; no other file needs to change. Write a line as
+  <code>{ "text", emote = "BOW" }</code> to give it a gesture.</p>
+  <p><code>tests/run.sh</code> runs three checks against the source with the game API stubbed: that
+  the TOC and the file tree agree, that the phrase library holds together, and that nothing reaches
+  chat except through an explicit send. They run on every push.</p>
+  <p><a href="https://github.com/seedwalk/silvertongue">Everything is on GitHub</a>, including the
+  issue tracker if something is wrong or a line sounds off.</p>
+</section>
+
+<footer>
+  <p>Silvertongue is a fan-made addon and is not affiliated with or endorsed by Blizzard
+  Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc.</p>
+  <p>Bundles <a href="https://www.wowace.com/projects/ace3">Ace3</a>, LibDataBroker-1.1 and
+  LibDBIcon-1.0. &middot; <a href="https://github.com/seedwalk/silvertongue">Source</a></p>
+</footer>
+
+</div>
+
+<script>
+// GitHub's /releases/latest ignores pre-releases, so the newest build is found
+// through the API instead -- otherwise the button would 404 until the first
+// finished release exists. A failure leaves the static link alone.
+(function () {
+  var button = document.getElementById("download");
+  var label  = document.getElementById("version");
+
+  fetch("https://api.github.com/repos/seedwalk/silvertongue/releases?per_page=1")
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (releases) {
+      var release = releases && releases[0];
+      if (!release) return;
+
+      var zip = (release.assets || []).filter(function (a) {
+        return /\.zip$/.test(a.name);
+      })[0];
+      if (zip) button.href = zip.browser_download_url;
+
+      var when = new Date(release.published_at).toLocaleDateString(undefined, {
+        year: "numeric", month: "long", day: "numeric"
+      });
+      label.textContent = release.tag_name + " · " + when +
+        (release.prerelease ? " · release candidate" : "");
+    })
+    .catch(function () {
+      label.textContent = "Latest build on GitHub";
+    });
+})();
+</script>
+
+</body>
+</html>

@@ -48,15 +48,21 @@ jobs:
 
       # Only the addon folder. Everything else in this repo -- tests, workflows,
       # notes -- is for working on it, not for running it.
+      # Two names for the same archive. The versioned one is what people keep;
+      # the plain one is what a download link can point at forever, since
+      # /releases/latest/download/Silvertongue.zip never changes.
       - name: Build the zip
         run: |
           zip -r "Silvertongue-${{ steps.version.outputs.tag }}.zip" Silvertongue
-          unzip -l "Silvertongue-${{ steps.version.outputs.tag }}.zip" | head -5
+          cp "Silvertongue-${{ steps.version.outputs.tag }}.zip" Silvertongue.zip
+          unzip -l Silvertongue.zip | head -5
 
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: Silvertongue-${{ steps.version.outputs.tag }}.zip
+          files: |
+            Silvertongue-${{ steps.version.outputs.tag }}.zip
+            Silvertongue.zip
           prerelease: ${{ steps.version.outputs.prerelease }}
           generate_release_notes: true
           body: |
