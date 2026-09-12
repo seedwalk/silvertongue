@@ -1,596 +1,574 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Silvertongue — roleplay phrases for WoW Burning Crusade Classic</title>
-<meta name="description" content="Give your character a voice. Roleplay phrases for World of Warcraft, on the frames you are already watching. 1,500 handwritten lines that adapt to your class, race and faction.">
-<meta property="og:title" content="Silvertongue">
-<meta property="og:description" content="Give your character a voice.">
+<title>Silvertongue — add a voice to your character</title>
+<meta name="description" content="Roleplay phrases for World of Warcraft: Burning Crusade Classic. 1,500 handwritten lines that adapt to your class, race and faction, on the frames you already watch.">
+<meta property="og:title" content="Silvertongue — add a voice to your character">
+<meta property="og:description" content="Roleplay for Burning Crusade Classic that lives on the frames you already watch. Nothing reaches chat until you click to send it.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0f12'/%3E%3Cpath d='M8 9h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z' fill='%23d8dee5'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#07090c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307090c'/%3E%3Cpath d='M8 9h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z' fill='%23e8c77a'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        night:  { 950: '#05070a', 900: '#07090c', 850: '#0b0e13', 800: '#111620' },
+        gold:   { 200: '#f6e6be', 300: '#eed79c', 400: '#e8c77a', 500: '#d4ac57', 600: '#a8842f' },
+        ember:  { 500: '#c8552f', 600: '#a33f21' },
+        arcane: { 400: '#6f9fd8', 500: '#4a7cb8' },
+      },
+      fontFamily: {
+        display: ['Cinzel', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      keyframes: {
+        rise:  { '0%': { transform: 'translateY(0) scale(1)', opacity: '0' },
+                 '10%': { opacity: '.7' },
+                 '100%': { transform: 'translateY(-120px) scale(.4)', opacity: '0' } },
+        bob:   { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(7px)' } },
+        fade:  { from: { opacity: '0', transform: 'translateY(16px)' }, to: { opacity: '1', transform: 'none' } },
+      },
+      animation: {
+        rise: 'rise linear infinite',
+        bob:  'bob 2.4s ease-in-out infinite',
+        fade: 'fade .7s ease-out both',
+      },
+    },
+  },
+}
+</script>
 
 <style>
-  :root {
-    --paper:     #fbfbfa;
-    --paper-2:   #f2f2f0;
-    --ink:       #12151a;
-    --ink-2:     #3d444e;
-    --ink-3:     #737b86;
-    --hair:      #dcdcd8;
-    --silver:    #8d98a6;
-    --silver-lo: #b9c2cc;
-    --chrome-a:  #eef1f4;
-    --chrome-b:  #aab3bf;
-    --chrome-c:  #79828f;
+  body { background:#05070a; }
 
-    /* the dark cards that stand in for the game's own interface */
-    --ui-bg:     #0d0f12;
-    --ui-line:   #2b3038;
-    --ui-text:   #e7eaee;
-    --ui-dim:    #8b94a0;
-    --ui-gold:   #d8c79a;
-
-    --measure: 640px;
+  /* Engraved gold, the way the game sets a title. */
+  .goldtext {
+    background: linear-gradient(180deg,#fbf0d2 0%,#e8c77a 42%,#b98f36 58%,#e8c77a 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,.55));
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper:   #0e1013;
-      --paper-2: #16191d;
-      --ink:     #eceef1;
-      --ink-2:   #b3bac3;
-      --ink-3:   #7d8590;
-      --hair:    #272b31;
-      --silver:  #9aa5b1;
-      --silver-lo: #5d6773;
-    }
+  .hairline { background: linear-gradient(90deg,transparent,rgba(232,199,122,.35),transparent); }
+
+  /* A slow grain over the hero so the gradients do not read as plastic. */
+  .grain::after {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.16;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
   }
 
-  * { box-sizing: border-box; }
+  .ember { position:absolute; bottom:-10px; width:2px; height:2px; border-radius:9999px;
+           background:#e8a24a; box-shadow:0 0 8px 2px rgba(232,162,74,.45); }
 
-  html { -webkit-text-size-adjust: 100%; }
-
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font: 17px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-feature-settings: "kern" 1;
+  /* Reveal-on-scroll, but never hide anything if the script does not run. */
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s ease-out, transform .7s ease-out; }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity:1 !important; transform:none !important; transition:none; }
+    .animate-rise, .animate-bob { animation:none !important; }
   }
+  .no-js .reveal { opacity:1; transform:none; }
 
-  .wrap { max-width: var(--measure); margin: 0 auto; padding: 0 24px; }
-  .wide { max-width: 880px; margin: 0 auto; padding: 0 24px; }
-
-  h1, h2, h3, .display {
-    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.15;
-    color: var(--ink);
-  }
-
-  a { color: var(--ink); text-decoration-color: var(--silver-lo); text-underline-offset: 3px; }
-  a:hover { text-decoration-color: var(--ink); }
-
-  /* ─────────────  the mark  ───────────── */
-
-  .mark { display: block; }
-  .mark .bubble { fill: url(#chrome); }
-  .mark .edge   { fill: none; stroke: var(--silver); stroke-width: 1; opacity: .5; }
-
-  /* ─────────────  masthead  ───────────── */
-
-  header { padding: 92px 0 0; text-align: center; }
-
-  header .mark { margin: 0 auto 26px; width: 54px; height: 54px; }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(46px, 11vw, 86px);
-    letter-spacing: -0.03em;
-  }
-
-  .tagline {
-    margin: 14px auto 0;
-    max-width: 30ch;
-    font-family: "Iowan Old Style", Palatino, Georgia, serif;
-    font-size: clamp(19px, 4.4vw, 25px);
-    font-style: italic;
-    color: var(--ink-2);
-    line-height: 1.35;
-  }
-
-  .kicker {
-    margin: 28px 0 0;
-    font-size: 11.5px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-
-  /* ─────────────  download  ───────────── */
-
-  .get { margin: 38px 0 0; }
-
-  .buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center; }
-
-  .button {
-    display: inline-block;
-    padding: 13px 28px;
-    border: 1px solid var(--ink);
-    border-radius: 2px;
-    background: var(--ink);
-    color: var(--paper);
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: .01em;
-    text-decoration: none;
-  }
-  .button:hover { background: transparent; color: var(--ink); }
-
-  .button.ghost { background: transparent; color: var(--ink); border-color: var(--hair); }
-  .button.ghost:hover { border-color: var(--ink); }
-
-  .version {
-    margin: 14px 0 0;
-    font-size: 12.5px;
-    letter-spacing: .06em;
-    color: var(--ink-3);
-    min-height: 1.2em;
-  }
-
-  /* ─────────────  rules and rhythm  ───────────── */
-
-  .hr { height: 1px; background: var(--hair); border: 0; margin: 76px 0 0; }
-
-  .hr-mark { position: relative; margin: 84px 0 0; text-align: center; }
-  .hr-mark::before {
-    content: ""; position: absolute; left: 0; right: 0; top: 50%;
-    height: 1px; background: var(--hair);
-  }
-  .hr-mark .mark {
-    position: relative; display: inline-block;
-    width: 22px; height: 22px; padding: 0 16px;
-    background: var(--paper);
-  }
-
-  section { padding: 48px 0 0; }
-
-  .num {
-    display: block;
-    font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase;
-    color: var(--silver); margin-bottom: 14px;
-  }
-
-  h2 { font-size: clamp(28px, 6vw, 38px); margin: 0 0 4px; }
-  h3 { font-size: 21px; margin: 40px 0 2px; }
-
-  p { margin: 16px 0; }
-  p.lead { font-size: 20px; line-height: 1.6; color: var(--ink); }
-  .dim { color: var(--ink-2); }
-  .small { font-size: 15px; color: var(--ink-2); }
-
-  strong, b { font-weight: 600; }
-
-  code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: .88em;
-    background: var(--paper-2);
-    border: 1px solid var(--hair);
-    border-radius: 2px;
-    padding: 1px 5px;
-  }
-
-  /* ─────────────  pull quote  ───────────── */
-
-  blockquote {
-    margin: 30px 0;
-    padding: 0 0 0 22px;
-    border-left: 2px solid var(--silver-lo);
-    font-family: "Iowan Old Style", Palatino, Georgia, serif;
-    font-size: 21px;
-    font-style: italic;
-    line-height: 1.45;
-    color: var(--ink);
-  }
-  blockquote span { display: block; }
-  blockquote + .attrib { margin-top: -18px; font-size: 13px; color: var(--ink-3); padding-left: 24px; }
-
-  /* ─────────────  the game interface, shown as dark cards  ───────────── */
-
-  figure { margin: 32px 0; }
-
-  .ui {
-    display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
-    padding: 26px;
-    background: var(--ui-bg);
-    border-radius: 4px;
-  }
-
-  .menu {
-    min-width: 188px;
-    border: 1px solid var(--ui-line);
-    border-radius: 3px;
-    padding: 7px 0;
-    font-size: 13.5px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: rgba(255,255,255,.02);
-  }
-  .menu .head { padding: 2px 13px 0; color: var(--ui-gold); font-weight: 600; }
-  .menu .sub  { padding: 0 13px 6px; color: var(--ui-dim); font-size: 11.5px; }
-  .menu .sep  { height: 1px; margin: 6px 10px; background: var(--ui-line); }
-  .menu .row  { padding: 3px 13px; color: var(--ui-text); }
-  .menu .row.on  { background: rgba(255,255,255,.07); }
-  .menu .row.act { color: var(--ui-gold); }
-
-  .strip {
-    flex: 1; min-width: 250px;
-    border: 1px solid var(--ui-line); border-radius: 3px;
-    padding: 12px 14px;
-    background: rgba(255,255,255,.02);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  .strip .line { color: var(--ui-text); font-size: 14px; line-height: 1.45; }
-  .strip .gesture { color: var(--ui-dim); font-size: 12px; margin-top: 7px; }
-  .strip .btns { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
-  .strip .btn {
-    border: 1px solid var(--ui-line); border-radius: 2px;
-    color: var(--ui-text); font-size: 11.5px; padding: 4px 11px;
-    background: rgba(255,255,255,.04);
-  }
-  .strip .btn.primary { border-color: #4a5361; background: rgba(255,255,255,.1); }
-
-  figcaption { margin-top: 12px; font-size: 13.5px; color: var(--ink-3); }
-
-  /* ─────────────  tables  ───────────── */
-
-  table { width: 100%; border-collapse: collapse; margin: 26px 0; font-size: 15.5px; }
-  th, td { text-align: left; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--hair); vertical-align: top; }
-  thead th {
-    font-family: -apple-system, sans-serif;
-    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--silver); font-weight: 600;
-    border-bottom-color: var(--ink);
-  }
-  td.who { color: var(--ink-3); white-space: nowrap; padding-right: 24px; }
-
-  /* ─────────────  figures of note  ───────────── */
-
-  .stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0; margin: 34px 0;
-    border-top: 1px solid var(--ink); border-bottom: 1px solid var(--hair);
-  }
-  .stat { padding: 20px 8px; text-align: center; border-right: 1px solid var(--hair); }
-  .stat:last-child { border-right: 0; }
-  .stat .big {
-    display: block;
-    font-family: "Iowan Old Style", Palatino, Georgia, serif;
-    font-size: 36px; line-height: 1; letter-spacing: -.02em;
-  }
-  .stat .lbl { display: block; margin-top: 7px; font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
-
-  /* ─────────────  steps  ───────────── */
-
-  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 26px 0; }
-  ol.steps li {
-    counter-increment: s;
-    position: relative;
-    padding: 0 0 22px 46px;
-    border-left: 1px solid var(--hair);
-    margin-left: 12px;
-  }
-  ol.steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
-  ol.steps li::before {
-    content: counter(s);
-    position: absolute; left: -12px; top: -2px;
-    width: 24px; height: 24px;
-    background: var(--paper); color: var(--silver);
-    border: 1px solid var(--hair); border-radius: 50%;
-    font-family: "Iowan Old Style", Georgia, serif;
-    font-size: 13px; text-align: center; line-height: 22px;
-  }
-
-  pre.block {
-    margin: 12px 0; padding: 14px 16px; overflow-x: auto;
-    background: var(--paper-2); border: 1px solid var(--hair); border-radius: 3px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 13px; color: var(--ink-2);
-  }
-
-  .aside {
-    margin: 28px 0; padding: 18px 20px;
-    background: var(--paper-2);
-    border-left: 2px solid var(--silver);
-    font-size: 15.5px; color: var(--ink-2);
-  }
-  .aside b { color: var(--ink); }
-
-  /* ─────────────  colophon  ───────────── */
-
-  footer {
-    margin-top: 90px; padding: 34px 0 56px;
-    border-top: 1px solid var(--hair);
-    font-size: 13px; line-height: 1.7; color: var(--ink-3); text-align: center;
-  }
-  footer .mark { width: 20px; height: 20px; margin: 0 auto 18px; opacity: .55; }
-  footer a { color: var(--ink-2); }
-
-  @media (max-width: 600px) {
-    header { padding-top: 62px; }
-    .ui { padding: 16px; flex-direction: column; }
-    .menu { width: 100%; }
-    .stat { border-right: 0; border-bottom: 1px solid var(--hair); }
-    .stat:last-child { border-bottom: 0; }
-  }
+  ::selection { background: rgba(232,199,122,.28); }
 </style>
 </head>
-<body>
 
-<!-- One definition of the mark, used everywhere it appears. -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="var(--chrome-a)"/>
-      <stop offset="52%"  stop-color="var(--chrome-b)"/>
-      <stop offset="53%"  stop-color="var(--chrome-c)"/>
-      <stop offset="100%" stop-color="var(--chrome-b)"/>
-    </linearGradient>
-    <symbol id="bubble" viewBox="0 0 40 40">
-      <path class="bubble" d="M6 7h28a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H19l-8 6v-6H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z"/>
-      <path class="edge"   d="M6 7h28a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H19l-8 6v-6H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z"/>
-    </symbol>
-  </defs>
-</svg>
+<body class="bg-night-950 text-slate-300 font-sans antialiased no-js">
+<script>document.body.classList.remove('no-js')</script>
 
-<header class="wrap">
-  <svg class="mark" viewBox="0 0 40 40" role="img" aria-label="Silvertongue"><use href="#bubble"/></svg>
+<!-- The mark, defined once. -->
+<svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
+  <linearGradient id="au" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fbf0d2"/><stop offset="45%" stop-color="#e8c77a"/>
+    <stop offset="55%" stop-color="#b98f36"/><stop offset="100%" stop-color="#e8c77a"/>
+  </linearGradient>
+  <symbol id="bubble" viewBox="0 0 40 40">
+    <path d="M6 7h28a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H19l-8 6v-6H6a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z" fill="url(#au)"/>
+  </symbol>
+</defs></svg>
 
-  <h1>Silvertongue</h1>
-  <p class="tagline">Give your character a voice.</p>
-  <p class="kicker">World of Warcraft &nbsp;·&nbsp; Burning Crusade Classic</p>
-
-  <div class="get">
-    <div class="buttons">
-      <a class="button" id="download" href="https://github.com/seedwalk/silvertongue/releases">Download</a>
-      <a class="button ghost" href="https://github.com/seedwalk/silvertongue">View source</a>
+<!-- ══════════════════ nav ══════════════════ -->
+<nav id="nav" class="fixed inset-x-0 top-0 z-50 -translate-y-full transition-transform duration-300
+                     border-b border-white/5 bg-night-950/80 backdrop-blur-md">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+    <a href="#top" class="flex items-center gap-2.5">
+      <svg class="h-5 w-5" viewBox="0 0 40 40"><use href="#bubble"/></svg>
+      <span class="font-display text-sm tracking-[0.2em] text-gold-300">SILVERTONGUE</span>
+    </a>
+    <div class="flex items-center gap-6 text-sm">
+      <a href="#features" class="hidden text-slate-400 transition hover:text-gold-300 sm:block">Features</a>
+      <a href="#install"  class="hidden text-slate-400 transition hover:text-gold-300 sm:block">Install</a>
+      <a id="nav-dl" href="https://github.com/seedwalk/silvertongue/releases"
+         class="rounded-md border border-gold-600/60 bg-gold-400/10 px-4 py-1.5 font-medium text-gold-300
+                transition hover:bg-gold-400/20">Download</a>
     </div>
-    <p class="version" id="version"></p>
   </div>
+</nav>
+
+<!-- ══════════════════ hero ══════════════════ -->
+<header id="top" class="grain relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6">
+
+  <!-- Original artwork: a ridgeline under a cold sky, with something burning behind it. -->
+  <div class="pointer-events-none absolute inset-0">
+    <div class="absolute inset-0" style="background:
+      radial-gradient(120% 80% at 50% 108%, rgba(200,85,47,.30) 0%, transparent 58%),
+      radial-gradient(90% 60% at 50% -10%, rgba(74,124,184,.16) 0%, transparent 60%),
+      linear-gradient(#05070a, #07090c 45%, #0b0e13)"></div>
+
+    <svg class="absolute inset-x-0 bottom-0 h-[46vh] w-full" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 420V250l110-62 92 44 128-96 104 70 96-40 120 84 118-108 126 96 104-56 128 78 94-44 100 62v142z"
+            fill="#080b10"/>
+      <path d="M0 420V308l150-70 120 58 150-84 130 74 122-50 148 88 140-92 160 96 120-56 100 52v96z"
+            fill="#05070a"/>
+      <path d="M726 168l26 60h-52z" fill="#0b0f15"/>
+    </svg>
+
+    <!-- Drop a wide image at docs/img/hero.jpg and it takes over the background.
+         Nothing breaks if it is absent: the drawn ridgeline below shows through. -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-45"
+         style="background-image:url('img/hero.jpg')"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-night-950/70 via-night-950/45 to-night-950"></div>
+
+    <div id="embers" class="absolute inset-x-0 bottom-0 h-1/2"></div>
+    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night-950 to-transparent"></div>
+  </div>
+
+  <div class="relative z-10 flex flex-col items-center text-center">
+    <!-- docs/img/tbc-logo.png, if supplied. Removes itself when missing. -->
+    <img src="img/tbc-logo.png" alt="" onerror="this.remove()"
+         class="mb-6 h-auto w-[min(320px,68vw)] animate-fade drop-shadow-2xl">
+
+    <svg class="mb-8 h-14 w-14 animate-fade" viewBox="0 0 40 40" role="img" aria-label="Silvertongue"><use href="#bubble"/></svg>
+
+    <h1 class="goldtext font-display text-[clamp(2.9rem,11vw,6.5rem)] font-700 leading-[0.95] tracking-tight animate-fade">
+      Silvertongue
+    </h1>
+
+    <p class="mt-6 max-w-xl text-[clamp(1.1rem,3.6vw,1.5rem)] leading-snug text-slate-200 animate-fade" style="animation-delay:.1s">
+      Add a voice to your character.
+    </p>
+
+    <p class="mt-4 text-[11px] uppercase tracking-[0.28em] text-slate-500 animate-fade" style="animation-delay:.16s">
+      World of Warcraft &nbsp;·&nbsp; Burning Crusade Classic
+    </p>
+
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade" style="animation-delay:.22s">
+      <a id="download" href="https://github.com/seedwalk/silvertongue/releases"
+         class="group rounded-lg border border-gold-500/70 bg-gradient-to-b from-gold-400/25 to-gold-600/10
+                px-8 py-3.5 font-medium text-gold-200 shadow-[0_0_30px_-8px_rgba(232,199,122,.5)]
+                transition hover:from-gold-400/35 hover:text-gold-100">
+        Download the addon
+        <span class="ml-1 inline-block transition group-hover:translate-x-0.5">→</span>
+      </a>
+      <a href="https://github.com/seedwalk/silvertongue"
+         class="rounded-lg border border-white/10 px-6 py-3.5 text-slate-300 transition hover:border-white/25 hover:text-white">
+        View source
+      </a>
+    </div>
+
+    <p id="version" class="mt-4 h-5 text-xs tracking-wide text-slate-500"></p>
+  </div>
+
+  <a href="#features" class="absolute bottom-8 z-10 flex flex-col items-center gap-2 text-slate-500 transition hover:text-gold-300">
+    <span class="text-[10px] uppercase tracking-[0.25em]">Features</span>
+    <svg class="h-5 w-5 animate-bob" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
 </header>
 
-<div class="wrap"><hr class="hr"></div>
+<!-- ══════════════════ the pitch ══════════════════ -->
+<section id="features" class="relative px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-3xl text-center">
+    <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">The problem</p>
+    <h2 class="reveal mt-5 font-display text-[clamp(1.9rem,5.5vw,3rem)] leading-tight text-white">
+      Your character has been silent this whole time
+    </h2>
+    <p class="reveal mt-6 text-lg leading-relaxed text-slate-400">
+      You know exactly what is happening. The warrior held the line, the group wiped, a stranger
+      helped you on a quest. And then you type <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">ty</code>
+      and move on, because stopping to write something in character costs more than the moment is worth.
+    </p>
+    <p class="reveal mt-5 text-lg leading-relaxed text-slate-400">
+      Silvertongue makes that cost <span class="text-white">three seconds</span>. Click a target,
+      pick <span class="text-white">Praise</span>, read the line, click <span class="text-white">Say</span>.
+    </p>
+  </div>
 
-<div class="wrap">
-
-<section>
-  <p class="lead">You know what is happening. Silvertongue knows how to say it.</p>
-  <p>Click a target, pick <b>Praise</b>, read the line, click <b>Say</b>. Three seconds, and your
-  character said something in character instead of <code>nice heals bro</code>.</p>
-
-  <div class="aside">
-    <b>Nothing reaches chat until you click to send it.</b> Every button, key and menu in this addon
-    fills a box and stops. You read the line first, every time.
+  <div class="reveal mx-auto mt-16 max-w-3xl rounded-xl border border-gold-500/25 bg-gradient-to-b from-gold-400/[0.07] to-transparent p-7 text-center">
+    <p class="text-lg text-slate-200">
+      <span class="font-medium text-gold-300">Nothing reaches chat until you click to send it.</span>
+      Every button, key and menu fills a box and stops. You read the line first, every time.
+    </p>
   </div>
 </section>
 
-</div>
+<div class="hairline mx-auto h-px max-w-5xl"></div>
 
-<div class="wide"><div class="hr-mark"><svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><use href="#bubble"/></svg></div></div>
-
-<div class="wrap">
-
-<section>
-  <span class="num">One</span>
-  <h2>It lives on the frames you already watch</h2>
-  <p>There is no window to go and find. A small speech bubble sits on your portrait, on your target,
-  on each party member, and on every row of the group browser. Clicking one opens a menu shaped
-  like the game's own.</p>
-</section>
-
-</div>
-
-<div class="wide">
-  <figure>
-    <div class="ui">
-      <div class="menu">
-        <div class="head">Gromkar</div>
-        <div class="sub">Orc Warrior</div>
-        <div class="sep"></div>
-        <div class="row">Hello</div>
-        <div class="row on">Praise</div>
-        <div class="row">Respect</div>
-        <div class="row">Joke</div>
-        <div class="sep"></div>
-        <div class="row">Warn</div>
-        <div class="row">Apologize</div>
-        <div class="sep"></div>
-        <div class="row act">Invite</div>
-        <div class="row act">Trade</div>
-        <div class="row act">Duel</div>
+<!-- ══════════════════ 1. on the frames ══════════════════ -->
+<section class="px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-6xl">
+    <div class="grid items-center gap-14 lg:grid-cols-2">
+      <div>
+        <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">One</p>
+        <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
+          It lives on the frames you already watch
+        </h2>
+        <p class="reveal mt-6 leading-relaxed text-slate-400">
+          No window to go and find, nothing covering your screen. A small speech bubble sits on your
+          portrait, on your target, on each party member, and on every row of the group browser.
+          Clicking one opens a menu shaped like the game's own — because it should feel like part of
+          the game, not like something bolted on top of it.
+        </p>
+        <ul class="reveal mt-8 space-y-3.5 text-slate-400">
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+            <span>Opens beside what you clicked, never on top of it.</span></li>
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+            <span>Click away to dismiss, the way a right-click menu behaves.</span></li>
+          <li class="flex gap-3"><span class="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold-400"></span>
+            <span>Drag any of it wherever you want it. It stays there.</span></li>
+        </ul>
       </div>
 
-      <div class="strip">
-        <div class="line">&ldquo;Well fought, Gromkar. The spirits favored your blade.&rdquo;</div>
-        <div class="gesture">&#10003;&nbsp; applauds before Gromkar</div>
-        <div class="btns">
-          <span class="btn primary">Party</span>
-          <span class="btn">Say</span>
-          <span class="btn">Whisper</span>
-          <span class="btn">&#8635;</span>
+      <figure class="reveal">
+        <!-- docs/img/menu.png, if supplied: a real capture replaces the drawing. -->
+        <img src="img/menu.png" alt="The menu open beside a targeted player" class="hidden w-full rounded-xl border border-white/10 shadow-2xl"
+             onload="this.classList.remove('hidden'); var d=document.getElementById('menu-drawing'); if(d) d.remove()"
+             onerror="this.remove()">
+
+        <div id="menu-drawing" class="rounded-xl border border-white/10 bg-night-900 p-5 shadow-2xl">
+          <div class="flex flex-wrap items-start gap-3">
+            <div class="min-w-[186px] rounded-md border border-white/10 bg-white/[0.03] py-2 text-[13.5px]">
+              <div class="px-3.5 font-medium text-gold-300">Gromkar</div>
+              <div class="px-3.5 pb-1.5 text-[11.5px] text-slate-500">Orc Warrior</div>
+              <div class="mx-2.5 my-1.5 h-px bg-white/10"></div>
+              <div class="px-3.5 py-0.5 text-slate-200">Hello</div>
+              <div class="bg-white/10 px-3.5 py-0.5 text-white">Praise</div>
+              <div class="px-3.5 py-0.5 text-slate-200">Respect</div>
+              <div class="px-3.5 py-0.5 text-slate-200">Joke</div>
+              <div class="mx-2.5 my-1.5 h-px bg-white/10"></div>
+              <div class="px-3.5 py-0.5 text-slate-200">Warn</div>
+              <div class="px-3.5 py-0.5 text-slate-200">Apologize</div>
+              <div class="mx-2.5 my-1.5 h-px bg-white/10"></div>
+              <div class="px-3.5 py-0.5 text-gold-300">Invite</div>
+              <div class="px-3.5 py-0.5 text-gold-300">Trade</div>
+              <div class="px-3.5 py-0.5 text-gold-300">Duel</div>
+            </div>
+
+            <div class="min-w-[240px] flex-1 rounded-md border border-white/10 bg-white/[0.03] p-3.5">
+              <p class="text-[14px] leading-snug text-slate-100">“Well fought, Gromkar. The spirits favored your blade.”</p>
+              <p class="mt-2 text-[12px] text-slate-500">✓&nbsp; applauds before Gromkar</p>
+              <div class="mt-3 flex flex-wrap gap-1.5 text-[11.5px]">
+                <span class="rounded border border-gold-600/50 bg-gold-400/15 px-3 py-1 text-gold-200">Party</span>
+                <span class="rounded border border-white/10 bg-white/5 px-3 py-1 text-slate-300">Say</span>
+                <span class="rounded border border-white/10 bg-white/5 px-3 py-1 text-slate-300">Whisper</span>
+                <span class="rounded border border-white/10 bg-white/5 px-2.5 py-1 text-slate-400">↻</span>
+              </div>
+            </div>
+          </div>
         </div>
+        <figcaption class="mt-3 text-sm text-slate-500">
+          The channel buttons <em>are</em> the send. You never pick a channel — the context already did.
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 2. sounds like you ══════════════════ -->
+<section class="relative px-6 py-28 sm:py-36">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-night-900/60 to-transparent"></div>
+
+  <div class="relative mx-auto max-w-6xl">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Two</p>
+      <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
+        It sounds like <em class="text-gold-300">your</em> character
+      </h2>
+      <p class="reveal mt-6 leading-relaxed text-slate-400">
+        A line is assembled in layers: a shared pool, then your class, your race and your faction,
+        then the class and race of whoever you are speaking to. Nobody wrote “undead mage” — the
+        undead layer and the mage layer together already read as one.
+      </p>
+    </div>
+
+    <div class="mt-14 grid gap-4 md:grid-cols-3">
+      <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
+        <p class="mt-1 font-display text-xl text-gold-300">Ready</p>
+        <p class="mt-4 text-slate-300">“Totems are down. I am set.”</p>
+        <p class="mt-1 text-xs text-slate-600">Shaman</p>
+        <p class="mt-4 text-slate-300">“Ready. I have been in position for some time.”</p>
+        <p class="mt-1 text-xs text-slate-600">Rogue</p>
+      </div>
+      <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6" style="transition-delay:.08s">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
+        <p class="mt-1 font-display text-xl text-gold-300">Hello</p>
+        <p class="mt-4 text-slate-300">“Hey mon. Da spirits be watchin' you.”</p>
+        <p class="mt-1 text-xs text-slate-600">Troll</p>
+        <p class="mt-4 text-slate-300">“Ah, there y'are. Good to see ye.”</p>
+        <p class="mt-1 text-xs text-slate-600">Dwarf</p>
+      </div>
+      <div class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-6" style="transition-delay:.16s">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-slate-500">The same button</p>
+        <p class="mt-1 font-display text-xl text-gold-300">Wipe</p>
+        <p class="mt-4 text-slate-300">“I should have held. Next time I hold.”</p>
+        <p class="mt-1 text-xs text-slate-600">Warrior</p>
+        <p class="mt-4 text-slate-300">“Interesting failure. I have several theories.”</p>
+        <p class="mt-1 text-xs text-slate-600">Gnome</p>
       </div>
     </div>
-    <figcaption>The menu opens beside what you clicked. The channel buttons <i>are</i> the send —
-    one click picks how it goes out and says it.</figcaption>
-  </figure>
-</div>
 
-<div class="wrap">
+    <div class="reveal mx-auto mt-14 max-w-3xl rounded-xl border border-ember-500/25 bg-ember-500/[0.06] p-8 text-center">
+      <p class="text-sm text-slate-400">And a few race-and-class pairings carry what neither half contains.</p>
+      <p class="mt-5 font-display text-[clamp(1.15rem,3.4vw,1.6rem)] leading-snug text-gold-200">
+        “I did not ask the Light for this. I took it.”
+      </p>
+      <p class="mt-3 text-sm text-slate-500">A blood elf paladin — a line no other paladin can draw</p>
+    </div>
 
-<section>
-  <p>You never choose a channel. Opening the menu from your party means it goes to party chat;
-  from a stranger, it is said aloud. The refresh arrow says the same thing differently, and the
-  line itself is editable before it goes.</p>
-
-  <h3>What it offers depends on who they are</h3>
-  <table>
-    <thead><tr><th>Your target</th><th>What you get</th></tr></thead>
-    <tbody>
-      <tr><td class="who">Another player</td><td>Greetings, thanks, praise, warnings — and asking to group, trade or duel</td></tr>
-      <tr><td class="who">Already in your group</td><td>The same, minus asking to group. They already are.</td></tr>
-      <tr><td class="who">A warlock</td><td>All of it, plus Distrust, Demon and Fel Magic</td></tr>
-      <tr><td class="who">An innkeeper</td><td>Greetings and courtesies. No NPC is going to accept your duel.</td></tr>
-      <tr><td class="who">Anything hostile</td><td>Challenge, Taunt, Mock, Respect, Victory, Warning</td></tr>
-    </tbody>
-  </table>
-  <p class="small">An enemy gets <b>Respect</b> on purpose. A worthy opponent deserves a word.</p>
-</section>
-
-<section>
-  <span class="num">Two</span>
-  <h2>It sounds like your character</h2>
-  <p>A phrase is assembled in layers: a shared pool, then your class, your race and your faction,
-  then the class and race of whoever you are speaking to. Nobody wrote &ldquo;undead mage&rdquo; —
-  the undead layer and the mage layer together already read as one.</p>
-
-  <table>
-    <thead><tr><th>The same button</th><th>Different characters</th></tr></thead>
-    <tbody>
-      <tr><td class="who">Ready</td><td>&ldquo;Totems are down. I am set.&rdquo;<br>&ldquo;Ready. I have been in position for some time.&rdquo;</td></tr>
-      <tr><td class="who">Hello</td><td>&ldquo;Hey mon. Da spirits be watchin' you.&rdquo;<br>&ldquo;Ah, there y'are. Good to see ye.&rdquo;</td></tr>
-      <tr><td class="who">Wipe</td><td>&ldquo;I should have held. Next time I hold.&rdquo;<br>&ldquo;Interesting failure. I have several theories.&rdquo;</td></tr>
-    </tbody>
-  </table>
-
-  <p>And a few race-and-class pairings carry something neither half contains. A blood elf paladin
-  knows how his order came by the Light, and says so where no other paladin does.</p>
-
-  <blockquote>
-    <span>I did not ask the Light for this. I took it.</span>
-    <span>We drained a naaru to learn this. I have not made peace with that.</span>
-  </blockquote>
-  <p class="attrib">Blood elf paladin — lines no other character can draw</p>
-
-  <div class="stats">
-    <div class="stat"><span class="big">1,500</span><span class="lbl">handwritten lines</span></div>
-    <div class="stat"><span class="big">53</span><span class="lbl">characters covered</span></div>
-    <div class="stat"><span class="big">9</span><span class="lbl">classes with a voice</span></div>
-    <div class="stat"><span class="big">10</span><span class="lbl">races with a voice</span></div>
+    <div class="reveal mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 md:grid-cols-4">
+      <div class="bg-night-950 px-4 py-8 text-center">
+        <p class="font-display text-4xl text-gold-300">1,500</p>
+        <p class="mt-2 text-xs text-slate-500">handwritten lines</p></div>
+      <div class="bg-night-950 px-4 py-8 text-center">
+        <p class="font-display text-4xl text-gold-300">53</p>
+        <p class="mt-2 text-xs text-slate-500">characters covered</p></div>
+      <div class="bg-night-950 px-4 py-8 text-center">
+        <p class="font-display text-4xl text-gold-300">9</p>
+        <p class="mt-2 text-xs text-slate-500">classes with a voice</p></div>
+      <div class="bg-night-950 px-4 py-8 text-center">
+        <p class="font-display text-4xl text-gold-300">10</p>
+        <p class="mt-2 text-xs text-slate-500">races with a voice</p></div>
+    </div>
+    <p class="reveal mt-5 text-center text-sm text-slate-500">
+      No generator, no AI, no templates stitched together. Somebody wrote all of them.
+    </p>
   </div>
-  <p class="small">No generator, no AI, no templates stitched together. Somebody wrote all of them.</p>
 </section>
 
-<section>
-  <span class="num">Three</span>
-  <h2>Gestures, groups, and the rest</h2>
+<div class="hairline mx-auto h-px max-w-5xl"></div>
 
-  <h3>It bows when it thanks you</h3>
-  <p>Lines carry the matching emote, so your character actually bows, salutes or roars — aimed at
-  whoever you are speaking to, so it reads as <i>Shamanolo bows before Gromkar</i>. The checkbox
-  shows you before it happens, because other people see it too.</p>
+<!-- ══════════════════ 3. the rest ══════════════════ -->
+<section class="px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Three</p>
+      <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
+        It reaches the rest of the world too
+      </h2>
+    </div>
 
-  <h3>It finds you a group, in character</h3>
-  <p>A bubble in the Looking For Group window advertises you on the channel, opening with the
-  shorthand people actually scan for.</p>
+    <div class="mt-14 grid gap-6 md:grid-cols-3">
+      <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
+          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 3v10m0 0l-3.5-3.5M12 13l3.5-3.5M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-white">It bows when it thanks you</h3>
+        <p class="mt-3 leading-relaxed text-slate-400">
+          Lines carry the matching emote, so your character actually bows, salutes or roars — aimed
+          at whoever you are speaking to. A checkbox shows you before it happens, because other
+          people see it too.
+        </p>
+      </article>
 
-  <blockquote><span>LFG Scarlet Monastery — orc rogue, 36. Ready when you are.</span></blockquote>
+      <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7" style="transition-delay:.08s">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
+          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/>
+            <path d="M3.5 19c.6-3 2.9-4.5 5.5-4.5S13.9 16 14.5 19M16 15c2 .3 3.6 1.6 4 4" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-white">It finds you a group</h3>
+        <p class="mt-3 leading-relaxed text-slate-400">
+          A bubble in the group browser advertises you on the channel, opening with the shorthand
+          people actually scan for. Every listing grows one too: it reads who posted it, what they
+          are running and <span class="text-slate-200">what they are short of</span>, then offers the
+          roles your class could fill.
+        </p>
+        <p class="mt-4 rounded-md border border-white/10 bg-black/40 px-3 py-2 font-mono text-[12.5px] text-gold-300">
+          LFG Scarlet Monastery — orc rogue, 36.
+        </p>
+      </article>
 
-  <p>Every row of the browser grows a bubble too. It reads the listing — who posted it, what they
-  are running, what they are short of — and offers <b>the roles they actually need and your class
-  could fill</b>. There is no &ldquo;ask what they need&rdquo;: the game already published it.</p>
-
-  <h3>It is yours to edit</h3>
-  <p><code>/silvertongue</code> opens the library: every line this character can say, and where each
-  one came from. Write your own, drop the ones you dislike, change a gesture, rearrange any menu.
-  Changes are stored as a diff, so new phrases in later versions still reach you.</p>
-  <p class="small">You choose who a change applies to — all your characters, your race, your class or
-  your faction. Dropping a line uses whichever of those the line already belongs to.</p>
-</section>
-
-<section>
-  <span class="num">Four</span>
-  <h2>Install</h2>
-
-  <ol class="steps">
-    <li>Download the zip and unzip it. You should have a folder called <code>Silvertongue</code>.</li>
-    <li>Put that folder in your AddOns directory.
-      <pre class="block">World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/</pre>
-    </li>
-    <li><b>Restart the game.</b> Not <code>/reload</code> — new addons are only found at launch.</li>
-  </ol>
-
-  <div class="aside">
-    <b>The one thing that goes wrong.</b> You should end up with
-    <code>AddOns/Silvertongue/Silvertongue.toc</code>. If unzipping left an extra folder in between —
-    <code>AddOns/Silvertongue-rc-0.1.0/Silvertongue/</code> — the game will never find it. Move the
-    inner folder up one level.
+      <article class="reveal rounded-xl border border-white/10 bg-white/[0.02] p-7" style="transition-delay:.16s">
+        <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-gold-600/40 bg-gold-400/10">
+          <svg class="h-5 w-5 text-gold-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 20l4-1 10-10a2.1 2.1 0 10-3-3L5 16l-1 4z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-white">It is yours to edit</h3>
+        <p class="mt-3 leading-relaxed text-slate-400">
+          Every line, and where it came from. Write your own, drop the ones you dislike, change a
+          gesture, rearrange any menu. Changes are stored as a diff — so new phrases in later
+          versions still reach you, underneath your own.
+        </p>
+      </article>
+    </div>
   </div>
-
-  <p>There is nothing to configure. It works on any character the moment it loads, and
-  <code>/silvertongue</code> opens it. To put it on a key: <b>Esc → Key Bindings → Silvertongue</b>.</p>
-
-  <h3>Which build to take</h3>
-  <p>Releases tagged <code>v0.1.0</code> are finished. <code>rc-0.1.0</code> are candidates that pass
-  the tests but have had less time in a real game. Both install the same way.</p>
-
-  <h3>Updating</h3>
-  <p>Replace the folder. Your own phrases, your menu order and wherever you dragged things live in
-  the game's saved variables rather than in the addon folder, so they survive.</p>
 </section>
 
-<section>
-  <span class="num">Five</span>
-  <h2>If you want to add to it</h2>
-  <p>The phrases are plain Lua tables in <code>Silvertongue/RP/</code>. Adding lines, a race, a class
-  or a faction is <b>data</b> — no other file needs to change. Write a line as
-  <code>{ "text", emote = "BOW" }</code> to give it a gesture.</p>
-  <p><code>tests/run.sh</code> runs three checks against the source with the game API stubbed: that
-  the TOC and the file tree agree, that the phrase library holds together, and that nothing reaches
-  chat except through an explicit send. They run on every push.</p>
-  <p><a href="https://github.com/seedwalk/silvertongue">Everything is on GitHub</a> — including the
-  issue tracker, if something is broken or a line sounds wrong.</p>
+<div class="hairline mx-auto h-px max-w-5xl"></div>
+
+<!-- ══════════════════ install ══════════════════ -->
+<section id="install" class="px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-3xl">
+    <div class="text-center">
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-gold-500">Install</p>
+      <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] text-white">Three steps, no setup</h2>
+    </div>
+
+    <ol class="mt-14 space-y-8">
+      <li class="reveal flex gap-5">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">1</span>
+        <div>
+          <p class="font-medium text-white">Download and unzip it</p>
+          <p class="mt-1.5 text-slate-400">You should end up with a folder called <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">Silvertongue</code>.</p>
+        </div>
+      </li>
+      <li class="reveal flex gap-5">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">2</span>
+        <div class="min-w-0">
+          <p class="font-medium text-white">Put it in your AddOns folder</p>
+          <pre class="mt-2.5 overflow-x-auto rounded-lg border border-white/10 bg-black/50 px-4 py-3 font-mono text-[12.5px] text-gold-300">World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/</pre>
+        </div>
+      </li>
+      <li class="reveal flex gap-5">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold-600/50 bg-gold-400/10 font-display text-sm text-gold-300">3</span>
+        <div>
+          <p class="font-medium text-white">Restart the game</p>
+          <p class="mt-1.5 text-slate-400">Not <code class="rounded bg-white/5 px-1.5 py-0.5 text-[0.9em] text-gold-300">/reload</code> — new addons are only found when the client launches.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="reveal mt-12 rounded-xl border border-ember-500/30 bg-ember-500/[0.07] p-6">
+      <p class="font-medium text-white">The one thing that goes wrong</p>
+      <p class="mt-2 leading-relaxed text-slate-400">
+        You need <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-gold-300">AddOns/Silvertongue/Silvertongue.toc</code>.
+        If unzipping left an extra folder in between — <code class="rounded bg-black/40 px-1.5 py-0.5 text-[0.9em] text-gold-300">AddOns/Silvertongue-rc-0.1.0/Silvertongue/</code> —
+        the game will never find it. Move the inner folder up one level.
+      </p>
+    </div>
+
+    <div class="reveal mt-10 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+        <p class="font-medium text-white">Which build?</p>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+          <code class="text-gold-300">v0.1.0</code> is finished. <code class="text-gold-300">rc-0.1.0</code>
+          passes the tests but has had less time in a real game. Both install the same way.</p>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+        <p class="font-medium text-white">Updating</p>
+        <p class="mt-1.5 text-sm leading-relaxed text-slate-400">
+          Replace the folder. Your own phrases and layout live in the game's saved variables, not in
+          the addon, so they survive.</p>
+      </div>
+    </div>
+
+    <div class="reveal mt-14 text-center">
+      <a id="download2" href="https://github.com/seedwalk/silvertongue/releases"
+         class="inline-block rounded-lg border border-gold-500/70 bg-gradient-to-b from-gold-400/25 to-gold-600/10
+                px-9 py-4 font-medium text-gold-200 shadow-[0_0_30px_-8px_rgba(232,199,122,.5)]
+                transition hover:from-gold-400/35 hover:text-gold-100">
+        Download the addon →
+      </a>
+      <p class="mt-4 text-sm text-slate-500">Free, open source, and it does not phone anywhere.</p>
+    </div>
+  </div>
 </section>
 
-</div>
-
-<footer class="wrap">
-  <svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><use href="#bubble"/></svg>
-  <p>Silvertongue is a fan-made addon, not affiliated with or endorsed by Blizzard Entertainment.<br>
-  World of Warcraft is a trademark of Blizzard Entertainment, Inc.</p>
-  <p>Bundles <a href="https://www.wowace.com/projects/ace3">Ace3</a>, LibDataBroker-1.1 and
-  LibDBIcon-1.0. &nbsp;·&nbsp; <a href="https://github.com/seedwalk/silvertongue">Source</a></p>
+<!-- ══════════════════ footer ══════════════════ -->
+<footer class="border-t border-white/5 px-6 py-14">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">
+      <div class="flex items-center gap-3">
+        <svg class="h-6 w-6 opacity-70" viewBox="0 0 40 40" aria-hidden="true"><use href="#bubble"/></svg>
+        <span class="font-display text-sm tracking-[0.2em] text-slate-400">SILVERTONGUE</span>
+      </div>
+      <div class="flex gap-7 text-sm">
+        <a href="https://github.com/seedwalk/silvertongue" class="text-slate-400 transition hover:text-gold-300">GitHub</a>
+        <a href="https://github.com/seedwalk/silvertongue/releases" class="text-slate-400 transition hover:text-gold-300">Releases</a>
+        <a href="https://github.com/seedwalk/silvertongue/issues" class="text-slate-400 transition hover:text-gold-300">Issues</a>
+      </div>
+    </div>
+    <p class="mt-10 text-center text-xs leading-relaxed text-slate-600">
+      Silvertongue is a fan-made addon, not affiliated with or endorsed by Blizzard Entertainment.
+      World of Warcraft is a trademark of Blizzard Entertainment, Inc.<br>
+      Bundles <a href="https://www.wowace.com/projects/ace3" class="text-slate-500 underline decoration-slate-700 underline-offset-2">Ace3</a>,
+      LibDataBroker-1.1 and LibDBIcon-1.0.
+    </p>
+  </div>
 </footer>
 
 <script>
-// GitHub's /releases/latest ignores pre-releases, so the newest build is found
-// through the API instead — otherwise the button would 404 until the first
-// finished release exists. A failure leaves the static link alone.
+// ── embers drifting up out of the ridgeline ──────────────────────────────────
 (function () {
-  var button = document.getElementById("download");
-  var label  = document.getElementById("version");
+  var host = document.getElementById("embers");
+  if (!host || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for (var i = 0; i < 26; i++) {
+    var e = document.createElement("span");
+    e.className = "ember animate-rise";
+    e.style.left = (Math.random() * 100) + "%";
+    e.style.animationDuration = (5 + Math.random() * 7) + "s";
+    e.style.animationDelay = (Math.random() * 8) + "s";
+    host.appendChild(e);
+  }
+})();
 
+// ── reveal on scroll ─────────────────────────────────────────────────────────
+(function () {
+  var items = document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window)) {
+    items.forEach(function (el) { el.classList.add("in"); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
+    });
+  }, { rootMargin: "0px 0px -12% 0px" });
+  items.forEach(function (el) { io.observe(el); });
+})();
+
+// ── the bar appears once the hero is behind you ──────────────────────────────
+(function () {
+  var nav = document.getElementById("nav");
+  addEventListener("scroll", function () {
+    nav.classList.toggle("-translate-y-full", scrollY < innerHeight * 0.75);
+  }, { passive: true });
+})();
+
+// ── point every download button at the newest build ──────────────────────────
+// GitHub's /releases/latest ignores pre-releases, so the newest is found through
+// the API; otherwise these would 404 until a finished release exists.
+(function () {
+  var label = document.getElementById("version");
   fetch("https://api.github.com/repos/seedwalk/silvertongue/releases?per_page=1")
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function (releases) {
       var release = releases && releases[0];
       if (!release) return;
-
-      var zip = (release.assets || []).filter(function (a) {
-        return /\.zip$/.test(a.name);
-      })[0];
-      if (zip) button.href = zip.browser_download_url;
-
-      var when = new Date(release.published_at).toLocaleDateString(undefined, {
-        year: "numeric", month: "long", day: "numeric"
-      });
+      var zip = (release.assets || []).filter(function (a) { return /\.zip$/.test(a.name); })[0];
+      if (zip) {
+        ["download", "download2", "nav-dl"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.href = zip.browser_download_url;
+        });
+      }
+      var when = new Date(release.published_at).toLocaleDateString(undefined,
+        { year: "numeric", month: "long", day: "numeric" });
       label.textContent = release.tag_name + "  ·  " + when +
         (release.prerelease ? "  ·  release candidate" : "");
     })
-    .catch(function () {
-      label.textContent = "Latest build on GitHub";
-    });
+    .catch(function () { label.textContent = "Latest build on GitHub"; });
 })();
 </script>
 
