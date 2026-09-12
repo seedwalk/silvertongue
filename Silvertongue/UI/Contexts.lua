@@ -128,6 +128,25 @@ function Contexts:Group()
     if not inGroup then
         intents[#intents + 1] = { "LFG", "SOLO", "Looking for a group" }
         intents[#intents + 1] = { "LFG", "OFFER", "Answer a listing" }
+
+        -- Offering yourself is not the same as forming a group, and until now
+        -- the only advert available said what you are without saying what you
+        -- would be doing. The role is the first thing anyone reads for.
+        local ROLE_SOLO = {
+            { "TANK",    "SOLO_TANK",   "Looking, as a tank"   },
+            { "HEALER",  "SOLO_HEALER", "Looking, as a healer" },
+            { "DAMAGER", "SOLO_DPS",    "Looking, as damage"   },
+        }
+        local added = false
+        for _, role in ipairs(ROLE_SOLO) do
+            if ns.CanFillRole(role[1]) then
+                if not added then
+                    intents[#intents + 1] = ns.SEP
+                    added = true
+                end
+                intents[#intents + 1] = { "LFG", role[2], role[3] }
+            end
+        end
     else
         -- What is worth asking for is yours to say: the classes in a group are
         -- known, but who is actually tanking or healing is not.

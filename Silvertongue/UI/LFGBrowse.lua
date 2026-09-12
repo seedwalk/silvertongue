@@ -18,22 +18,10 @@ local BROWSER_ADDON = "Blizzard_GroupFinder_VanillaStyle"
 
 local function listingBoard() return ns.Board:New("Listing") end
 
--- Which roles a class can plausibly fill in this expansion. Specs are not
--- readable, so this is about what you could offer, and you are the one choosing
--- to offer it.
-local ROLE_CLASSES = {
-    TANK   = { WARRIOR = true, DRUID = true, PALADIN = true },
-    HEALER = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true },
-}
-
 local ROLE_INTENT = { TANK = "OFFER_TANK", HEALER = "OFFER_HEALER", DAMAGER = "OFFER_DPS" }
 local ROLE_LABEL  = { TANK = "Offer to tank", HEALER = "Offer to heal", DAMAGER = "Offer damage" }
 
-local function canFill(role)
-    if role == "DAMAGER" then return true end
-    local _, classToken = UnitClass("player")
-    return classToken ~= nil and ROLE_CLASSES[role] ~= nil and ROLE_CLASSES[role][classToken] == true
-end
+local function canFill(role) return ns.CanFillRole(role) end
 
 -- Everything the game will tell us about one row.
 function LFGBrowse:ReadResult(resultID)
@@ -107,10 +95,14 @@ local function canInvite(result)
         or false
 end
 
--- Your own listing. Having one means you are forming a group, whether or not
--- anyone has joined yet, so this recruits rather than asking to be let in --
--- and it recruits from what the game says the listing holds, which beats
--- anything inferred from classes.
+-- Your own listing.
+--
+-- It used to assume that having one meant forming a group. It does not: on your
+-- own, a listing is you advertising yourself, and the row offered to recruit for
+-- a group that was one person. So a listing with nobody else in it speaks about
+-- you -- race, class, level, the dungeon, and the role you would take, which is
+-- the first thing anyone reads for -- and only once somebody has joined does it
+-- turn into recruiting for what is missing.
 function LFGBrowse:BuildOwnListingContext(result)
     local ctx = ns.Engine:BuildPlayerContext()
     ctx.dungeon = result.activity or ns.CurrentDungeon()
@@ -119,6 +111,45 @@ function LFGBrowse:BuildOwnListingContext(result)
     ctx.needs   = math.max(0, 5 - (result.members or 1))
 
     local intents = {}
+
+    if (result.members or 1) <= 1 then
+        intents[#intents + 1] = { "LFG", "SOLO", "Looking for a group" }
+
+        local ROLE_SOLO = {
+            { "TANK",    "SOLO_TANK",   "Looking, as a tank"   },
+            { "HEALER",  "SOLO_HEALER", "Looking, as a healer" },
+            { "DAMAGER", "SOLO_DPS",    "Looking, as damage"   },
+        }
+        local added = false
+        for _, role in ipairs(ROLE_SOLO) do
+            if ns.CanFillRole(role[1]) then
+                if not added then
+                    intents[#intents + 1] = ns.SEP
+                    added = true
+                end
+                intents[#intents + 1] = { "LFG", role[2], role[3] }
+            end
+        end
+
+        local channels = { { key = "LFG", label = "LFG",
+                             hint = "Goes to the LookingForGroup channel, joining it if you have not." } }
+        if IsInGuild and IsInGuild() then
+            channels[#channels + 1] = { key = "GUILD", label = "Guild",
+                                        hint = "Asks your guild first." }
+        end
+        channels[#channels + 1] = { key = "SAY", label = "Say",
+                                    hint = "Everyone nearby hears it." }
+
+        return {
+            key      = "LISTING:SELF",
+            title    = "Your listing",
+            subtitle = result.activity or "On your own",
+            intents  = intents,
+            ctx      = ctx,
+            channels = channels,
+        }
+    end
+
     -- The heading above already says what is missing; repeating it on the row
     -- says nothing. This one asks for all of it at once, the rows below ask for
     -- one role.

@@ -1616,6 +1616,52 @@ check(not healerLabels["NEED_HEALER"], "it asked for a healer it already has")
 check(withHealer.ctx.have == "a healer and 2 dps",
       "it holds %s", tostring(withHealer.ctx.have))
 
+do
+    -- Your own listing, on your own. Having a listing is not having a group: the
+    -- row used to offer to recruit for a party of one, when what you actually
+    -- want there is to advertise yourself.
+    listings[9] = { leaderName = "Silvertongue", hasSelf = true, numMembers = 1,
+                    activityIDs = { 1 },
+                    counts = { TANK = 0, HEALER = 0, DAMAGER = 1,
+                               TANK_REMAINING = 1, HEALER_REMAINING = 1,
+                               DAMAGER_REMAINING = 2 } }
+    local solo = ns.LFGBrowse:BuildContext(9)
+    local offered = {}
+    for _, entry in ipairs(solo.intents) do
+        if entry ~= ns.SEP then offered[entry[2]] = true end
+    end
+    check(offered.SOLO ~= nil, "your own listing did not offer to advertise you")
+    check(offered.NEED_TANK == nil and offered.NEED_MORE == nil,
+          "a listing with only you in it offered to recruit for a group")
+
+    -- A shaman can offer to heal or to hit things, and not to tank. The role is
+    -- the word a group leader actually reads for.
+    check(offered.SOLO_HEALER ~= nil, "a shaman could not offer to heal")
+    check(offered.SOLO_DPS ~= nil, "nobody could offer damage")
+    check(offered.SOLO_TANK == nil, "a shaman was allowed to offer to tank")
+
+    -- And the advert says the role out loud.
+    local board9 = ns.Board:New("Listing")
+    board9:Open(nil, solo)
+    board9:Pick({ "LFG", "SOLO_HEALER", "Looking, as a healer" }, nil)
+    local advert = ns.Display.edit:GetText()
+    check(advert:lower():find("heal", 1, true) ~= nil,
+          "the healer advert never says so: %s", advert)
+    check(advert:find("^LFG ") ~= nil, "the advert does not open with LFG: %s", advert)
+    check(advert:find("{") == nil, "the advert left a placeholder: %s", advert)
+
+    -- Once somebody joins, it is a group, and then recruiting is the point.
+    listings[9].numMembers = 2
+    local joined = ns.LFGBrowse:BuildContext(9)
+    local now2 = {}
+    for _, entry in ipairs(joined.intents) do
+        if entry ~= ns.SEP then now2[entry[2]] = true end
+    end
+    check(now2.NEED_MORE ~= nil, "a listing with two in it stopped recruiting")
+    check(now2.SOLO == nil, "a group of two still advertised one person")
+    listings[9].numMembers = 1
+end
+
 -- The menu rereads when a line is picked, so changing the dungeon filter with
 -- it open names the new one rather than the one it opened on.
 check(type(own.rebuild) == "function", "your own listing never rereads itself")

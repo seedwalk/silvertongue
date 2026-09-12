@@ -10,6 +10,22 @@
 -- said they were playing.
 
 local ADDON, ns = ...
+
+-- Which roles a class could plausibly offer in this expansion. Specs are not
+-- readable, so this is about what you *could* do and you are the one choosing
+-- to say it. Shared, because advertising yourself and answering someone else's
+-- listing have to agree about this.
+ns.ROLE_CLASSES = {
+    TANK   = { WARRIOR = true, DRUID = true, PALADIN = true },
+    HEALER = { PRIEST = true, DRUID = true, PALADIN = true, SHAMAN = true },
+}
+
+function ns.CanFillRole(role)
+    if role == "DAMAGER" then return true end
+    local _, classToken = UnitClass("player")
+    return classToken ~= nil and ns.ROLE_CLASSES[role] ~= nil
+        and ns.ROLE_CLASSES[role][classToken] == true
+end
 ns.Phrases = ns.Phrases or {}
 
 ns.Phrases.LFG = {
@@ -25,6 +41,33 @@ ns.Phrases.LFG = {
     },
 
     -- You have a group with room in it.
+    -- The same advert with the one word that makes it useful. "Orc Shaman, 36"
+    -- does not tell anybody whether you are offering to heal or to hit things,
+    -- and that is the first thing a group leader reads for.
+    SOLO_TANK = {
+        "LFG {dungeon} -- {level} {race} {class}, happy to tank. I hold what I pull.",
+        "LFG {dungeon}. {race} {class}, {level}, tanking. Put me at the front and keep up.",
+        "LFG {dungeon} -- tank available. {level} {race} {class}, and I do not lose threat.",
+        "LFG {dungeon}, tanking. {race} {class}, {level}. I know the pulls.",
+        "LFG {dungeon} as tank -- {level} {race} {class}. Bring a healer who pays attention.",
+    },
+
+    SOLO_HEALER = {
+        "LFG {dungeon} -- {level} {race} {class}, healing. I will keep you upright.",
+        "LFG {dungeon}. {race} {class}, {level}, happy to heal. Do not stand in things.",
+        "LFG {dungeon}, healing. {level} {race} {class}, and I watch the whole group.",
+        "LFG {dungeon} as healer -- {race} {class}, {level}. I have mana and patience.",
+        "LFG {dungeon}, healing. {level} {race} {class}. Pull carefully and nobody dies.",
+    },
+
+    SOLO_DPS = {
+        "LFG {dungeon} -- {level} {race} {class}, damage. Point me at it.",
+        "LFG {dungeon}. {race} {class}, {level}, dps. I kill what the tank tells me to.",
+        "LFG {dungeon} as dps -- {level} {race} {class}. I wait for threat like a civilised person.",
+        "LFG {dungeon}, damage. {race} {class}, {level}, ready now.",
+        "LFG {dungeon} -- {level} {race} {class}, dps and no fuss.",
+    },
+
     NEED_MORE = {
         "LFM {dungeon}, need {missing} -- we have {have}.",
         "LFM {dungeon}. {have} so far, still need {missing}. Who is coming?",
