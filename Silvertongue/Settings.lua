@@ -258,13 +258,31 @@ function ns.JoinLookingForGroupAndSend(text)
     end
 end
 
--- You can only whisper a player on your own side. Alliance, creatures and an
--- empty selection all rule it out.
+-- A player of the other side.
+--
+-- This is not the same question as "can I attack them", and assuming it was is
+-- what put a group invite in front of a draenei. An Alliance player standing in
+-- a neutral zone with no PvP flag cannot be attacked at all, so UnitCanAttack
+-- says no and everything downstream treated them as a friend.
+function ns.IsOppositeFaction(unit)
+    unit = unit or "target"
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then return false end
+    if UnitIsUnit(unit, "player") then return false end
+    if not UnitFactionGroup then return false end
+    local theirs = UnitFactionGroup(unit)
+    local mine = UnitFactionGroup("player")
+    if not theirs or not mine or theirs == "Neutral" then return false end
+    return theirs ~= mine
+end
+
+-- You can only whisper a player on your own side. The other faction, creatures
+-- and an empty selection all rule it out.
 function ns.CanWhisperTarget(unit)
     unit = unit or "target"
     if not UnitExists(unit) then return false end
     if not UnitIsPlayer(unit) then return false end
     if UnitIsUnit(unit, "player") then return false end
+    if ns.IsOppositeFaction(unit) then return false end
     if UnitCanCooperate and UnitCanCooperate("player", unit) then return true end
     return not UnitCanAttack("player", unit)
 end

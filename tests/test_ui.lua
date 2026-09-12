@@ -268,12 +268,16 @@ GetNumGroupMembers = function() return #group > 0 and #group + 1 or 0 end
 local target = nil          -- the currently selected unit, or nil
 _G.__player = { name = "Silvertongue", className = "Shaman", classToken = "SHAMAN",
                 raceName = "Orc", raceToken = "Orc", faction = "Horde" }
-UnitFactionGroup = function(u) local m = _G.__player; return m and m.faction or "Horde" end
 local function unitIndex(unit) return tonumber(unit:match("^party(%d)$")) end
 local function resolve(u)
     if u == "target" then return target end
     if u == "player" then return _G.__player end
     return group[unitIndex(u) or 0]
+end
+UnitFactionGroup = function(u)
+    if u == "player" then return _G.__player.faction or "Horde" end
+    local m = resolve(u)
+    return (m and m.faction) or "Horde"
 end
 UnitExists   = function(u) return u ~= nil and resolve(u) ~= nil end
 UnitName     = function(u) local m = resolve(u); return m and m.name end
@@ -1989,6 +1993,43 @@ check(opener ~= nil, "the target has no way to open a conversation")
 check(opener.local_ == true, "opening our own window claims to act on them")
 opener.run()
 check(ns.Whisper:IsOpen("Vaelen"), "the target's opener opened nothing")
+
+-- An Alliance player, peacefully standing there with no PvP flag. This is the
+-- case that was wrong: UnitCanAttack says no, so everything downstream treated
+-- a draenei as a friend and offered to invite him to the group.
+target = { name = "Aeluneth", className = "Paladin", classToken = "PALADIN",
+           raceName = "Draenei", raceToken = "DRAENEI", faction = "Alliance" }
+ns.TargetUI:Refresh()
+check(UnitCanAttack("player", "target") == false,
+      "this test is not reproducing the bug: the draenei is attackable")
+local alliance = ns.TargetUI:BuildContext()
+check(alliance.opposed == true, "an Alliance player did not read as the other side")
+
+local labels = {}
+for _, entry in ipairs(alliance.intents) do
+    if entry ~= ns.SEP then labels[entry[2]] = true end
+end
+check(labels.PARTY == nil, "it offered a group invite to the other faction")
+check(labels.TRADE == nil, "it offered to trade with the other faction")
+check(labels.DUEL == nil, "it offered a duel to the other faction")
+check(labels.ENEMY_TAUNT ~= nil, "there was nothing to taunt him with")
+check(labels.ENEMY_MOCK ~= nil and labels.ENEMY_CHALLENGE ~= nil,
+      "the enemy lines were not offered")
+
+-- Nothing typed reaches them, so the line is for your own side standing there,
+-- and whispering them is not a thing the game will do at all.
+local allianceContext = ns.Contexts:Target()
+local keys = {}
+for _, channel in ipairs(allianceContext.channels) do keys[#keys + 1] = channel.key end
+check(table.concat(keys, ",") == "SAY,YELL",
+      "speaking to the other faction offered: %s", table.concat(keys, ","))
+check(allianceContext.actions == nil,
+      "it offered to open a private conversation with the other faction")
+check(ns.CanWhisperTarget("target") == false, "it thought it could whisper the other faction")
+
+-- The gesture is the half that does cross: an emote is an animation, and it
+-- arrives in the reader's own language.
+check(allianceContext.emoteTarget == "Aeluneth", "the gesture was not aimed at them")
 
 -- A hostile target has nobody to whisper, so the door is not there.
 target = { name = "Snarl", hostile = true }

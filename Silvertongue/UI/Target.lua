@@ -93,13 +93,19 @@ function TargetUI:BuildContext()
     end
 
     local ctx = ns.Engine:BuildUnitContext("target")
-    -- UnitCanAttack covers Alliance, hostile creatures and duel opponents at
-    -- once, which is exactly the line that matters here.
-    local hostile = UnitCanAttack("player", "target") and true or false
     local isPlayer = UnitIsPlayer("target") and true or false
+
+    -- Two separate questions, and treating them as one is what offered a
+    -- draenei a group invite. UnitCanAttack is about whether a fight is
+    -- possible right now; an Alliance player in a neutral zone without a PvP
+    -- flag answers no to that and is still not somebody you invite, trade with
+    -- or whisper.
+    local opposed = ns.IsOppositeFaction("target")
+    local hostile = (UnitCanAttack("player", "target") and true or false) or opposed
 
     local descriptor = ((ctx.raceName or "") .. " " .. (ctx.className or "")):gsub("^%s+", ""):gsub("%s+$", "")
     if descriptor == "" then descriptor = isPlayer and "Player" or "Creature" end
+
 
     local list = {}
     if hostile then
@@ -118,12 +124,23 @@ function TargetUI:BuildContext()
         end
     end
 
+    -- Worth saying on screen, because it changes what is worth saying at all.
+    -- "Hostile" would be wrong for somebody peacefully mining in Nagrand; what
+    -- matters about them is that your words land on everyone except them.
+    local note = descriptor
+    if opposed then
+        note = descriptor .. "  --  will not understand you"
+    elseif hostile then
+        note = descriptor .. "  --  hostile"
+    end
+
     return {
         ctx        = ctx,
         hostile    = hostile,
+        opposed    = opposed,
         isPlayer   = isPlayer,
         name       = ctx.name,
-        descriptor = hostile and (descriptor .. "  --  hostile") or descriptor,
+        descriptor = note,
         intents    = list,
     }
 end

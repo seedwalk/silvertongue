@@ -55,11 +55,28 @@ function Contexts:Target()
         if not redundant then intents[#intents + 1] = entry end
     end
 
-    local channels = { SAY_ALOUD }
-    -- Yelling at someone in your own group is shouting across a table.
-    if not grouped then channels[#channels + 1] = YELL end
-    if info.isPlayer and not info.hostile then
-        channels[#channels + 1] = WHISPER
+    local channels
+    if info.opposed then
+        -- Cross-faction speech arrives as gibberish, so the line is not for
+        -- them: it is for your own side standing there, and the tooltips say so
+        -- rather than letting you think it landed.
+        --
+        -- The gesture is the half that does arrive. An emote is an animation and
+        -- a sentence in the reader's own language, so a bow or a rude gesture
+        -- crosses the faction line when nothing you type does.
+        channels = {
+            { key = "SAY",  label = "Say",
+              hint = "Your own side nearby reads it. They will not -- but the gesture lands." },
+            { key = "YELL", label = "Yell",
+              hint = "Heard well past the room, by everyone on your side." },
+        }
+    else
+        channels = { SAY_ALOUD }
+        -- Yelling at someone in your own group is shouting across a table.
+        if not grouped then channels[#channels + 1] = YELL end
+        if info.isPlayer and not info.hostile then
+            channels[#channels + 1] = WHISPER
+        end
     end
     channels = leadWithParty(channels)
 
@@ -88,6 +105,7 @@ function Contexts:Target()
         grouped     = grouped,
         isPlayer    = info.isPlayer,
         hostile     = info.hostile,
+        opposed     = info.opposed,
         rebuild     = function() return ns.Engine:BuildUnitContext("target") end,
     }
 end
