@@ -515,12 +515,12 @@ function Config:Create()
 
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOP", 0, -16)
-    title:SetText("PHRASE LIBRARY")
+    title:SetText("SILVERTONGUE")
     title:SetTextColor(0.85, 0.35, 0.25)
 
     local who = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     who:SetPoint("TOP", title, "BOTTOM", 0, -2)
-    who:SetText("What this character can say")
+    who:SetText("Give your character a voice")
 
     CreateFrame("Button", nil, f, "UIPanelCloseButton"):SetPoint("TOPRIGHT", -6, -6)
 

@@ -64,6 +64,10 @@ same way your own does:
 The first three act the moment you press them — all three are requests the
 other player still has to accept. `Speak` opens the phrases.
 
+There is also an older tabbed panel at `/silvertongue panel`, with every
+category as a tab and an editable preview. The contextual menus have largely
+replaced it.
+
 Rows that make no sense are not there: no invite for someone already in your
 group, and nothing to accept from a creature or an enemy. The fan stays open or
 folded as you change targets, and an open phrase menu refills itself for
@@ -188,15 +192,10 @@ Any control **drags with the right mouse button** and stays where you put it.
 If you use replacement unit frames, this is how you move the bubbles somewhere
 they make sense. `/silvertongue anchors` hides them entirely.
 
-### The panel
-
-`/silvertongue` opens the full panel, with every category as a tab and a preview
-you can edit. Bind it under **Esc → Key Bindings → Silvertongue**.
-
 ### Your own phrases
 
-`/silvertongue config` opens the library: everything this character can say,
-with where each line came from.
+`/silvertongue` opens the library: everything this character can say, with where
+each line came from. Bind it under **Esc → Key Bindings → Silvertongue**.
 
 - **Write your own.** Type it, pick who gets it, `Add line`.
 - **Drop what you dislike.** `Drop` takes a line out for good. Dropped lines
@@ -229,8 +228,8 @@ locked out.
 
 | | |
 | --- | --- |
-| `/silvertongue` | open the panel |
-| `/silvertongue config` | the phrase library |
+| `/silvertongue` | open Silvertongue |
+| `/silvertongue panel` | the older tabbed panel |
 | `/silvertongue target` | the panel, on the Target tab |
 | `/silvertongue party` | on the Party tab |
 | `/silvertongue class` | on your class tab |

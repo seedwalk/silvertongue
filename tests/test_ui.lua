@@ -245,8 +245,12 @@ local function check(cond, fmt, ...)
 end
 
 -- 1. Open the panel and walk every tab, clicking every intent button.
+-- The bare command opens the library, which is the front door now.
 addon.__cmd("")
-check(ns.Window.frame:IsShown(), "window did not open")
+check(ns.Config.frame ~= nil and ns.Config.frame:IsShown(), "the library did not open")
+ns.Config:Hide()
+addon.__cmd("panel")
+check(ns.Window.frame:IsShown(), "the tabbed panel did not open")
 
 -- Drive the tabs through the real tab buttons.
 check(ns.TABS ~= nil, "tabs were never built")
@@ -684,12 +688,12 @@ end
 local body = xml:match("<Binding[^>]*>(.-)</Binding>")
 check(body:find("if Silvertongue_BindingToggle"), "the binding body is not guarded against a failed load")
 
-ns.Window:Hide()
+ns.Config:Hide()
 local beforeBind = #sent
 Silvertongue_BindingToggle()
-check(ns.Window:IsShown(), "the binding did not open the panel")
+check(ns.Config.frame:IsShown(), "the binding did not open Silvertongue")
 Silvertongue_BindingToggle()
-check(not ns.Window:IsShown(), "the binding did not close the panel")
+check(not ns.Config.frame:IsShown(), "the binding did not close it")
 check(#sent == beforeBind, "the binding put something in chat")
 
 -- 14. The faction tab follows the character the same way the class tab does.

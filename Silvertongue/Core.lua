@@ -61,10 +61,10 @@ end
 -- category there is "BINDING_HEADER_SILVERTONGUE" and the global is this one. The
 -- `header` attribute is not honoured and renders as raw text instead.
 BINDING_HEADER_SILVERTONGUE      = "Silvertongue"
-BINDING_NAME_SILVERTONGUE_TOGGLE = "Open/close the panel"
+BINDING_NAME_SILVERTONGUE_TOGGLE = "Silvertongue: open/close"
 
 function Silvertongue_BindingToggle()
-    ns.Window:Toggle()
+    ns.Config:Toggle()
 end
 
 local Silvertongue = LibStub("AceAddon-3.0"):NewAddon(ADDON, "AceEvent-3.0", "AceConsole-3.0")
@@ -130,14 +130,13 @@ function Silvertongue:OnInitialize()
                 if button == "RightButton" then
                     Silvertongue:ShowQuickMenu()
                 else
-                    ns.Window:Toggle()
+                    ns.Config:Toggle()
                 end
             end,
             OnTooltipShow = function(tooltip)
                 tooltip:AddLine("Silvertongue")
-                tooltip:AddLine("Left-click: open the panel.", 1, 1, 1)
+                tooltip:AddLine("Left-click: open Silvertongue.", 1, 1, 1)
                 tooltip:AddLine("Right-click: quick actions.", 1, 1, 1)
-                tooltip:AddLine("/silvertongue config edits the phrases.", 0.7, 0.7, 0.7)
             end,
         })
         if icon then
@@ -168,6 +167,8 @@ end
 function Silvertongue:HandleSlash(input)
     local arg = (input or ""):lower():match("^%s*(%S*)")
     if arg == "" then
+        ns.Config:Toggle()
+    elseif arg == "panel" then
         ns.Window:Toggle()
     elseif arg == "anchors" then
         ns.Anchors:SetEnabled(not self.db.profile.anchorsEnabled)
@@ -188,7 +189,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [config|anchors|general|party|target|faction|class|attitude|minimap|lfgprobe]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|lfgprobe]")
     end
 end
 
