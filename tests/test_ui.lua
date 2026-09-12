@@ -177,6 +177,16 @@ ScrollUtil = {
 }
 GetInstanceInfo = function() return "" end
 
+NUM_CHAT_WINDOWS = 2
+for i = 1, NUM_CHAT_WINDOWS do
+    local frame = newMock("ScrollingMessageFrame", "ChatFrame" .. i)
+    frame.AddMessage = function(self, text)
+        self.__written = self.__written or {}
+        self.__written[#self.__written + 1] = text
+    end
+    _G["ChatFrame" .. i] = frame
+end
+
 -- The chat message filters and our own link type.
 local filters = {}
 function ChatFrame_AddMessageEventFilter(event, fn)
@@ -1711,9 +1721,6 @@ check(plainSystem == "Your group has been disbanded.",
 clickLink("silvertongue:Baddiebolts")
 check(ns.Whisper:IsOpen("Baddiebolts"), "the invite mark opened no window")
 ns.Whisper:Close("Baddiebolts")
--- That window asked its own /who; the counting below is about Grumgar's.
-for i = #whoSent, 1, -1 do table.remove(whoSent, i) end
-
 -- Clicking the mark is what opens the window.
 clickLink("silvertongue:Grumgar")
 check(ns.Whisper:IsOpen("Grumgar"), "clicking the mark opened no window")
@@ -1721,39 +1728,30 @@ local window = ns.Whisper:Windows()["Grumgar"]
 check(window.__point ~= nil, "the window was built with no anchor")
 check(window.title:GetText() == "Grumgar", "the window is not titled with their name")
 
--- We know nothing about a stranger, so one /who goes out, once.
-check(#whoSent == 1, "expected one who lookup, got %d", #whoSent)
-check(whoSent[1].query:find("Grumgar", 1, true) ~= nil,
-      "the lookup did not ask about them: %s", tostring(whoSent[1].query))
--- The lookup is worthless unless the answer is routed to the list first.
-check(whoSent[1].toUi == true,
-      "the lookup went out with the answer routed to chat, where we cannot read it")
-check(whoSent[1].query:find("n-", 1, true) == 1,
-      "the lookup did not ask for an exact name: %s", whoSent[1].query)
--- The server throttles these hard, so asking twice about the same name has to
--- be refused at the source rather than merely never happening to be called.
-clickLink("silvertongue:Grumgar")
-ns.Whisper:Open("Grumgar")
-for _ = 1, 5 do ns.AskWho("Grumgar") end
-check(#whoSent == 1, "the who lookup was repeated %d times", #whoSent)
+-- What we know about him came from the message he sent: a chat message carries
+-- the sender's GUID, and that is race and class for nothing.
+guids["Player-1-GRUM"] = { className = "Shaman", classToken = "SHAMAN",
+                           raceName = "Orc", raceToken = "Orc", name = "Grumgar" }
+whisperEvent("CHAT_MSG_WHISPER", "you there?", "Grumgar",
+    nil, nil, nil, nil, nil, nil, nil, nil, nil, "Player-1-GRUM")
+ns.Whisper:RefreshHeader(window)
+check(window.subtitle:GetText() == "Orc Shaman",
+      "what his message told us did not reach the header: %s", tostring(window.subtitle:GetText()))
 
--- When it answers, the header fills in without the window being reopened.
-whoResults = { { fullName = "Grumgar", level = 41, raceStr = "Orc", classStr = "Shaman" } }
-ns.ReadWhoResults()
-check(window.subtitle:GetText() == "Orc Shaman, 41",
-      "the who answer did not reach the header: %s", tostring(window.subtitle:GetText()))
+-- Nothing is asked of the server at all. Reading a who answer meant switching
+-- results over to the interface, and the interface for who results is the Social
+-- window opening over the game.
+check(#whoSent == 0, "a window opened a /who: %d sent", #whoSent)
+-- The flag is the actual bug, not the query: it means "put who results in the
+-- interface", and the interface for who results is the Social window opening
+-- over the game. Nothing in the addon may switch it on.
+check(whoToUi == false, "something turned on who-to-interface")
 
 -- Nobody we have ever heard of says so, rather than showing a blank line.
 ns.Whisper:Open("Nobody")
 local nobody = ns.Whisper:Windows()["Nobody"]
-check(nobody.subtitle:GetText() == "Looking them up...",
-      "a stranger showed: %s", tostring(nobody.subtitle:GetText()))
--- The server answers without them in it: not found, and the header says so
--- instead of waiting forever.
-whoResults = {}
-ns.ReadWhoResults()
 check(nobody.subtitle:GetText() == "Unknown",
-      "a name the server did not know showed: %s", tostring(nobody.subtitle:GetText()))
+      "a stranger showed: %s", tostring(nobody.subtitle:GetText()))
 ns.Whisper:Close("Nobody")
 
 -- What we learn is kept. Closing the window and opening it months later must
@@ -1761,8 +1759,8 @@ ns.Whisper:Close("Nobody")
 -- current either.
 ns.Whisper:Close("Grumgar")
 local stored = addon.db.profile.people["Grumgar"]
-check(stored ~= nil and stored.raceName == "Orc" and stored.level == 41,
-      "what the server told us about Grumgar was not kept")
+check(stored ~= nil and stored.raceName == "Orc" and stored.className == "Shaman",
+      "what Grumgar's message told us was not kept")
 
 -- Somebody met before this session, never seen since: remembered, and dated.
 addon.db.profile.people["Rhottyn"] = {
@@ -1897,10 +1895,23 @@ ns.Log:Clear("Talker")
 bnAccounts["42"] = { gameAccountInfo = { isOnline = true, characterName = "Olfer",
     realmName = "Nethergarde", raceName = "Troll", className = "Shaman",
     characterLevel = 44 } }
-local toast = deliver("CHAT_MSG_BN_INLINE_TOAST_ALERT",
-    "|HBNplayer:Diego:42:0:0:|h[Diego]|h has come online.", nil)
+-- Not through a filter, because that line does not exist yet when the filters
+-- run: the event carries the token FRIEND_ONLINE and the account id, and the
+-- chat frame writes the sentence afterwards. So it is the frame's own
+-- AddMessage that has to be watched, and this is the line as it finally lands.
+ChatFrame1:AddMessage("|HBNplayer:Diego:42:0:0:|h[Diego] (Olfer)|h has come online.")
+local toast = ChatFrame1.__written[#ChatFrame1.__written]
 check(toast:find("|Hsilvertongue:bn:42:Diego|h", 1, true) ~= nil,
       "the friend-online line got no mark: %s", tostring(toast))
+check(toast:find("has come online.", 1, true) ~= nil,
+      "marking it broke the line: %s", tostring(toast))
+
+-- And an ordinary chat line is left alone, even though by this point its sender
+-- is a link too. Marking those would put a bubble on every line of general chat.
+ChatFrame1:AddMessage("|Hplayer:Meowmix|h[Meowmix]|h: oh spam, the ultimate")
+local ordinary = ChatFrame1.__written[#ChatFrame1.__written]
+check(ordinary:find("silvertongue", 1, true) == nil,
+      "a general chat line got marked: %s", tostring(ordinary))
 
 clickLink("silvertongue:bn:42:Diego")
 check(ns.Whisper:IsOpen("Diego", "42"), "clicking a Battle.net mark opened no window")

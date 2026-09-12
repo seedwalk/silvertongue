@@ -45,13 +45,7 @@ ChatLinks.EVENTS = {
 -- over an escape sequence rather than a guess at a localised sentence, so this
 -- works for every system line that names somebody and keeps working when the
 -- wording changes.
-ChatLinks.SYSTEM_EVENTS = {
-    CHAT_MSG_SYSTEM                = "system",
-    -- "[Diego Vinas] (Olfer) has come online." A Battle.net friend appearing is
-    -- one of the better moments to say something, and the name there is a link
-    -- too -- a different type, carrying an account id rather than a character.
-    CHAT_MSG_BN_INLINE_TOAST_ALERT = "friends",
-}
+ChatLinks.SYSTEM_EVENTS = { CHAT_MSG_SYSTEM = "system" }
 
 -- |Hplayer:Name|h[Name]|h, and the longer form that carries the line id and
 -- chat type after the name.
@@ -122,20 +116,63 @@ function ChatLinks:MarkNamesInText(message)
         return link .. " " .. markLink(name)
     end)
 
-    out = out:gsub(BN_LINK, function(link)
-        local display, id = link:match("|HBNplayer:([^:|]*):([^:|]+)")
-        if not id or seen["bn:" .. id] then return link end
-        seen["bn:" .. id] = true
-        changed = true
-        return link .. " " .. markBattleNet(id, display or "")
-    end)
-
     return changed and out or message
 end
 
 function ChatLinks:FilterSystem(event, message, ...)
     if not enabled("system") then return false, message, ... end
     return false, self:MarkNamesInText(message), ...
+end
+
+-- "[Diego Vinas] (Olfer) has come online."
+--
+-- This one cannot be done with a filter, and finding out why took removing a
+-- test that was only ever testing my own assumption. The event does not carry
+-- that sentence: it carries the token FRIEND_ONLINE, the name, and the account
+-- id, and the chat frame builds the sentence and the link itself afterwards --
+-- for a friend in-game, inside an asynchronous texture callback that writes
+-- straight into the window. By the time the line exists, every filter has run.
+--
+-- So this wraps the frames' own AddMessage, which sees the finished text, and it
+-- marks Battle.net links only. That restriction is the whole reason this is
+-- safe: an ordinary say or guild line also has its sender written as a link by
+-- the time it gets here, and marking those would put a bubble on every line of
+-- general chat -- the exact thing we decided not to do. A BNplayer link appears
+-- only in friend toasts, broadcasts and Battle.net whispers, which is precisely
+-- the set worth marking.
+function ChatLinks:HookFrames()
+    if self.framesHooked then return end
+    self.framesHooked = true
+
+    local count = NUM_CHAT_WINDOWS or 10
+    for i = 1, count do
+        local frame = _G["ChatFrame" .. i]
+        if frame and frame.AddMessage and not frame.silvertongueWrapped then
+            frame.silvertongueWrapped = true
+            local original = frame.AddMessage
+            frame.AddMessage = function(self, text, ...)
+                if type(text) == "string" and text:find("|HBNplayer:", 1, true) then
+                    text = ChatLinks:MarkBattleNetIn(text)
+                end
+                return original(self, text, ...)
+            end
+        end
+    end
+end
+
+function ChatLinks:MarkBattleNetIn(message)
+    if not enabled("friends") then return message end
+    if message:find("|H" .. LINK_TYPE .. ":bn:", 1, true) then return message end
+
+    local seen, changed = {}, false
+    local out = message:gsub(BN_LINK, function(link)
+        local display, id = link:match("|HBNplayer:([^:|]*):([^:|]+)")
+        if not id or seen[id] then return link end
+        seen[id] = true
+        changed = true
+        return link .. " " .. markBattleNet(id, display or "")
+    end)
+    return changed and out or message
 end
 
 function ChatLinks:OnClick(payload)
@@ -184,4 +221,6 @@ function ChatLinks:Register()
             return ChatLinks:FilterSystem(e, ...)
         end)
     end
+
+    self:HookFrames()
 end

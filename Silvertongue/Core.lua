@@ -178,8 +178,6 @@ function Silvertongue:OnEnable()
     self:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED", function() ns.LFGBrowse:Watch() end)
     -- Whose turn it is to be reachable changes with your selection and your
     -- group, and the window's invite and trade buttons say so.
-    self:RegisterEvent("WHO_LIST_UPDATE", function() ns.ReadWhoResults() end)
-
     -- The conversation is recorded from the events rather than from the chat
     -- filters: a whisper counts as said whether or not it reached a chat frame
     -- you happen to be watching.

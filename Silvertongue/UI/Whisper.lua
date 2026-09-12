@@ -55,9 +55,6 @@ local Log_MAX_SHOWN = 300
 -- which is why the header is built to read correctly with only a name in it.
 -- ---------------------------------------------------------------------------
 
-local whoAsked = {}          -- name -> true, so one lookup per name per session
-local whoPending = {}        -- name -> true while the server has not answered
-
 -- What we have ever learned about somebody, kept across sessions. Once you have
 -- met Rhottyn you have met him: the window opens knowing he is a troll shaman
 -- rather than asking the server again and showing nothing meanwhile.
@@ -216,71 +213,21 @@ function ns.IdentifyPlayer(name)
     return nil
 end
 
--- One /who per name per session. The server throttles these hard: asking on
--- every window would get the later ones answered with nothing, so a name is
--- asked about once and the answer kept.
+-- There is no lookup any more, and this is where it was.
 --
--- The part that is easy to get wrong, and that I did get wrong: a who result
--- only reaches the who LIST when SetWhoToUi is on. With it off -- which is the
--- default, and what the game leaves it as whenever the Social window is shut --
--- the answer is printed into the chat frame as text instead, GetNumWhoResults
--- stays at zero, and the lookup appears to do nothing at all. Which is exactly
--- what it appeared to do.
+-- Reading a /who answer required SetWhoToUi, which is not a quiet flag: it means
+-- "put who results in the interface", and the interface for who results is the
+-- Social window. So every window you opened on a stranger opened that panel over
+-- the game a moment later. It also leaked -- the flag was only put back after an
+-- answer arrived, so a lookup that found nobody left it on and hijacked the
+-- player's own /who afterwards.
 --
--- It is switched back off after reading, because leaving it on would swallow
--- the player's own /who into a list they are not looking at.
-function ns.AskWho(name)
-    if not name or whoAsked[name] then return end
-    if not C_FriendList or not C_FriendList.SendWho then return end
-    whoAsked[name] = true
-    whoPending[name] = true
+-- It is not worth fixing because it is barely worth having. The sender's GUID
+-- gives race and class for nothing, the guild roster gives level and class, and
+-- between them the only thing the lookup still added was the level of a stranger
+-- -- which is not worth a window opening in your face, a server throttle, and a
+-- global flag left switched on.
 
-    if C_FriendList.SetWhoToUi and not (WhoFrame and WhoFrame:IsShown()) then
-        C_FriendList.SetWhoToUi(true)
-    end
-
-    -- Blizzard's own exact-name tag, used verbatim: a name typed without it is
-    -- treated as a prefix and answered with everybody who merely starts the
-    -- same way.
-    local query = WHO_TAG_EXACT and (WHO_TAG_EXACT .. name) or ("n-\"" .. name .. "\"")
-    C_FriendList.SendWho(query, Enum and Enum.SocialWhoOrigin
-        and Enum.SocialWhoOrigin.Chat or nil)
-end
-
-function ns.ReadWhoResults()
-    if not C_FriendList or not C_FriendList.GetNumWhoResults then return end
-
-    local count = C_FriendList.GetNumWhoResults() or 0
-    for i = 1, count do
-        local info = C_FriendList.GetWhoInfo(i)
-        if info and info.fullName then
-            ns.RememberPlayer(info.fullName, {
-                className = info.classStr,
-                raceName  = info.raceStr,
-                level     = info.level,
-            })
-            whoPending[info.fullName] = nil
-            local window = windows[info.fullName]
-            if window then Whisper:RefreshHeader(window) end
-        end
-    end
-
-    -- Anything still waiting was not found: offline, another faction, or a name
-    -- that does not exist. Saying so beats a header that waits forever.
-    for name in pairs(whoPending) do
-        whoPending[name] = nil
-        local window = windows[name]
-        if window then Whisper:RefreshHeader(window) end
-    end
-
-    if C_FriendList.SetWhoToUi and not (WhoFrame and WhoFrame:IsShown()) then
-        C_FriendList.SetWhoToUi(false)
-    end
-end
-
-function ns.IsLookingUp(name)
-    return whoPending[name] == true
-end
 
 -- "seen 3 days ago". Rough on purpose: the point is whether this is current or
 -- a memory, not the hour it happened.
@@ -307,10 +254,7 @@ end
 -- everything, but out of date, and saying when you last saw them is the
 -- difference between a fact and a guess.
 local function describe(name, info)
-    if not info then
-        if ns.IsLookingUp(name) then return "Looking them up..." end
-        return "Unknown"
-    end
+    if not info then return "Unknown" end
 
     local who = ((info.raceName or "") .. " " .. (info.className or "")):gsub("^%s+", "")
     local parts = {}
@@ -320,10 +264,7 @@ local function describe(name, info)
     end
 
     local line = table.concat(parts)
-    if line == "" then
-        if ns.IsLookingUp(name) then return "Looking them up..." end
-        return "Unknown"
-    end
+    if line == "" then return "Unknown" end
 
     -- Remembered rather than current. Without this the window would state a
     -- level from three months ago as though it were true today.
@@ -631,8 +572,6 @@ function Whisper:Open(name, said, bnetID)
         frame.collapsed = db and db.profile.whisperCollapsed or false
         windows[key] = frame
         self:PlaceNew(frame, openCount)
-        -- Nothing to ask about an account: the client already knows.
-        if not bnetID then ns.AskWho(name) end
     end
 
     self:RefreshHeader(frame)
