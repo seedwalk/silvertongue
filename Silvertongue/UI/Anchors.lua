@@ -31,7 +31,6 @@ local PLAYER_ICONS = {
     GENERAL  = "Interface\\Icons\\INV_Misc_GroupLooking",
     FACTION  = "Interface\\Icons\\Ability_Warrior_BattleShout",
     ATTITUDE = "Interface\\Icons\\Spell_Shadow_PsychicScream",
-    GROUP    = "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
 }
 
 -- Spell icons carry a border in the texture. Trimming it is what stops them
@@ -103,7 +102,7 @@ local function createIcon(key, parent, default, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
     -- Above the click catcher, so pressing a bubble while a menu is open
     -- switches to it rather than being swallowed as a click outside.
-    control:SetFrameStrata("DIALOG")
+    control:SetFrameStrata("FULLSCREEN_DIALOG")
     control:SetSize(16, 16)
     control.anchorKey = key
 
@@ -165,7 +164,7 @@ end
 
 local function createLabel(key, parent, default, iconSpec, text, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
-    control:SetFrameStrata("DIALOG")
+    control:SetFrameStrata("FULLSCREEN_DIALOG")
     control:SetSize(FAN_WIDTH, PLAYER_ICON_SIZE)
     control.anchorKey = key
 
@@ -231,7 +230,7 @@ end
 -- Your own portrait: four categories.
 --------------------------------------------------------------------------------
 
-local PLAYER_TABS = { "GENERAL", "FACTION", "CLASS", "ATTITUDE", "GROUP" }
+local PLAYER_TABS = { "GENERAL", "FACTION", "CLASS", "ATTITUDE" }
 
 function Anchors:CreatePlayer()
     if self.playerBuilt then return end
@@ -249,27 +248,21 @@ function Anchors:CreatePlayer()
 
     self.fanControls = {}
     for _, tabKey in ipairs(PLAYER_TABS) do
-        local context = (tabKey == "GROUP") and ns.Contexts:Group()
-            or ns.Contexts:Player(tabKey)
+        local context = ns.Contexts:Player(tabKey)
         -- A character with no class or faction phrases gets no icon for it, and
         -- the arc closes up rather than leaving a gap in the ring.
         if context then
             local iconSpec = (tabKey == "CLASS") and { classOf = "player" }
                 or PLAYER_ICONS[tabKey]
             local control = createLabel("PLAYER_" .. tabKey, nil,
-                { point = "CENTER", x = 0, y = 0 }, iconSpec,
-                (tabKey == "GROUP") and "Group" or context.subtitle,
+                { point = "CENTER", x = 0, y = 0 }, iconSpec, context.subtitle,
                 function(self)
                     -- Rebuilt on click: the group changes, and so does what is
                     -- worth asking for.
-                    local fresh = (tabKey == "GROUP") and ns.Contexts:Group()
-                        or ns.Contexts:Player(tabKey)
+                    local fresh = ns.Contexts:Player(tabKey)
                     if fresh then playerBoard():Toggle(self, fresh) end
                 end)
-            local label = (tabKey == "GROUP") and "Group" or context.subtitle
-            tooltip(control, label, (tabKey == "GROUP")
-                and "Looking for a group, or for people to fill yours."
-                or ("The " .. context.subtitle .. " phrases."))
+            tooltip(control, context.subtitle, "The " .. context.subtitle .. " phrases.")
             self.fanControls[#self.fanControls + 1] = control
         end
     end

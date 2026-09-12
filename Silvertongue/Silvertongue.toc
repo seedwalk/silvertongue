@@ -45,5 +45,6 @@ UI\Board.lua
 UI\Display.lua
 UI\Contexts.lua
 UI\Anchors.lua
+UI\LFGBrowse.lua
 
 Core.lua

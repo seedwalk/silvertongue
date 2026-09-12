@@ -155,7 +155,13 @@ function Silvertongue:OnEnable()
         ns.TargetUI:Refresh()
         ns.Anchors:UpdateTarget()
     end)
-    self:RegisterEvent("PLAYER_ENTERING_WORLD", function() ns.Anchors:Refresh() end)
+    self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+        ns.Anchors:Refresh()
+        ns.LFGBrowse:Watch()
+    end)
+    -- The group browser is loaded on demand, so the row bubbles wait for it.
+    self:RegisterEvent("ADDON_LOADED", function(_, name) ns.LFGBrowse:OnAddonLoaded(name) end)
+    self:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED", function() ns.LFGBrowse:Watch() end)
     ns.Anchors:Refresh()
 end
 

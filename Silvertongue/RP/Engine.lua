@@ -354,6 +354,7 @@ function Engine:Format(template, ctx)
     text = text:gsub("{have}", ctx.have or "no one yet")
     text = text:gsub("{needs}", tostring(ctx.needs or ""))
     text = text:gsub("{dungeon}", ctx.dungeon or "anything")
+    text = text:gsub("{missing}", ctx.missing or "more")
     return text
 end
 
@@ -362,6 +363,25 @@ function Engine:BuildPlayerContext()
     local ctx = self:BuildUnitContext("player") or {}
     ctx.level = UnitLevel and UnitLevel("player") or nil
     return ctx
+end
+
+-- "a tank, a healer and 2 dps", from counts. Reads as English rather than as a
+-- table, because it goes out in a sentence.
+function ns.DescribeRoles(tank, healer, dps)
+    local parts = {}
+    if (tank or 0) > 0 then
+        parts[#parts + 1] = (tank == 1) and "a tank" or (tank .. " tanks")
+    end
+    if (healer or 0) > 0 then
+        parts[#parts + 1] = (healer == 1) and "a healer" or (healer .. " healers")
+    end
+    if (dps or 0) > 0 then
+        parts[#parts + 1] = dps .. " dps"
+    end
+
+    if #parts == 0 then return nil end
+    if #parts == 1 then return parts[1] end
+    return table.concat(parts, ", ", 1, #parts - 1) .. " and " .. parts[#parts]
 end
 
 -- What the group actually holds, counted rather than guessed: the classes are
@@ -376,10 +396,45 @@ function Engine:GroupComposition()
     end
 
     local size = #classes
+
+    -- If roles have been assigned, say them: they are what a recruiting line is
+    -- actually about. Otherwise fall back to the classes, which are always
+    -- known, rather than guessing a role from a class.
+    local tank, healer, dps, unassigned = 0, 0, 0, 0
+    if UnitGroupRolesAssigned then
+        local units = { "player" }
+        for _, unit in ipairs(ns.GroupUnits and ns.GroupUnits() or {}) do
+            units[#units + 1] = unit
+        end
+        for _, unit in ipairs(units) do
+            local role = UnitGroupRolesAssigned(unit)
+            if role == "TANK" then tank = tank + 1
+            elseif role == "HEALER" then healer = healer + 1
+            elseif role == "DAMAGER" then dps = dps + 1
+            else unassigned = unassigned + 1 end
+        end
+    else
+        unassigned = size
+    end
+
+    local have
+    if unassigned == 0 and size > 0 then
+        have = ns.DescribeRoles(tank, healer, dps)
+    else
+        have = table.concat(classes, ", "):lower()
+    end
+
+    -- A five-man wants one of each and three who hit things.
+    local missing = (unassigned == 0)
+        and ns.DescribeRoles(math.max(0, 1 - tank), math.max(0, 1 - healer),
+                             math.max(0, 3 - dps))
+        or nil
+
     return {
-        have  = table.concat(classes, ", "):lower(),
-        size  = size,
-        needs = math.max(0, 5 - size),
+        have    = have,
+        missing = missing,
+        size    = size,
+        needs   = math.max(0, 5 - size),
     }
 end
 

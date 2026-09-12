@@ -90,7 +90,9 @@ function Board:Create()
 
     local f = CreateFrame("Frame", "SilvertongueBoard" .. self.key, UIParent, "BackdropTemplate")
     f:SetWidth(WIDTH)
-    f:SetFrameStrata("DIALOG")    -- above the click catcher
+    -- Above the click catcher, and above Blizzard's own dialogs: the group
+    -- browser is one, and a menu opening behind it looks like a dead button.
+    f:SetFrameStrata("FULLSCREEN_DIALOG")
     f:SetToplevel(true)
     f:SetBackdrop({
         bgFile   = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",

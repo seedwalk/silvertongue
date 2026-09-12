@@ -115,7 +115,10 @@ It sits against the row you clicked, and is cut to fit the phrase.
 
 ### Finding a group
 
-`Group` puts your advert on the **LookingForGroup** channel, in character:
+A speech bubble next to the refresh button in the **Looking For Group** window,
+because that is the only place you ever want it.
+
+It puts your advert on the **LookingForGroup** channel, in character:
 
 > *"A troll rogue with time on his hands and nothing to kill. Invite me."*
 
@@ -123,13 +126,50 @@ Which is the point. `Rogue 36 LF Scarlet` is a classified ad, and one more of
 those is worth nothing — somebody who reads a line with a character behind it
 remembers who wrote it.
 
-On your own it offers to say you are looking. In a group it counts the seats and
-switches to recruiting: *"We have warrior, priest, rogue. 2 places left."* What
-the group holds is **counted, not guessed** — the classes are known, but who is
-actually tanking is not, so asking for a tank or a healer stays yours to choose.
+On your own it offers to say you are looking. In a group it switches to
+recruiting, and talks in **roles** when it can:
+
+> *"LFM Scarlet Monastery, need a tank and a healer — we have 2 dps."*
+
+Where that comes from depends on what the game will tell it. On **your own
+listing** it is exact: the game publishes which slots are filled and which are
+open, the same numbers that draw the role squares, so it never asks for a healer
+you already have. In a group without a listing it uses assigned roles if there
+are any, and otherwise falls back to naming the classes — which are always
+true. It never reads a role off a class: a warrior might be fury, and claiming
+you have a tank when you do not is how a group wastes an evening.
 
 If you have not joined the LookingForGroup channel, the line simply will not
 send. It is never said aloud to whoever is standing next to you instead.
+
+### In the group browser
+
+Open the **Looking For Group** window and every row grows a small speech bubble
+beside the name. It reads the listing — who posted it, their level and class,
+what they are running, and what they are short of — and offers:
+
+```
+ Chudlightly
+ Scarlet Monastery - needs a tank, 2 dps
+ ─────────────────────────────
+ Offer to join
+ Offer damage          ← because that is the place they have open
+ ─────────────────────────────
+ Invite them
+```
+
+The offers whisper them in character, with their dungeon already named because
+the listing said so. There is no "ask what they need": the game publishes it, so
+asking would waste their time. Instead you are offered **the roles they are
+actually short of, and that your class could fill** — a shaman is offered the
+open healer and damage places, never the tank one.
+
+`Invite them` only appears when the game would allow it — a lone player, and you
+in a position to invite. On **your own** listing the whole menu flips: it
+recruits for you rather than offering to join yourself.
+
+Nothing here searches on your own behalf: it reads whatever your own refresh
+brought back.
 
 ### Gestures
 
@@ -204,7 +244,7 @@ locked out.
 
 ## What you actually get
 
-**786 handwritten lines.** No generator, no AI, no templates stitched together.
+**801 handwritten lines.** No generator, no AI, no templates stitched together.
 Somebody wrote all of them.
 
 They adapt to who you are and who you are talking to. An orc shaman praising a

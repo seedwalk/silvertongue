@@ -78,6 +78,7 @@ function Contexts:Group()
     local composition = ns.Engine:GroupComposition()
     local ctx = ns.Engine:BuildPlayerContext()
     ctx.have, ctx.needs = composition.have, composition.needs
+    ctx.missing = composition.missing
     ctx.dungeon = ns.CurrentDungeon()
 
     local inGroup = IsInGroup()
@@ -89,13 +90,12 @@ function Contexts:Group()
     else
         -- What is worth asking for is yours to say: the classes in a group are
         -- known, but who is actually tanking or healing is not.
-        intents[#intents + 1] = { "LFG", "NEED_MORE",   "Need " .. composition.needs .. " more" }
+        intents[#intents + 1] = { "LFG", "NEED_MORE",   "Fill the group" }
         intents[#intents + 1] = ns.SEP
-        intents[#intents + 1] = { "LFG", "NEED_TANK",   "Need a tank" }
-        intents[#intents + 1] = { "LFG", "NEED_HEALER", "Need a healer" }
-        intents[#intents + 1] = { "LFG", "NEED_DPS",    "Need damage" }
-        intents[#intents + 1] = ns.SEP
-        intents[#intents + 1] = { "LFG", "FULL",        "We are full" }
+        intents[#intents + 1] = { "LFG", "NEED_TANK",   "Ask for a tank" }
+        intents[#intents + 1] = { "LFG", "NEED_HEALER", "Ask for a healer" }
+        intents[#intents + 1] = { "LFG", "NEED_DPS",    "Ask for damage" }
+
     end
 
     local channels = { TO_LFG }

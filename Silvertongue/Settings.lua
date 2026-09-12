@@ -60,6 +60,14 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
         DoEmote(emote, emoteTarget)
     end
 
+    -- A named recipient is enough on its own. The target-based check below is
+    -- for lines aimed at whoever you have selected; this name came from a
+    -- group listing, where there is no unit to inspect.
+    if channel == "WHISPER" and recipient then
+        SendChatMessage(text, "WHISPER", nil, recipient)
+        return "WHISPER"
+    end
+
     -- Before the fallback below: an advert with nowhere to go must not be
     -- shouted at whoever happens to be standing next to you instead.
     if channel == "LFG" then

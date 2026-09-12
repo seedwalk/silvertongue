@@ -34,7 +34,7 @@ function Display:Create()
 
     local f = CreateFrame("Frame", "SilvertongueDisplay", UIParent, "BackdropTemplate")
     f:SetHeight(PAD * 2 + TEXT_H + BUTTON_H + 2)
-    f:SetFrameStrata("DIALOG")
+    f:SetFrameStrata("FULLSCREEN_DIALOG")
     f:SetToplevel(true)
     f:SetBackdrop({
         bgFile   = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",

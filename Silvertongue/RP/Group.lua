@@ -26,12 +26,12 @@ ns.Phrases.LFG = {
 
     -- You have a group with room in it.
     NEED_MORE = {
-        "LFM {dungeon}, need {needs} -- we have {have}.",
-        "LFM {dungeon}. {have} so far, {needs} places left. Who is coming?",
-        "LFM {dungeon}, {needs} short. We have {have} and we are not waiting all night.",
-        "LFM {dungeon} -- need {needs}. Currently {have}. Whisper me.",
-        "LFM {dungeon}: {have}. Room for {needs} more.",
-        "LFM {dungeon}, {needs} more and we go. We have {have}.",
+        "LFM {dungeon}, need {missing} -- we have {have}.",
+        "LFM {dungeon}. {have} so far, still need {missing}. Who is coming?",
+        "LFM {dungeon}, short {missing}. We have {have} and we are not waiting all night.",
+        "LFM {dungeon} -- need {missing}. Currently {have}. Whisper me.",
+        "LFM {dungeon}: {have}. Looking for {missing}.",
+        "LFM {dungeon}, {missing} and we go. We have {have}.",
     },
 
     NEED_TANK = {
@@ -67,7 +67,35 @@ ns.Phrases.LFG = {
         "A {race} {class} at your service for {dungeon}, if you will have him. Level {level}.",
     },
 
-    -- The group is full and moving.
+    -- Offering for the exact role a listing is short of. The game publishes
+    -- which slots are empty, so there is no reason to ask.
+    OFFER_TANK = {
+        "You need a tank for {dungeon}. I will take the hits. {race} {class}, {level}.",
+        "{dungeon} -- I can tank it. Level {level} {race} {class}.",
+        "I will stand in front for {dungeon}. {level} {race} {class}, and I do not run.",
+        "Tank here for {dungeon}. {race} {class}, {level}. Put me at the door.",
+        "You are short a tank for {dungeon}. I am a {level} {race} {class} and that is my job.",
+    },
+
+    OFFER_HEALER = {
+        "You need a healer for {dungeon}. I will keep you standing. {race} {class}, {level}.",
+        "{dungeon} -- I can heal it. Level {level} {race} {class}.",
+        "Healer here for {dungeon}. {race} {class}, {level}. Try not to make it hard.",
+        "I will mend you through {dungeon}. {level} {race} {class}.",
+        "You are short a healer for {dungeon}. That is what I do. {race} {class}, {level}.",
+    },
+
+    OFFER_DPS = {
+        "You need damage for {dungeon}. {race} {class}, {level}, and a sharp one.",
+        "{dungeon} -- I will kill things. Level {level} {race} {class}.",
+        "Damage here for {dungeon}. {race} {class}, {level}.",
+        "I hit hard and I stand out of the fire. {level} {race} {class}, for {dungeon}.",
+        "You have a place for damage in {dungeon}. I am a {level} {race} {class} and I will fill it.",
+    },
+
+    -- Closing an advert you placed in the channel. No menu offers this any
+    -- more -- delisting is what people actually do -- but the lines are kept:
+    -- they are reachable from the library, and someone may want the row back.
     FULL = {
         "{dungeon} group is full. Good hunting to the rest of you.",
         "{dungeon}: closed. Thank you to everyone who spoke up.",

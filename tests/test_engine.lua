@@ -48,8 +48,8 @@ local function checkLine(where, line)
     if line:match("^%s") or line:match("%s$") then fail("%s: stray whitespace: %q", where, line) end
     -- Anything the engine can actually substitute. A variable outside this set
     -- would reach chat as a literal placeholder.
-    local KNOWN = { name = true, race = true, class = true,
-                    level = true, have = true, needs = true, dungeon = true }
+    local KNOWN = { name = true, race = true, class = true, level = true,
+                    have = true, needs = true, dungeon = true, missing = true }
     for var in line:gmatch("{(%w+)}") do
         if not KNOWN[var] then fail("%s: unknown variable {%s}", where, var) end
     end
@@ -518,7 +518,7 @@ ns.Phrases.GENERAL.TESTPOOL = nil
 UnitLevel = function() return 36 end
 local groupCtx = { name = "Bellaco", raceName = "Orc", className = "Rogue",
                    level = 36, have = "rogue, priest", needs = 3,
-                   dungeon = "Scarlet Monastery" }
+                   dungeon = "Scarlet Monastery", missing = "a tank" }
 for intent in pairs(ns.Phrases.LFG) do
     local text = Engine:Request("LFG", intent, groupCtx)
     if not text then fail("LFG.%s returned nothing", intent) end
@@ -532,7 +532,10 @@ end
 -- Every advert has to carry the shorthand people actually scan the channel
 -- for. A line in character that nobody finds is worth nothing.
 for intent, lines in pairs(ns.Phrases.LFG) do
-    if intent ~= "OFFER" and intent ~= "FULL" then
+    -- Anything OFFER is whispered to one person who already knows what they
+    -- listed, and FULL closes an advert rather than placing one. Only the lines
+    -- that go out to a whole channel need the shorthand.
+    if intent:sub(1, 5) ~= "OFFER" and intent ~= "FULL" then
         for _, line in ipairs(lines) do
             if not (line:find("^LFG ") or line:find("^LFM ")) then
                 fail("LFG.%s does not open with LFG or LFM: %s", intent, line)
@@ -544,6 +547,18 @@ for intent, lines in pairs(ns.Phrases.LFG) do
             fail("LFG.%s never names the dungeon: %s", intent, line)
         end
     end
+end
+
+-- Role counts read as a sentence, because they go out inside one.
+if ns.DescribeRoles(1, 1, 2) ~= "a tank, a healer and 2 dps" then
+    fail("roles read as: %s", tostring(ns.DescribeRoles(1, 1, 2)))
+end
+if ns.DescribeRoles(0, 1, 0) ~= "a healer" then
+    fail("a lone healer reads as: %s", tostring(ns.DescribeRoles(0, 1, 0)))
+end
+if ns.DescribeRoles(0, 0, 0) ~= nil then fail("an empty group described itself") end
+if ns.DescribeRoles(2, 0, 0) ~= "2 tanks" then
+    fail("two tanks read as: %s", tostring(ns.DescribeRoles(2, 0, 0)))
 end
 
 -- The suggestions have to bracket your level rather than list everything.

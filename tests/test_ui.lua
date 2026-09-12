@@ -129,6 +129,26 @@ JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 
 -- Runs straight away so the test can see what the delayed send does.
 C_Timer = { After = function(_, fn) fn() end }
 IsInGuild = function() return true end
+UnitIsGroupLeader = function() return true end
+local assignedRoles = {}
+UnitGroupRolesAssigned = function(unit) return assignedRoles[unit] or "NONE" end
+UnitIsGroupAssistant = function() return false end
+
+-- The group browser, as this client reports it.
+local listings = {}
+C_LFGList = {
+    HasSearchResultInfo = function(id) return listings[id] ~= nil end,
+    GetSearchResultInfo = function(id) return listings[id] end,
+    GetSearchResultPlayerInfo = function(id) return listings[id] and listings[id].player end,
+    GetSearchResultMemberCounts = function(id) return listings[id] and listings[id].counts end,
+    GetActivityInfoTable = function(activityID)
+        return { fullName = "Scarlet Monastery", shortName = "SM" }
+    end,
+}
+ScrollUtil = {
+    AddAcquiredFrameCallback = function() end,
+    AddReleasedFrameCallback = function() end,
+}
 GetInstanceInfo = function() return "" end
 
 -- The stock scrolling-list helpers the config window uses.
@@ -175,6 +195,7 @@ UnitCanCooperate = function(_, u) local m = resolve(u); return m ~= nil and m.ho
 local acted = {}
 InviteUnit    = function(name) acted[#acted + 1] = { "invite", name } end
 InitiateTrade = function(unit) acted[#acted + 1] = { "trade", unit } end
+InviteToGroup = function(name) acted[#acted + 1] = { "invite", name } end
 StartDuel     = function(unit) acted[#acted + 1] = { "duel", unit } end
 
 -- Library stubs.
@@ -211,7 +232,7 @@ libs["LibDBIcon-1.0"] = { Register = function() end, Hide = function() end, Show
 local function load(file) return assert(loadfile(DIR .. file))("Silvertongue", ns) end
 load("Settings.lua")
 for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Attitude","Classes","Races","Target","Rogue","Self","Alliance","Dungeons","Group","Emotes"}) do load("RP/"..f..".lua") end
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 load("Core.lua")
 
 local addon = ns.addon
@@ -586,7 +607,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 
 check(labelFor("CLASS") == "Rogue", "rogue got class tab labelled %s", tostring(labelFor("CLASS")))
@@ -618,7 +639,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelFor("CLASS") == nil, "a mage was given a class tab")
 addon.__cmd("shaman")   -- must not land on a tab that does not exist
@@ -635,7 +656,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 
 local xml = io.open("../Silvertongue/Bindings.xml"):read("*a")
 local declared = {}
@@ -680,7 +701,7 @@ _G.__player = { name = "Silvertongue", className = "Shaman", classToken = "SHAMA
                 raceName = "Orc", raceToken = "Orc", faction = "Horde" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelOf("FACTION") == "Horde", "a Horde character got the %s tab", tostring(labelOf("FACTION")))
 ns.Tabs:Select("FACTION")
@@ -691,7 +712,7 @@ _G.__player = { name = "Alaric", className = "Rogue", classToken = "ROGUE",
                 raceName = "Human", raceToken = "Human", faction = "Alliance" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelOf("FACTION") == "Alliance", "an Alliance character got the %s tab", tostring(labelOf("FACTION")))
 ns.Tabs:Select("FACTION")
@@ -705,7 +726,7 @@ _G.__player = { name = "Silvertongue", className = "Shaman", classToken = "SHAMA
                 raceName = "Orc", raceToken = "Orc", faction = "Horde" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 addon.db.profile.custom = {}
 
@@ -955,7 +976,7 @@ ns.Anchors.fanOpen = false
 ns.Anchors:Refresh()
 check(ns.Anchors.hub ~= nil, "no bubble was built on the portrait")
 check(ns.Anchors.hub:IsShown(), "the bubble is hidden")
-check(#ns.Anchors.fanControls == 5, "a shaman got %d category icons instead of five",
+check(#ns.Anchors.fanControls == 4, "a shaman got %d category icons instead of four",
       #ns.Anchors.fanControls)
 for _, control in ipairs(ns.Anchors.fanControls) do
     check(not control:IsShown(), "a category icon was showing while folded away")
@@ -1300,6 +1321,16 @@ check(groupLabels["NEED_TANK"] and groupLabels["NEED_HEALER"], "a group cannot a
 check(not groupLabels["SOLO"], "a group was offered the line for being alone")
 check(groupContext.subtitle == "3 of 5", "the group is described as %s", groupContext.subtitle)
 
+-- With roles assigned, the recruiting line talks about roles rather than about
+-- classes, because that is what anyone reading it cares about.
+assignedRoles = { player = "DAMAGER", party1 = "TANK", party2 = "HEALER" }
+local byRole = ns.Contexts:Group()
+check(byRole.ctx.have == "a tank, a healer and 1 dps",
+      "with roles assigned it says it holds %s", tostring(byRole.ctx.have))
+check(byRole.ctx.missing == "2 dps",
+      "with roles assigned it says it needs %s", tostring(byRole.ctx.missing))
+assignedRoles = {}
+
 -- The line names what the group actually holds.
 ns.Engine:Request("LFG", "NEED_MORE", groupContext.ctx)
 local recruiting = ns.Engine:GetCurrent()
@@ -1332,6 +1363,151 @@ check(#sent == beforeFailed, "a failed join shouted the advert somewhere else")
 JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
 lfgChannelId = 4
 group = {}
+
+-- 20. The group browser. Reading a listing, and speaking to whoever posted it.
+listings[7] = {
+    leaderName = "Chudlightly",
+    numMembers = 1,
+    activityIDs = { 42 },
+    comment = "friendly run",
+    player = { level = 34, className = "Hunter", classFilename = "HUNTER" },
+    counts = { TANK_REMAINING = 1, HEALER_REMAINING = 0, DAMAGER_REMAINING = 2 },
+}
+
+local read = ns.LFGBrowse:ReadResult(7)
+check(read ~= nil, "a listing could not be read")
+check(read.leaderName == "Chudlightly", "the leader is %s", tostring(read.leaderName))
+check(read.activity == "Scarlet Monastery", "the activity is %s", tostring(read.activity))
+check(read.level == 34, "the level is %s", tostring(read.level))
+-- What they are missing comes from the game, not from a guess about classes.
+check(read.missing:find("tank"), "it did not read what they are short of: %s", tostring(read.missing))
+check(read.missing:find("2 dps"), "it did not read the open dps places: %s", tostring(read.missing))
+check(not read.missing:find("healer"), "it invented a missing healer: %s", read.missing)
+
+-- Nothing to read is not an error.
+check(ns.LFGBrowse:ReadResult(999) == nil, "an absent listing returned something")
+check(ns.LFGBrowse:BuildContext(999) == nil, "an absent listing built a context")
+
+local listing = ns.LFGBrowse:BuildContext(7)
+check(listing.title == "Chudlightly", "the menu is titled %s", tostring(listing.title))
+check(listing.subtitle:find("Scarlet Monastery"), "the menu does not name the dungeon")
+check(listing.subtitle:find("tank"), "the menu does not say what they need")
+check(listing.recipient == "Chudlightly", "the whisper would go to %s", tostring(listing.recipient))
+check(listing.channels[1].key == "WHISPER", "a listing does not whisper")
+
+-- The advert names their dungeon, taken from the listing rather than typed.
+ns.Engine:Request("LFG", "OFFER", listing.ctx)
+local offer = ns.Engine:GetCurrent()
+check(offer:find("Scarlet Monastery", 1, true), "the offer does not name their dungeon: %s", offer)
+check(not offer:find("{"), "the offer left a placeholder: %s", offer)
+
+-- A whisper from a listing does not depend on what you have targeted.
+target = nil
+local beforeWhisper = #sent
+ns.SendPhrase(offer, "WHISPER", listing.recipient)
+check(#sent == beforeWhisper + 1, "the whisper never went out")
+check(sent[#sent].to == "Chudlightly", "it whispered %s", tostring(sent[#sent].to))
+
+-- The offers match what the listing is short of, and what you could fill.
+-- Listing 7 needs a tank and 2 dps; the character here is a shaman, who can
+-- heal and fight but not tank.
+local listingLabels = {}
+for _, entry in ipairs(listing.intents) do
+    if entry[2] then listingLabels[entry[2]] = true end
+end
+check(listingLabels["OFFER"], "there is no way to simply offer to join")
+check(listingLabels["OFFER_DPS"], "a shaman was not offered the open damage place")
+check(not listingLabels["OFFER_TANK"], "a shaman was offered to tank")
+check(not listingLabels["OFFER_HEALER"], "it offered a healer place that is not open")
+check(not listingLabels["ASK"], "it still offers to ask what they already published")
+
+-- Blizzard's own rule: only a lone player can be invited.
+acted = {}
+check(listing.actions ~= nil, "a lone player could not be invited")
+listing.actions[1].run("Chudlightly")
+check(acted[1] and acted[1][2] == "Chudlightly", "the invite went nowhere")
+
+listings[8] = {
+    leaderName = "Qvictor", numMembers = 3, activityIDs = { 42 },
+    player = { level = 38, className = "Mage", classFilename = "MAGE" },
+    counts = { TANK_REMAINING = 0, HEALER_REMAINING = 1, DAMAGER_REMAINING = 0 },
+}
+check(ns.LFGBrowse:BuildContext(8).actions == nil,
+      "a group of three was offered an invite, which the game refuses")
+
+-- Your own listing recruits, and recruits from what the game says it holds:
+-- two dps in, still short a tank and a healer.
+listings[9] = {
+    leaderName = "Bellaco", numMembers = 2, hasSelf = true, activityIDs = { 42 },
+    player = { level = 36, className = "Rogue", classFilename = "ROGUE" },
+    counts = { TANK = 0, HEALER = 0, DAMAGER = 2,
+               TANK_REMAINING = 1, HEALER_REMAINING = 1, DAMAGER_REMAINING = 1 },
+}
+local own = ns.LFGBrowse:BuildContext(9)
+check(own ~= nil, "your own listing could not be read")
+local ownLabels = {}
+for _, entry in ipairs(own.intents) do
+    if entry ~= ns.SEP and entry[2] then ownLabels[entry[2]] = true end
+end
+check(not ownLabels["OFFER"], "your own listing offered to join itself")
+check(not ownLabels["OFFER_TANK"], "your own listing offered itself a tank")
+check(ownLabels["NEED_MORE"], "your own listing cannot say it is recruiting")
+check(not ownLabels["FULL"], "the closing line is still offered as a row")
+check(own.actions == nil, "your own listing offered to invite you")
+check(own.ctx.dungeon == "Scarlet Monastery", "your own listing lost its dungeon")
+
+-- It says what it holds and what it is short of, both from the game.
+check(own.ctx.have == "2 dps", "the listing says it holds %s", tostring(own.ctx.have))
+check(own.ctx.missing == "a tank, a healer and 1 dps",
+      "the listing says it needs %s", tostring(own.ctx.missing))
+ns.Engine:Request("LFG", "NEED_MORE", own.ctx)
+local advert = ns.Engine:GetCurrent()
+check(advert:find("2 dps", 1, true), "the advert does not say what it holds: %s", advert)
+check(advert:find("tank", 1, true), "the advert does not say what it needs: %s", advert)
+check(advert:find("^LFM "), "the advert does not read as looking for more: %s", advert)
+
+-- And it never asks for a role it already filled.
+listings[10] = {
+    leaderName = "Bellaco", numMembers = 3, hasSelf = true, activityIDs = { 42 },
+    player = { level = 36, className = "Rogue", classFilename = "ROGUE" },
+    counts = { TANK = 0, HEALER = 1, DAMAGER = 2,
+               TANK_REMAINING = 1, HEALER_REMAINING = 0, DAMAGER_REMAINING = 1 },
+}
+local withHealer = ns.LFGBrowse:BuildContext(10)
+local healerLabels = {}
+for _, entry in ipairs(withHealer.intents) do
+    if entry ~= ns.SEP and entry[2] then healerLabels[entry[2]] = true end
+end
+check(healerLabels["NEED_TANK"], "a listing short a tank cannot ask for one")
+check(not healerLabels["NEED_HEALER"], "it asked for a healer it already has")
+check(withHealer.ctx.have == "a healer and 2 dps",
+      "it holds %s", tostring(withHealer.ctx.have))
+
+-- The menu rereads when a line is picked, so changing the dungeon filter with
+-- it open names the new one rather than the one it opened on.
+check(type(own.rebuild) == "function", "your own listing never rereads itself")
+check(type(listing.rebuild) == "function", "someone else's listing never rereads itself")
+check(own.rebuild() ~= nil, "rereading your own listing returned nothing")
+listings[9] = nil
+check(own.rebuild() == nil, "a listing that went away still reread as present")
+
+-- Advertising for a group lives in the group window, not on your portrait.
+for _, control in ipairs(ns.Anchors.fanControls) do
+    check(control.entry == nil or control.entry.key ~= "GROUP",
+          "the portrait still carries the group row")
+end
+
+-- A row that cannot be read says so rather than doing nothing.
+ns.LFGBrowse:Explain(nil)
+ns.LFGBrowse:Explain(999)
+
+-- Hooking a client that has no such browser must do nothing rather than error.
+local realScrollUtil = ScrollUtil
+ScrollUtil = nil
+ns.LFGBrowse.hooked = false
+ns.LFGBrowse:Watch()
+check(not ns.LFGBrowse.hooked, "it claimed to hook a browser that is not there")
+ScrollUtil = realScrollUtil
 
 print(errors == 0 and "UI SMOKE: ALL CHECKS PASSED" or ("UI SMOKE: " .. errors .. " FAILURES"))
 print(string.format("messages sent during the whole run: %d (all via explicit Send calls)", #sent))
