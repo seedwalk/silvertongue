@@ -38,102 +38,14 @@ end
 -- reasons I inferred rather than measured. This measures: which of the calls
 -- exist, what the channel id is before and after, what the join returned, and
 -- what the client thinks you are in.
--- Sends one line to the LookingForGroup channel through exactly the call the
--- addon uses, and then listens for the server sending it back.
+-- The LookingForGroup question is answered, and the two probes that answered it
+-- are gone: one of them wrote a test line into a public channel, which is not
+-- something to leave a typo away from.
 --
--- The echo is the point. A line you cannot see in your chat window proves
--- nothing: the window may simply not be carrying that channel, which would look
--- identical to the client refusing the call. What the server echoes back does
--- not depend on which windows you have open.
-function ns.ProbeChannelSend()
-    local id = ns.LookingForGroupChannel()
-    ns.addon:Print("--- channel send probe ---")
-    ns.addon:Print("  LookingForGroup id: " .. tostring(id))
-    if not id then
-        ns.addon:Print("  not in the channel, so there is nothing to test here")
-        return
-    end
-
-    local marker = "Silvertongue test " .. tostring(math.random(1000, 9999)) .. ", ignore me."
-    local heard = false
-
-    local listener = CreateFrame("Frame")
-    listener:RegisterEvent("CHAT_MSG_CHANNEL")
-    listener:SetScript("OnEvent", function(_, _, text)
-        if text == marker then heard = true end
-    end)
-
-    -- Whether the window is showing that channel at all, which is the innocent
-    -- explanation for seeing nothing.
-    local shown = false
-    for i = 1, (NUM_CHAT_WINDOWS or 10) do
-        local frame = _G["ChatFrame" .. i]
-        for _, name in ipairs((frame and frame.channelList) or {}) do
-            if tostring(name):lower():find("lookingforgroup", 1, true) then
-                shown = true
-                ns.addon:Print("  carried by chat window " .. i)
-            end
-        end
-    end
-    if not shown then
-        ns.addon:Print("  NO chat window is carrying LookingForGroup -- you would not see it")
-    end
-
-    ns.addon:Print("  sending: " .. marker)
-    SendChatMessage(marker, "CHANNEL", nil, id)
-
-    local function verdict()
-        listener:UnregisterAllEvents()
-        if heard then
-            ns.addon:Print("  the server echoed it back: THE SEND WORKS.")
-        else
-            ns.addon:Print("  no echo in three seconds: the client refused the send.")
-        end
-        ns.addon:Print("--- end of channel send probe ---")
-    end
-    if C_Timer and C_Timer.After then C_Timer.After(3, verdict) else verdict() end
-end
-
-function ns.ProbeJoin()
-    local NAME = "LookingForGroup"
-    local say = function(line) ns.addon:Print(line) end
-
-    say("--- join probe ---")
-    say("  JoinPermanentChannel: " .. type(JoinPermanentChannel))
-    say("  JoinChannelByName:    " .. type(JoinChannelByName))
-    say("  JoinTemporaryChannel: " .. type(JoinTemporaryChannel))
-    say("  C_ChatInfo:           " .. type(C_ChatInfo))
-    if C_ChatInfo then
-        say("  C_ChatInfo.JoinChannelByName: " .. type(C_ChatInfo.JoinChannelByName))
-    end
-    say("  channel id before: " .. tostring(GetChannelName and GetChannelName(NAME)))
-
-    if JoinPermanentChannel then
-        local frame = (FCF_GetCurrentChatFrame and FCF_GetCurrentChatFrame()) or DEFAULT_CHAT_FRAME
-        local frameID = (FCF_GetCurrentChatFrameID and FCF_GetCurrentChatFrameID())
-            or (frame and frame.GetID and frame:GetID()) or 1
-        say("  chat frame id: " .. tostring(frameID))
-        local ok, a, b = pcall(JoinPermanentChannel, NAME, nil, frameID, 1)
-        say("  JoinPermanentChannel -> ok=" .. tostring(ok)
-            .. " a=" .. tostring(a) .. " b=" .. tostring(b))
-        if ok and frame and frame.AddChannel then
-            local added = pcall(frame.AddChannel, frame, NAME)
-            say("  frame:AddChannel -> ok=" .. tostring(added))
-        end
-    end
-
-    local function after()
-        say("  channel id after: " .. tostring(GetChannelName and GetChannelName(NAME)))
-        if GetChannelList then
-            local list = { GetChannelList() }
-            local parts = {}
-            for i = 1, #list do parts[#parts + 1] = tostring(list[i]) end
-            say("  channels: " .. (table.concat(parts, ", "):sub(1, 220)))
-        end
-        say("--- end of join probe ---")
-    end
-    if C_Timer and C_Timer.After then C_Timer.After(1.5, after) else after() end
-end
+-- What they found, because it cost three wrong fixes to learn: being in a
+-- channel and having a window that shows it are different things, and the gap
+-- between them is invisible from the outside. The send had been working the
+-- whole time.
 
 function ns.ProbeLFG()
     local CANDIDATES = {
@@ -339,10 +251,6 @@ function Silvertongue:HandleSlash(input)
             or "Frame controls hidden.")
     elseif arg == "probe" or arg == "lfgprobe" then
         ns.Probe()
-    elseif arg == "sendtest" then
-        ns.ProbeChannelSend()
-    elseif arg == "joindebug" then
-        ns.ProbeJoin()
     elseif arg == "chatdebug" then
         ns.ChatLinks:Debug(12)
     elseif arg == "config" or arg == "phrases" or arg == "library" then
@@ -357,7 +265,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug|joindebug|sendtest]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug]")
     end
 end
 
