@@ -163,10 +163,6 @@ JoinChannelByName = function(name)
     joined[#joined + 1] = { name = name, how = "byname" }
     lfgChannelId = 4
 end
-DEFAULT_CHAT_FRAME = newMock("ScrollingMessageFrame", "DEFAULT_CHAT_FRAME")
-DEFAULT_CHAT_FRAME.GetID = function() return 1 end
-local carried = {}
-DEFAULT_CHAT_FRAME.AddChannel = function(_, name) carried[#carried + 1] = name end
 -- Runs straight away so the test can see what the delayed send does.
 C_Timer = { After = function(_, fn) fn() end }
 UnitIsGroupLeader = function() return true end
@@ -199,6 +195,17 @@ for i = 1, NUM_CHAT_WINDOWS do
         self.__written[#self.__written + 1] = text
     end
     _G["ChatFrame" .. i] = frame
+end
+
+-- In the game these are the same frame, and pretending otherwise let a test
+-- pass while the addon scanned one and wrote to the other.
+DEFAULT_CHAT_FRAME = _G["ChatFrame1"]
+DEFAULT_CHAT_FRAME.GetID = function() return 1 end
+local carried = {}
+DEFAULT_CHAT_FRAME.AddChannel = function(self, name)
+    carried[#carried + 1] = name
+    self.channelList = self.channelList or {}
+    table.insert(self.channelList, name)
 end
 
 -- The chat message filters and our own link type.
@@ -1720,6 +1727,24 @@ do
     check(#sent == before + 1, "the advert did not go out after joining")
     check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
     lfgChannelId = 4
+end
+
+do
+    -- Being in a channel and seeing it are different things, and the gap looks
+    -- exactly like a broken button: the advert goes out and no answer ever
+    -- appears. fede was in LookingForGroup with no window carrying it.
+    for i = #carried, 1, -1 do table.remove(carried, i) end
+    DEFAULT_CHAT_FRAME.channelList = {}
+    lfgChannelId = 4
+    local before = #sent
+    ns.SendPhrase("LFG Scarlet Monastery -- orc rogue, 36.", "LFG")
+    check(#sent == before + 1, "the advert did not go out")
+    check(#carried == 1 and carried[1] == "LookingForGroup",
+          "it advertised in a channel no window was showing")
+
+    -- And it does not keep adding it once something is carrying it.
+    ns.SendPhrase("LFG again.", "LFG")
+    check(#carried == 1, "it added the channel %d times", #carried)
 end
 
 -- The menu rereads when a line is picked, so changing the dungeon filter with

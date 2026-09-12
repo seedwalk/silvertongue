@@ -91,6 +91,9 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
     if channel == "LFG" then
         local id = ns.LookingForGroupChannel()
         if id then
+            -- Before speaking, not after: the first thing that happens next is
+            -- somebody answering, and it has to land somewhere you are looking.
+            ns.EnsureChannelVisible("LookingForGroup")
             SendChatMessage(text, "CHANNEL", nil, id)
         else
             ns.JoinLookingForGroupAndSend(text)
@@ -230,6 +233,36 @@ function ns.LookingForGroupChannel()
     local id = GetChannelName("LookingForGroup")
     if id and id > 0 then return id end
     return nil
+end
+
+-- Is any chat window actually showing this channel?
+--
+-- Being in a channel and seeing it are different things, and the gap between
+-- them looks exactly like a broken addon: the advert goes out, nobody's reply
+-- is visible, and the button appears to do nothing.
+function ns.ChannelIsVisible(name)
+    local wanted = tostring(name):lower()
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
+        local frame = _G["ChatFrame" .. i]
+        for _, carried in ipairs((frame and frame.channelList) or {}) do
+            if tostring(carried):lower() == wanted then return true, i end
+        end
+    end
+    return false
+end
+
+-- Puts it in the main window if nothing is carrying it. Advertising somewhere
+-- you cannot read is not advertising: the answers come back on that channel.
+function ns.EnsureChannelVisible(name)
+    if ns.ChannelIsVisible(name) then return false end
+    local frame = DEFAULT_CHAT_FRAME
+    if not frame or not frame.AddChannel then return false end
+    frame:AddChannel(name)
+    if ns.addon then
+        ns.addon:Print("Showing " .. name .. " in your main chat window -- "
+            .. "you were in it but no window was carrying it, so the replies had nowhere to land.")
+    end
+    return true
 end
 
 -- Joins the channel and then speaks. Pressing "looking for a group" is a clear
