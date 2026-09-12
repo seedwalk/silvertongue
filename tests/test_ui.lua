@@ -2058,6 +2058,10 @@ whisperEvent("CHAT_MSG_WHISPER", "test", "Arthuruno-Dreamscythe",
     nil, nil, nil, nil, nil, nil, nil, nil, nil, "Player-4-ABC")
 ns.Whisper:Open("Arthuruno-Dreamscythe")
 local cross = ns.Whisper:Windows()["Arthuruno"]
+-- Checked before it is read: a key that does not match leaves no window here,
+-- and crashing the suite says far less than a named failure does.
+check(cross ~= nil, "no window was filed under the character's own name")
+cross = cross or { subtitle = { GetText = function() return "(no window)" end } }
 -- The race comes from the message, the level from the roster, and neither on
 -- its own would have made that line.
 check(cross.subtitle:GetText() == "Human Priest, 70",
