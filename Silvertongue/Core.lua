@@ -39,13 +39,12 @@ end
 -- exist, what the channel id is before and after, what the join returned, and
 -- what the client thinks you are in.
 -- Sends one line to the LookingForGroup channel through exactly the call the
--- addon uses, and says which id it used.
+-- addon uses, and then listens for the server sending it back.
 --
--- This exists because the join turned out to be a red herring: the probe showed
--- fede already in the channel, as id 2, so the join branch never ran and
--- whatever failed failed on the send itself. A blocked call cannot be caught by
--- pcall -- the client prints its own line and stops -- so the only way to tell
--- a block from a silent no-op is to watch whether this reaches the channel.
+-- The echo is the point. A line you cannot see in your chat window proves
+-- nothing: the window may simply not be carrying that channel, which would look
+-- identical to the client refusing the call. What the server echoes back does
+-- not depend on which windows you have open.
 function ns.ProbeChannelSend()
     local id = ns.LookingForGroupChannel()
     ns.addon:Print("--- channel send probe ---")
@@ -54,10 +53,45 @@ function ns.ProbeChannelSend()
         ns.addon:Print("  not in the channel, so there is nothing to test here")
         return
     end
-    ns.addon:Print("  calling SendChatMessage(..., \"CHANNEL\", nil, " .. id .. ")")
-    SendChatMessage("Silvertongue test, ignore me.", "CHANNEL", nil, id)
-    ns.addon:Print("  the call returned. If nothing appeared in channel " .. id
-        .. ", the client refused it.")
+
+    local marker = "Silvertongue test " .. tostring(math.random(1000, 9999)) .. ", ignore me."
+    local heard = false
+
+    local listener = CreateFrame("Frame")
+    listener:RegisterEvent("CHAT_MSG_CHANNEL")
+    listener:SetScript("OnEvent", function(_, _, text)
+        if text == marker then heard = true end
+    end)
+
+    -- Whether the window is showing that channel at all, which is the innocent
+    -- explanation for seeing nothing.
+    local shown = false
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
+        local frame = _G["ChatFrame" .. i]
+        for _, name in ipairs((frame and frame.channelList) or {}) do
+            if tostring(name):lower():find("lookingforgroup", 1, true) then
+                shown = true
+                ns.addon:Print("  carried by chat window " .. i)
+            end
+        end
+    end
+    if not shown then
+        ns.addon:Print("  NO chat window is carrying LookingForGroup -- you would not see it")
+    end
+
+    ns.addon:Print("  sending: " .. marker)
+    SendChatMessage(marker, "CHANNEL", nil, id)
+
+    local function verdict()
+        listener:UnregisterAllEvents()
+        if heard then
+            ns.addon:Print("  the server echoed it back: THE SEND WORKS.")
+        else
+            ns.addon:Print("  no echo in three seconds: the client refused the send.")
+        end
+        ns.addon:Print("--- end of channel send probe ---")
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(3, verdict) else verdict() end
 end
 
 function ns.ProbeJoin()
