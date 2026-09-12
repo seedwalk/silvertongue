@@ -14,8 +14,17 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Read once here so the step below can ask whether it exists. A secret
+    # cannot be tested directly in an `if`, and without the test every release
+    # from a fork or a clone would fail on a token it was never given.
+    env:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
     steps:
+      # Full history: the packager writes its changelog from the commits since
+      # the previous tag, and a shallow clone has neither.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Lua 5.1
         run: sudo apt-get update && sudo apt-get install -y lua5.1
@@ -73,3 +82,13 @@ jobs:
             ```
 
             Restart the client. Burning Crusade Classic, Interface 20506.
+
+      # CurseForge, and only for a finished release. The packager would publish
+      # an rc as a final version, which is the one thing an rc is not.
+      #
+      # It reads where to upload from X-Curse-Project-ID in the TOC, and the
+      # game version from the Interface line -- it worked out "bcc" on its own
+      # when this was tried by hand.
+      - name: Publish to CurseForge
+        if: ${{ startsWith(github.ref_name, 'v') && env.CF_API_TOKEN != '' }}
+        uses: BigWigsMods/packager@v2
