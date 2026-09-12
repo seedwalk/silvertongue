@@ -275,14 +275,20 @@ end
 -- then tell a chat frame to carry the channel. Joining without that second half
 -- leaves you in a channel whose messages appear nowhere.
 --
--- The join does not take effect the instant it is asked for, so the line waits
--- a moment for the channel to answer rather than going out into nothing.
+-- Then it waits for the channel to answer rather than for a number of seconds I
+-- picked. A join takes as long as the server takes, and a fixed wait is either
+-- too long every time or too short exactly when the server is busy -- which is
+-- when you most want the advert to land. So it asks every so often whether the
+-- channel has a number yet, and speaks the moment it does.
+local JOIN_TRIES    = 12
+local JOIN_INTERVAL = 0.4
+
 function ns.JoinLookingForGroupAndSend(text)
     local NAME = "LookingForGroup"
 
-    -- The main chat window, not "the current" one. The probe answered 10 for
-    -- current, which is a temporary window -- adding the channel there would
-    -- join you to a channel whose lines land somewhere you are not looking.
+    -- The main chat window, not "the current" one. The current one can be a
+    -- temporary window -- adding the channel there would join you to a channel
+    -- whose lines land somewhere you are not looking.
     local frame = DEFAULT_CHAT_FRAME
     local frameID = (frame and frame.GetID and frame:GetID()) or 1
 
@@ -295,19 +301,36 @@ function ns.JoinLookingForGroupAndSend(text)
         return
     end
 
-    local function speak()
+    local tries = 0
+    local function attempt()
         local id = ns.LookingForGroupChannel()
         if id then
+            -- Again after joining: the window has to be carrying it before the
+            -- line goes out, or you will not see your own advert or the replies.
+            ns.EnsureChannelVisible(NAME)
             SendChatMessage(text, "CHANNEL", nil, id)
-        elseif ns.addon then
-            ns.addon:Print("Could not join the LookingForGroup channel, so that went nowhere.")
+            return
+        end
+
+        tries = tries + 1
+        if tries >= JOIN_TRIES then
+            if ns.addon then
+                ns.addon:Print("The LookingForGroup channel did not answer, so that went nowhere. "
+                    .. "Try /join LookingForGroup and say it again.")
+            end
+            return
+        end
+
+        if C_Timer and C_Timer.After then
+            C_Timer.After(JOIN_INTERVAL, attempt)
         end
     end
 
+    -- Never immediately: the join has only just been asked for.
     if C_Timer and C_Timer.After then
-        C_Timer.After(0.6, speak)
+        C_Timer.After(JOIN_INTERVAL, attempt)
     else
-        speak()
+        attempt()
     end
 end
 

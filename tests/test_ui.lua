@@ -1508,6 +1508,30 @@ check(joined[1] and joined[1].name == "LookingForGroup", "it did not join the ch
 check(#sent == beforeUnjoined + 1, "it did not speak after joining")
 check(sent[#sent].channel == "CHANNEL", "after joining it went out on %s", sent[#sent].channel)
 
+do
+    -- A join takes as long as the server takes. It waits for the channel to
+    -- answer rather than for a number of seconds somebody guessed, which is
+    -- what made the advert go out before the channel existed.
+    lfgChannelId = 0
+    local answerAfter = 4          -- the server takes four rounds to come back
+    local asked = 0
+    local realGet = GetChannelName
+    GetChannelName = function(name)
+        if name ~= "LookingForGroup" then return 0 end
+        asked = asked + 1
+        return (asked > answerAfter) and 4 or 0
+    end
+
+    local before = #sent
+    ns.SendPhrase("LFG Scarlet Monastery.", "LFG")
+    check(#sent == before + 1, "it gave up before the channel answered")
+    check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
+    check(asked > answerAfter, "it did not keep asking: %d attempts", asked)
+
+    GetChannelName = realGet
+    lfgChannelId = 4
+end
+
 -- And it is never said aloud to whoever is standing next to you instead.
 lfgChannelId = 0
 local realJoin = JoinPermanentChannel
