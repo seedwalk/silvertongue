@@ -1627,6 +1627,50 @@ local plain = deliver("CHAT_MSG_WHISPER", "hello?", "Grumgar")
 check(plain == "hello?", "a switched-off mark still changed the line: %s", tostring(plain))
 addon.db.profile.chatIcons.whisper = true
 
+-- A system line has no author at all: the name lives inside the sentence, as
+-- the player link that already makes it clickable. This is the invite exactly
+-- as the client writes it.
+local invite = "|Hplayer:Baddiebolts|h[Baddiebolts]|h has invited you to join a group."
+local marked = deliver("CHAT_MSG_SYSTEM", invite, nil)
+check(marked:find("|Hsilvertongue:Baddiebolts|h", 1, true) ~= nil,
+      "the invite line got no mark: %s", tostring(marked))
+check(marked:find("|Hplayer:Baddiebolts|h[Baddiebolts]|h", 1, true) ~= nil,
+      "marking the invite broke the game's own link: %s", tostring(marked))
+check(marked:find("has invited you to join a group.", 1, true) ~= nil,
+      "the invite line lost its text: %s", tostring(marked))
+-- After the name, so the sentence still starts with its first word.
+check(marked:find("|h |Hsilvertongue", 1, true) ~= nil,
+      "the mark did not land beside the name: %s", tostring(marked))
+
+-- The longer link form, which carries the line id and chat type after the name.
+local long = deliver("CHAT_MSG_SYSTEM",
+    "|Hplayer:Kelda:12:WHISPER|h[Kelda]|h has come online.", nil)
+check(long:find("|Hsilvertongue:Kelda|h", 1, true) ~= nil,
+      "the longer link form was not recognised: %s", tostring(long))
+
+-- Your own name in a system line needs no button, and a line naming the same
+-- person twice gets one mark, not two.
+local mineSystem = deliver("CHAT_MSG_SYSTEM",
+    "|Hplayer:Silvertongue|h[Silvertongue]|h has joined the party.", nil)
+check(mineSystem:find("silvertongue:Silvertongue", 1, true) == nil,
+      "we marked ourselves: %s", tostring(mineSystem))
+local twice = deliver("CHAT_MSG_SYSTEM",
+    "|Hplayer:Kelda|h[Kelda]|h and |Hplayer:Kelda|h[Kelda]|h.", nil)
+local count = select(2, twice:gsub("|Hsilvertongue:", ""))
+check(count == 1, "one name got %d marks", count)
+
+-- A system line that names nobody is left exactly as it came.
+local plainSystem = deliver("CHAT_MSG_SYSTEM", "Your group has been disbanded.", nil)
+check(plainSystem == "Your group has been disbanded.",
+      "a line with no name was rewritten: %s", tostring(plainSystem))
+
+-- And the mark on the invite opens the same window as everything else.
+clickLink("silvertongue:Baddiebolts")
+check(ns.Whisper:IsOpen("Baddiebolts"), "the invite mark opened no window")
+ns.Whisper:Close("Baddiebolts")
+-- That window asked its own /who; the counting below is about Grumgar's.
+for i = #whoSent, 1, -1 do table.remove(whoSent, i) end
+
 -- Clicking the mark is what opens the window.
 clickLink("silvertongue:Grumgar")
 check(ns.Whisper:IsOpen("Grumgar"), "clicking the mark opened no window")

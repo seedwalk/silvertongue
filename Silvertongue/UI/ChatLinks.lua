@@ -35,6 +35,25 @@ ChatLinks.EVENTS = {
     CHAT_MSG_GUILD   = "guild",
 }
 
+-- Lines the game writes itself: "[Baddiebolts] has invited you to join a
+-- group." These have no author -- the name lives inside the sentence -- so the
+-- two above cannot reach them.
+--
+-- They do not need parsing either, which is the part worth knowing. The game
+-- writes the name as a player link, which is why clicking it already opens a
+-- tell. That link is the name, marked, in the text: finding it is a pattern
+-- over an escape sequence rather than a guess at a localised sentence, so this
+-- works for every system line that names somebody and keeps working when the
+-- wording changes.
+ChatLinks.SYSTEM_EVENTS = { CHAT_MSG_SYSTEM = "system" }
+
+-- |Hplayer:Name|h[Name]|h, and the longer form that carries the line id and
+-- chat type after the name.
+-- No captures: gsub hands the whole link to the replacement, and the name is
+-- read back out of it. With a capture it would hand over the name alone and the
+-- link itself would be lost.
+local PLAYER_LINK = "|Hplayer:[^|]+|h.-|h"
+
 local function enabled(kind)
     local db = ns.addon and ns.addon.db
     if not db then return true end
@@ -46,8 +65,13 @@ end
 
 -- What the icon is wrapped in. The name travels inside the link, so the click
 -- knows who it was about without looking at anything that may have moved on.
+local function markLink(name)
+    return "|H" .. LINK_TYPE .. ":" .. name .. "|h" .. MARK .. "|h"
+end
+
+-- Ahead of the message, so the icon sits where the name is.
 local function mark(name)
-    return "|H" .. LINK_TYPE .. ":" .. name .. "|h" .. MARK .. "|h "
+    return markLink(name) .. " "
 end
 
 -- Message filters may rewrite the arguments and must pass the rest through
@@ -69,6 +93,30 @@ function ChatLinks:Filter(kind, event, message, author, ...)
     end
 
     return false, mark(author) .. message, author, ...
+end
+
+-- The mark goes after the name rather than before it, so the sentence still
+-- reads from its first word.
+function ChatLinks:MarkNamesInText(message)
+    if not message or message:find("|H" .. LINK_TYPE .. ":", 1, true) then return message end
+
+    local me = UnitName and UnitName("player")
+    local seen, changed = {}, false
+
+    local out = message:gsub(PLAYER_LINK, function(link)
+        local name = link:match("|Hplayer:([^:|]+)")
+        if not name or name == me or seen[name] then return link end
+        seen[name] = true
+        changed = true
+        return link .. " " .. markLink(name)
+    end)
+
+    return changed and out or message
+end
+
+function ChatLinks:FilterSystem(event, message, ...)
+    if not enabled("system") then return false, message, ... end
+    return false, self:MarkNamesInText(message), ...
 end
 
 function ChatLinks:OnClick(name)
@@ -104,6 +152,11 @@ function ChatLinks:Register()
     for event, kind in pairs(self.EVENTS) do
         ChatFrame_AddMessageEventFilter(event, function(_, e, ...)
             return ChatLinks:Filter(kind, e, ...)
+        end)
+    end
+    for event in pairs(self.SYSTEM_EVENTS) do
+        ChatFrame_AddMessageEventFilter(event, function(_, e, ...)
+            return ChatLinks:FilterSystem(e, ...)
         end)
     end
 end
