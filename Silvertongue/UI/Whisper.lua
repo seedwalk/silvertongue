@@ -362,31 +362,6 @@ function Whisper:Build(name, bnetID)
     end)
     frame.log = log
 
-    -- What the folded window says in place of the conversation. Folded, it used
-    -- to show an empty gap that is indistinguishable from a transcript that
-    -- failed to record -- and since the fold is remembered, every window opened
-    -- looking broken.
-    local folded = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    folded:SetPoint("TOPLEFT", PAD + 2, -HEAD_H + 2)
-    folded:SetJustifyH("LEFT")
-    folded:Hide()
-    frame.folded = folded
-
-    -- Three windows open with a transcript each is most of a screen, so the
-    -- conversation folds away and the window becomes the strip it used to be.
-    local fold = CreateFrame("Button", nil, frame)
-    fold:SetSize(16, 16)
-    fold:SetPoint("TOPRIGHT", -24, -8)
-    fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
-    fold:SetScript("OnClick", function() Whisper:ToggleLog(frame) end)
-    fold:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(frame.collapsed and "Show the conversation" or "Hide the conversation")
-        GameTooltip:Show()
-    end)
-    fold:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    frame.fold = fold
-
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetSize(24, 24)
     close:SetPoint("TOPRIGHT", 2, 2)
@@ -534,30 +509,13 @@ function Whisper:Say(frame, text)
     end
 end
 
+-- The window is one size. Folding the conversation away was meant for having
+-- three open at once, and it earned nothing: folded it was barely smaller, and
+-- the empty strip it left looked exactly like a transcript that had failed to
+-- record -- which is what it was mistaken for.
 function Whisper:ApplyFold(frame)
-    -- The input stays whichever way it folds: a folded window is still a
-    -- conversation you are in, it is just one you are not reading back.
-    local base = HEAD_H + ICON + INPUT_H + PAD * 2 + 5
-    if frame.collapsed then
-        frame.log:Hide()
-        local kept = #ns.Log:Lines(ns.Log:Key(frame.name, frame.bnetID))
-        frame.folded:SetText(kept == 0
-            and "Nothing said yet"
-            or (kept .. (kept == 1 and " line" or " lines") .. " hidden - press + to read"))
-        frame.folded:Show()
-        frame:SetHeight(base + 14)
-        frame.fold:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up")
-    else
-        frame.folded:Hide()
-        frame.log:Show()
-        frame:SetHeight(base + LOG_H + 4)
-        frame.fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
-    end
-end
-
-function Whisper:ToggleLog(frame)
-    frame.collapsed = not frame.collapsed
-    self:ApplyFold(frame)
+    frame.log:Show()
+    frame:SetHeight(HEAD_H + LOG_H + ICON + INPUT_H + PAD * 2 + 9)
 end
 
 function Whisper:RefreshHeader(frame)
@@ -594,9 +552,6 @@ function Whisper:Open(name, said, bnetID)
     if not frame then
         openCount = openCount + 1
         frame = self:Build(name, bnetID)
-        -- Windows open showing the conversation. Remembering the fold meant one
-        -- press, weeks ago, quietly made every window since look empty.
-        frame.collapsed = false
         windows[key] = frame
         self:PlaceNew(frame, openCount)
     end

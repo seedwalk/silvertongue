@@ -43,7 +43,6 @@ ns.defaults = {
         -- one switch away.
         chatIcons      = { whisper = true, guild = true, system = true, friends = true },
         whisperAnchor  = nil,
-        whisperCollapsed = false,
         log            = {},
     },
 }

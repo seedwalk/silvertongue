@@ -2133,31 +2133,11 @@ check(table.concat(late.log.__lines or {}, "\n"):find("you around?", 1, true) ~=
       "opening a window later did not show what was already said")
 ns.Whisper:Close("Faranell")
 
--- Folding it away turns the window back into the strip it was, and the choice
--- is remembered for the next one.
-ns.Whisper:ToggleLog(window)
-check(window.collapsed == true, "the conversation did not fold away")
-check(not window.log:IsShown(), "the conversation is folded but still showing")
--- A folded window must not look like a broken one. It says how much it is
--- holding, because an empty gap is indistinguishable from a transcript that
--- never recorded -- which is exactly how it read in the game.
-check(window.folded:IsShown(), "a folded window shows an empty gap")
-check(window.folded:GetText():find("hidden", 1, true) ~= nil,
-      "a folded window does not say what it is holding: %s",
-      tostring(window.folded:GetText()))
-ns.Whisper:ToggleLog(window)
-check(window.log:IsShown(), "the conversation did not come back")
-check(not window.folded:IsShown(), "the folded notice stayed once it was open")
-
--- And the fold is not remembered across windows: one press weeks ago should
--- not quietly make every window since open looking empty.
-ns.Whisper:ToggleLog(window)
-ns.Whisper:Close("Nobody2")
-ns.Whisper:Open("Nobody2")
-check(ns.Whisper:Windows()["Nobody2"].collapsed == false,
-      "a new window opened folded because another one was")
-ns.Whisper:Close("Nobody2")
-ns.Whisper:ToggleLog(window)
+-- The window is one size: no fold. It was meant for having three open at once
+-- and earned nothing, since folded it was barely smaller and the empty strip it
+-- left was mistaken for a transcript that had failed to record.
+check(window.log:IsShown(), "the conversation is not showing")
+check(ns.Whisper.ToggleLog == nil, "the fold is still there")
 
 -- The bound. Not privacy -- the file is read and written whole at login and
 -- logout, so a store that only grows costs time at both ends forever.
