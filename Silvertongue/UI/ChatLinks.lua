@@ -58,7 +58,7 @@ local PLAYER_LINK = "|Hplayer:[^|]+|h.-|h"
 -- a Battle.net whisper is addressed to: there may be no character to whisper at
 -- all, and if they are on the other faction or another realm there certainly is
 -- not.
-local BN_LINK = "|HBNplayer:[^|]+|h.-|h"
+local BN_LINK = "|HBNplayer[^|]*|h.-|h"
 
 local function enabled(kind)
     local db = ns.addon and ns.addon.db
@@ -140,18 +140,58 @@ end
 -- general chat -- the exact thing we decided not to do. A BNplayer link appears
 -- only in friend toasts, broadcasts and Battle.net whispers, which is precisely
 -- the set worth marking.
+-- Printing the raw text of a line, escapes and all.
+--
+-- This exists because I have now guessed wrong twice about what that Battle.net
+-- line actually contains, and a guess dressed as a fix wastes a round trip
+-- through the game each time. `/silvertongue chatdebug` prints the next few
+-- lines exactly as they reach the frame, with every pipe doubled so the client
+-- shows the escapes instead of rendering them.
+local debugLeft = 0
+local printing = false
+
+function ChatLinks:Debug(count)
+    debugLeft = count or 12
+    if ns.addon then
+        ns.addon:Print("Printing the next " .. debugLeft ..
+            " chat lines raw. Make a friend come online, then paste what appears.")
+    end
+end
+
+local function debugLine(text)
+    if debugLeft <= 0 or printing or type(text) ~= "string" then return end
+    -- Print writes to a chat frame, which comes straight back through here.
+    printing = true
+    debugLeft = debugLeft - 1
+    if ns.addon then ns.addon:Print("RAW: " .. text:gsub("|", "||")) end
+    printing = false
+end
+
+-- Counted off the frames themselves rather than remembered here. What the
+-- probe has to answer is "is the wrapper on the frames", and a flag on this
+-- table answers "did I once believe I put it there" -- which is not the same
+-- question the moment anything else reloads or replaces a frame.
+function ChatLinks:IsHooked()
+    local count = 0
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
+        local frame = _G["ChatFrame" .. i]
+        if frame and frame.silvertongueWrapped then count = count + 1 end
+    end
+    return count > 0, count
+end
+
 function ChatLinks:HookFrames()
     if self.framesHooked then return end
     self.framesHooked = true
 
-    local count = NUM_CHAT_WINDOWS or 10
-    for i = 1, count do
+    for i = 1, (NUM_CHAT_WINDOWS or 10) do
         local frame = _G["ChatFrame" .. i]
         if frame and frame.AddMessage and not frame.silvertongueWrapped then
             frame.silvertongueWrapped = true
             local original = frame.AddMessage
             frame.AddMessage = function(self, text, ...)
-                if type(text) == "string" and text:find("|HBNplayer:", 1, true) then
+                debugLine(text)
+                if type(text) == "string" and text:find("|HBNplayer", 1, true) then
                     text = ChatLinks:MarkBattleNetIn(text)
                 end
                 return original(self, text, ...)
@@ -166,7 +206,7 @@ function ChatLinks:MarkBattleNetIn(message)
 
     local seen, changed = {}, false
     local out = message:gsub(BN_LINK, function(link)
-        local display, id = link:match("|HBNplayer:([^:|]*):([^:|]+)")
+        local display, id = link:match("|HBNplayer[^:]*:([^:|]*):([^:|]+)")
         if not id or seen[id] then return link end
         seen[id] = true
         changed = true

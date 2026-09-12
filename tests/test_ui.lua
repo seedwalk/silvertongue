@@ -1903,6 +1903,7 @@ ns.Log:Clear("Talker")
 bnAccounts["42"] = { gameAccountInfo = { isOnline = true, characterName = "Olfer",
     realmName = "Nethergarde", raceName = "Troll", className = "Shaman",
     characterLevel = 44 } }
+do
 -- Not through a filter, because that line does not exist yet when the filters
 -- run: the event carries the token FRIEND_ONLINE and the account id, and the
 -- chat frame writes the sentence afterwards. So it is the frame's own
@@ -1914,12 +1915,29 @@ check(toast:find("|Hsilvertongue:bn:42:Diego|h", 1, true) ~= nil,
 check(toast:find("has come online.", 1, true) ~= nil,
       "marking it broke the line: %s", tostring(toast))
 
+-- The display text of that line carries an embedded texture for the game icon,
+-- which is a pipe escape inside the part the pattern has to skip over. This is
+-- the shape the client actually builds.
+ChatFrame1:AddMessage("|HBNplayer:Diego:77:0:0:|h[Diego] (" ..
+    "|TInterface\\FriendsFrame\\Battlenet-WoWicon:32:32:10|t Olfer)|h has come online.")
+local withIcon = ChatFrame1.__written[#ChatFrame1.__written]
+check(withIcon:find("|Hsilvertongue:bn:77:Diego|h", 1, true) ~= nil,
+      "a line with an embedded texture in the name got no mark: %s", tostring(withIcon))
+
 -- And an ordinary chat line is left alone, even though by this point its sender
 -- is a link too. Marking those would put a bubble on every line of general chat.
 ChatFrame1:AddMessage("|Hplayer:Meowmix|h[Meowmix]|h: oh spam, the ultimate")
 local ordinary = ChatFrame1.__written[#ChatFrame1.__written]
 check(ordinary:find("silvertongue", 1, true) == nil,
       "a general chat line got marked: %s", tostring(ordinary))
+
+-- The frames really are wrapped, which is the half that cannot be told apart
+-- from "the pattern did not match" by looking at chat.
+local hooked, hookedCount = ns.ChatLinks:IsHooked()
+check(hooked and hookedCount == NUM_CHAT_WINDOWS,
+      "wrapped %d of %d chat frames", hookedCount, NUM_CHAT_WINDOWS)
+
+end
 
 clickLink("silvertongue:bn:42:Diego")
 check(ns.Whisper:IsOpen("Diego", "42"), "clicking a Battle.net mark opened no window")

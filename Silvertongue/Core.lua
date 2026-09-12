@@ -16,6 +16,10 @@ function ns.Probe()
         ns.addon:Print("  control " .. i .. ": "
             .. (control and (control:IsShown() and "shown" or "hidden") or "never built"))
     end
+    local hooked, count = ns.ChatLinks:IsHooked()
+    ns.addon:Print("--- chat ---")
+    ns.addon:Print("  frames wrapped: " .. tostring(hooked) .. " (" .. count .. ")")
+
     ns.addon:Print("--- conversations kept ---")
     local kept, lines = 0, 0
     for key, entries in pairs(ns.addon.db.profile.log or {}) do
@@ -234,6 +238,8 @@ function Silvertongue:HandleSlash(input)
             or "Frame controls hidden.")
     elseif arg == "probe" or arg == "lfgprobe" then
         ns.Probe()
+    elseif arg == "chatdebug" then
+        ns.ChatLinks:Debug(12)
     elseif arg == "config" or arg == "phrases" or arg == "library" then
         ns.Config:Toggle()
     elseif TAB_ARGS[arg] then
@@ -246,7 +252,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug]")
     end
 end
 
