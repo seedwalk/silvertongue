@@ -113,6 +113,9 @@ passthrough.Clear = function(self) self.__lines = {} end
 passthrough.SetMaxLines = function(self, n)
     if type(n) ~= "number" then error("bad argument to SetMaxLines", 2) end
 end
+-- The client takes a name here as happily as an object -- the whole addon
+-- passes names and draws fine -- so this only records what it was given.
+passthrough.SetFontObject = function(self, font) self.__font = font end
 
 function CreateFrame(kind, name, parent, template)
     local f = newMock(kind, name)
@@ -121,6 +124,8 @@ function CreateFrame(kind, name, parent, template)
     return f
 end
 
+GameFontHighlightSmall = newMock("Font", "GameFontHighlightSmall")
+ChatFontSmall = newMock("Font", "ChatFontSmall")
 UIParent, Minimap, GameTooltip = newMock("Frame"), newMock("Frame"), newMock("Frame")
 PlayerFrame, TargetFrame = newMock("Frame"), newMock("Frame")
 PlayerFrameManaBar = newMock("StatusBar")
@@ -1996,6 +2001,27 @@ transcript = table.concat(window.log.__lines or {}, "\n")
 check(transcript:find("on my way", 1, true) ~= nil, "our own reply was not recorded")
 check(transcript:find("Silvertongue:", 1, true) ~= nil,
       "our own reply is not marked as ours: %s", transcript)
+
+-- An empty conversation says so rather than showing an empty box. Nothing
+-- recorded and nothing rendered look identical otherwise, and telling them
+-- apart was costing a round trip through the game each time.
+ns.Log:Clear("Hollow")
+ns.Whisper:Open("Hollow")
+local hollow = ns.Whisper:Windows()["Hollow"]
+check(table.concat(hollow.log.__lines or {}, "\n"):find("Nothing said yet", 1, true) ~= nil,
+      "an empty conversation drew nothing at all: %s",
+      table.concat(hollow.log.__lines or {}, "\n"))
+ns.Whisper:Close("Hollow")
+
+-- And it is replaced the moment there is something to show.
+whisperEvent("CHAT_MSG_WHISPER", "first line", "Hollow")
+ns.Whisper:Open("Hollow")
+hollow = ns.Whisper:Windows()["Hollow"]
+local shown = table.concat(hollow.log.__lines or {}, "\n")
+check(shown:find("first line", 1, true) ~= nil, "the first line did not appear: %s", shown)
+check(shown:find("Nothing said yet", 1, true) == nil,
+      "the placeholder stayed once there was a conversation")
+ns.Whisper:Close("Hollow")
 
 -- A whisper with no window open is still written down: the conversation is the
 -- record, not the window.

@@ -347,11 +347,15 @@ function Whisper:Build(name, bnetID)
     local log = CreateFrame("ScrollingMessageFrame", nil, frame)
     log:SetPoint("TOPLEFT", PAD, -HEAD_H)
     log:SetSize(WIDTH - PAD * 2, LOG_H)
-    log:SetFontObject("GameFontHighlightSmall")
+    -- The font object itself, not its name. A ScrollingMessageFrame with no font
+    -- draws nothing at all: AddMessage takes the lines and the window stays
+    -- blank, which looks exactly like a transcript that was never recorded.
+    log:SetFontObject(GameFontHighlightSmall or "GameFontHighlightSmall")
     log:SetJustifyH("LEFT")
     log:SetFading(false)              -- a transcript must not dissolve as you read it
     log:SetMaxLines(Log_MAX_SHOWN)
-    log:SetInsertMode("BOTTOM")
+    -- No SetInsertMode: it takes an enum rather than a string, and the default
+    -- is already the one the chat windows use.
     log:EnableMouseWheel(true)
     log:SetScript("OnMouseWheel", function(self, delta)
         if delta > 0 then self:ScrollUp() else self:ScrollDown() end
@@ -481,6 +485,14 @@ function Whisper:RefreshLog(frame)
     local key = ns.Log:Key(frame.name, frame.bnetID)
     local lines = ns.Log:Lines(key)
     local me = UnitName and UnitName("player") or "you"
+
+    -- Says so rather than showing an empty box. The two failures look identical
+    -- otherwise -- nothing recorded, and nothing rendered -- and telling them
+    -- apart took a round trip through the game every time.
+    if #lines == 0 then
+        frame.log:AddMessage("|cff808080Nothing said yet. It is kept from here on.|r")
+        return
+    end
 
     local from = math.max(1, #lines - Log_MAX_SHOWN + 1)
     for i = from, #lines do
