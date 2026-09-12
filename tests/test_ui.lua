@@ -1811,6 +1811,13 @@ for i = 1, 4 do
 end
 check(_G.SilvertongueAnchorPARTY_ALL ~= nil, "the group control was never built")
 check(_G.SilvertongueAnchorPARTY_ALL.__point ~= nil, "the group control has no anchor")
+-- It says what it is. The four member bubbles hang off frames that name the
+-- person for them; this one floats above the block with nothing around it.
+check(_G.SilvertongueAnchorPARTY_ALL.label ~= nil,
+      "the group control is a bare icon with nothing to say what it is")
+check(_G.SilvertongueAnchorPARTY_ALL.label:GetText() == "Everyone",
+      "the group control is labelled: %s",
+      tostring(_G.SilvertongueAnchorPARTY_ALL.label:GetText()))
 
 -- Advertising for a group lives in the group window, not on your portrait.
 for _, control in ipairs(ns.Anchors.fanControls) do

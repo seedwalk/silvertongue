@@ -171,15 +171,29 @@ local function paintIcon(icon, spec)
     end
 end
 
-local function createLabel(key, parent, default, iconSpec, text, onClick)
-    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
+local function createLabel(key, parent, default, iconSpec, text, onClick, backdrop)
+    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent,
+        backdrop and "BackdropTemplate" or nil)
     control:SetFrameStrata("MEDIUM")
+
+    -- One row on its own reads as a stray pixel over the world; in the fan it
+    -- has four neighbours to give it an edge. A plate supplies the edge.
+    if backdrop and control.SetBackdrop then
+        control:SetBackdrop({
+            bgFile   = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            edgeSize = 10,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 },
+        })
+        control:SetBackdropColor(0, 0, 0, 0.7)
+        control:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
+    end
     control:SetSize(FAN_WIDTH, PLAYER_ICON_SIZE)
     control.anchorKey = key
 
     local icon = control:CreateTexture(nil, "ARTWORK")
     icon:SetSize(PLAYER_ICON_SIZE, PLAYER_ICON_SIZE)
-    icon:SetPoint("LEFT")
+    icon:SetPoint("LEFT", backdrop and 5 or 0, 0)
 
     paintIcon(icon, iconSpec)
     icon:SetAlpha(0.75)
@@ -448,10 +462,15 @@ function Anchors:CreateParty()
     local allDefault = first
         and { point = "BOTTOMLEFT", relPoint = "TOPLEFT", x = 8, y = 10 }
         or { point = "TOPLEFT", relPoint = "TOPLEFT", x = 30, y = -170 }
-    local control = createIcon("PARTY_ALL", first or UIParent, allDefault,
+    -- Labelled rather than bare. The four member bubbles sit on frames that
+    -- name the person for them; this one hangs above the block with nothing
+    -- around it, and a 16-pixel icon alone up there reads as a smudge.
+    local control = createLabel("PARTY_ALL", first or UIParent, allDefault,
+        nil, "Everyone",
         function(self)
             partyBoard():Toggle(self, ns.Contexts:PartyAll())
-        end)
+        end, true)
+    control:SetSize(76, PLAYER_ICON_SIZE + 6)
     tooltip(control, "Speak to the group", "Ready, boss, wipe, and the rest.")
 end
 
