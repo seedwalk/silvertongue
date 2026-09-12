@@ -98,6 +98,11 @@ function ns.RememberPlayer(name, info)
     local store = people()
     if not store then return end
 
+    -- Filed under the character, exactly as conversations are. What we learn
+    -- arrives from a chat event, which carries the realm, and is looked up
+    -- against a window opened from a unit, which does not -- so leaving this
+    -- one un-normalised put "Unknown" over people we had just identified.
+    name = ns.ConversationKey(name)
     local known = store[name] or {}
     known.className = info.className or known.className
     known.raceName  = info.raceName  or known.raceName
@@ -110,7 +115,7 @@ end
 
 local function fromUnit(unit, name)
     if not UnitExists(unit) then return nil end
-    if ns.UnitFullName(unit) ~= name then return nil end
+    if ns.ConversationKey(ns.UnitFullName(unit)) ~= ns.ConversationKey(name) then return nil end
     local className = UnitClass(unit)
     local raceName  = UnitRace(unit)
     return {
@@ -128,7 +133,7 @@ local function fromGuild(name)
     if not GetNumGuildMembers or not GetGuildRosterInfo then return nil end
     for i = 1, (GetNumGuildMembers() or 0) do
         local member, _, _, level, class = GetGuildRosterInfo(i)
-        if member == name then
+        if ns.ConversationKey(member) == ns.ConversationKey(name) then
             return { className = class, level = level }
         end
     end
@@ -174,6 +179,7 @@ end
 
 function ns.IdentifyPlayer(name)
     if not name then return nil end
+    name = ns.ConversationKey(name)
 
     local units = { "target", "mouseover" }
     for _, candidate in ipairs(ns.GroupUnits and ns.GroupUnits() or {}) do

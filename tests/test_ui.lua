@@ -2156,6 +2156,25 @@ ns.Whisper:Close("Tanaris")
 
 end
 
+do
+    -- The same mismatch, in the other half. What we learn about somebody comes
+    -- from a chat event, which carries the realm, and is read back against a
+    -- window opened from a unit, which does not -- so an identity we had just
+    -- been handed showed as "Unknown".
+    guids["Player-9-WIL"] = { className = "Priest", classToken = "PRIEST",
+                              raceName = "Blood Elf", raceToken = "BLOODELF",
+                              name = "Wilcoh" }
+    ns.Whisper:Open("Wilcoh")                       -- as a unit names them
+    whisperEvent("CHAT_MSG_WHISPER", "received", "Wilcoh-Dreamscythe",
+        nil, nil, nil, nil, nil, nil, nil, nil, nil, "Player-9-WIL")
+    local w = ns.Whisper:Windows()["Wilcoh"]
+    check(w ~= nil, "no window under the character's name")
+    check(w and w.subtitle:GetText() == "Blood Elf Priest",
+          "we were told who they are and still showed: %s",
+          w and tostring(w.subtitle:GetText()))
+    ns.Whisper:Close("Wilcoh")
+end
+
 -- A whisper with no window open is still written down: the conversation is the
 -- record, not the window.
 whisperEvent("CHAT_MSG_WHISPER", "you around?", "Faranell")
