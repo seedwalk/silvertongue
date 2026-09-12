@@ -42,6 +42,7 @@ A small speech bubble sits under your level. Press it and four rows fan out:
  ⚔  Horde        your faction
  🗡 Rogue        your class
  😱 Attitude     when you have an opinion
+ 🎲 Group        finding one, or filling yours
 ```
 
 Press it again and they fold away. Pick one and its menu opens beside it. They
@@ -111,6 +112,24 @@ It sits against the row you clicked, and is cut to fit the phrase.
   from under your cursor.
 - **Click anywhere else to dismiss it**, menu and all — the way a right-click
   menu behaves. Speaking closes it too.
+
+### Finding a group
+
+`Group` puts your advert on the **LookingForGroup** channel, in character:
+
+> *"A troll rogue with time on his hands and nothing to kill. Invite me."*
+
+Which is the point. `Rogue 36 LF Scarlet` is a classified ad, and one more of
+those is worth nothing — somebody who reads a line with a character behind it
+remembers who wrote it.
+
+On your own it offers to say you are looking. In a group it counts the seats and
+switches to recruiting: *"We have warrior, priest, rogue. 2 places left."* What
+the group holds is **counted, not guessed** — the classes are known, but who is
+actually tanking is not, so asking for a tank or a healer stays yours to choose.
+
+If you have not joined the LookingForGroup channel, the line simply will not
+send. It is never said aloud to whoever is standing next to you instead.
 
 ### Gestures
 
@@ -185,7 +204,7 @@ locked out.
 
 ## What you actually get
 
-**748 handwritten lines.** No generator, no AI, no templates stitched together.
+**786 handwritten lines.** No generator, no AI, no templates stitched together.
 Somebody wrote all of them.
 
 They adapt to who you are and who you are talking to. An orc shaman praising a

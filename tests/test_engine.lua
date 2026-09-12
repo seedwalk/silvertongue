@@ -30,7 +30,7 @@ local function load(file)
 end
 
 load("Settings.lua")
-for _, f in ipairs({"Engine", "General", "Party", "Horde", "Shaman", "Rogue", "Attitude", "Classes", "Races", "Target", "Self", "Alliance", "Emotes"}) do
+for _, f in ipairs({"Engine", "General", "Party", "Horde", "Shaman", "Rogue", "Attitude", "Classes", "Races", "Target", "Self", "Alliance", "Dungeons", "Group", "Emotes"}) do
     load("RP/" .. f .. ".lua")
 end
 
@@ -46,10 +46,12 @@ local function checkLine(where, line)
     total = total + 1
     if #line > 255 then fail("%s: over 255 bytes: %s", where, line) end
     if line:match("^%s") or line:match("%s$") then fail("%s: stray whitespace: %q", where, line) end
+    -- Anything the engine can actually substitute. A variable outside this set
+    -- would reach chat as a literal placeholder.
+    local KNOWN = { name = true, race = true, class = true,
+                    level = true, have = true, needs = true, dungeon = true }
     for var in line:gmatch("{(%w+)}") do
-        if var ~= "name" and var ~= "race" and var ~= "class" then
-            fail("%s: unknown variable {%s}", where, var)
-        end
+        if not KNOWN[var] then fail("%s: unknown variable {%s}", where, var) end
     end
 end
 
@@ -510,6 +512,56 @@ if Engine:EmoteFor("GENERAL", "TESTPOOL", "fancy") ~= "FLEX" then
     fail("flattening lost the gesture")
 end
 ns.Phrases.GENERAL.TESTPOOL = nil
+
+-- Group-finding lines describe you and what the group holds. Every variable
+-- they use must resolve, or the channel sees a raw placeholder.
+UnitLevel = function() return 36 end
+local groupCtx = { name = "Bellaco", raceName = "Orc", className = "Rogue",
+                   level = 36, have = "rogue, priest", needs = 3,
+                   dungeon = "Scarlet Monastery" }
+for intent in pairs(ns.Phrases.LFG) do
+    local text = Engine:Request("LFG", intent, groupCtx)
+    if not text then fail("LFG.%s returned nothing", intent) end
+    for i = 1, 20 do
+        local t = Engine:Reroll()
+        if t:find("{") then fail("LFG.%s left a variable unresolved: %s", intent, t) end
+        if #t > 255 then fail("LFG.%s is over the message limit: %s", intent, t) end
+    end
+end
+
+-- Every advert has to carry the shorthand people actually scan the channel
+-- for. A line in character that nobody finds is worth nothing.
+for intent, lines in pairs(ns.Phrases.LFG) do
+    if intent ~= "OFFER" and intent ~= "FULL" then
+        for _, line in ipairs(lines) do
+            if not (line:find("^LFG ") or line:find("^LFM ")) then
+                fail("LFG.%s does not open with LFG or LFM: %s", intent, line)
+            end
+        end
+    end
+    for _, line in ipairs(lines) do
+        if not line:find("{dungeon}", 1, true) then
+            fail("LFG.%s never names the dungeon: %s", intent, line)
+        end
+    end
+end
+
+-- The suggestions have to bracket your level rather than list everything.
+local nearby = ns.NearbyDungeons(36, 5)
+if #nearby ~= 5 then fail("expected five suggestions, got %d", #nearby) end
+local named = {}
+for _, dungeon in ipairs(nearby) do named[dungeon.name] = true end
+if not (named["Uldaman"] or named["Scarlet Monastery"] or named["Razorfen Downs"]) then
+    fail("nothing near level 36 was suggested")
+end
+if named["Magisters' Terrace"] then fail("a level 70 dungeon was suggested at 36") end
+
+-- What the group holds is counted, never guessed at.
+local composition = Engine:GroupComposition()
+if composition.needs + composition.size ~= 5 then
+    fail("the group maths does not add up: %d in a group of five leaves %d",
+         composition.size, composition.needs)
+end
 
 -- Every gesture offered in the window has a readable name.
 for _, token in ipairs(ns.EMOTE_LIST) do

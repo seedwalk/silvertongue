@@ -121,6 +121,15 @@ UnitInParty = function(u)
     return false
 end
 UnitInRaid = function() return false end
+UnitLevel = function() return 36 end
+local lfgChannelId = 4
+local joined = {}
+GetChannelName = function(name) return (name == "LookingForGroup") and lfgChannelId or 0 end
+JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
+-- Runs straight away so the test can see what the delayed send does.
+C_Timer = { After = function(_, fn) fn() end }
+IsInGuild = function() return true end
+GetInstanceInfo = function() return "" end
 
 -- The stock scrolling-list helpers the config window uses.
 local scrollOffset = setmetatable({}, { __mode = "k" })
@@ -201,7 +210,7 @@ libs["LibDBIcon-1.0"] = { Register = function() end, Hide = function() end, Show
 
 local function load(file) return assert(loadfile(DIR .. file))("Silvertongue", ns) end
 load("Settings.lua")
-for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Attitude","Classes","Races","Target","Rogue","Self","Alliance","Emotes"}) do load("RP/"..f..".lua") end
+for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Attitude","Classes","Races","Target","Rogue","Self","Alliance","Dungeons","Group","Emotes"}) do load("RP/"..f..".lua") end
 for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors"}) do load("UI/"..f..".lua") end
 load("Core.lua")
 
@@ -946,7 +955,7 @@ ns.Anchors.fanOpen = false
 ns.Anchors:Refresh()
 check(ns.Anchors.hub ~= nil, "no bubble was built on the portrait")
 check(ns.Anchors.hub:IsShown(), "the bubble is hidden")
-check(#ns.Anchors.fanControls == 4, "a shaman got %d category icons instead of four",
+check(#ns.Anchors.fanControls == 5, "a shaman got %d category icons instead of five",
       #ns.Anchors.fanControls)
 for _, control in ipairs(ns.Anchors.fanControls) do
     check(not control:IsShown(), "a category icon was showing while folded away")
@@ -1246,6 +1255,83 @@ check(#sent == beforeMenus, "the order editor sent something to chat")
 
 addon.db.profile.menus = {}
 ns.Config:Select("GENERAL", "THANKS")
+
+-- 19. Looking for a group.
+group = {}
+local soloContext = ns.Contexts:Group()
+local soloLabels = {}
+for _, entry in ipairs(soloContext.intents) do
+    if entry ~= ns.SEP and entry[2] then soloLabels[entry[2]] = true end
+end
+check(soloLabels["SOLO"], "alone, there is no way to say you are looking")
+check(not soloLabels["NEED_TANK"], "alone, it offered to recruit for a group you do not have")
+check(soloContext.channels[1].key == "LFG", "the group context does not lead with the LFG channel")
+local groupChannels = {}
+for _, channel in ipairs(soloContext.channels) do groupChannels[channel.key] = true end
+check(groupChannels["GUILD"], "a guilded character cannot ask their guild")
+
+-- The dungeon the advert names is picked from the menu itself.
+local offered = {}
+for _, entry in ipairs(soloContext.intents) do
+    if entry ~= ns.SEP and entry.setDungeon then offered[entry.setDungeon] = true end
+end
+local anyOffered = false
+for _ in pairs(offered) do anyOffered = true end
+check(anyOffered, "the menu offers no dungeon to name")
+
+ns.SetDungeon("Uldaman")
+check(ns.CurrentDungeon() == "Uldaman", "picking a dungeon did not stick")
+ns.Engine:Request("LFG", "SOLO", ns.Contexts:Group().ctx)
+check(ns.Engine:GetCurrent():find("Uldaman", 1, true),
+      "the advert does not name the chosen dungeon: %s", ns.Engine:GetCurrent())
+ns.SetDungeon(nil)
+
+-- In a group, it recruits instead, and knows how many seats are open.
+group = {
+    { name = "Gromkar", className = "Warrior", classToken = "WARRIOR", raceName = "Orc", raceToken = "Orc" },
+    { name = "Altheon", className = "Priest",  classToken = "PRIEST",  raceName = "Troll", raceToken = "Troll" },
+}
+local groupContext = ns.Contexts:Group()
+local groupLabels = {}
+for _, entry in ipairs(groupContext.intents) do
+    if entry ~= ns.SEP and entry[2] then groupLabels[entry[2]] = true end
+end
+check(groupLabels["NEED_TANK"] and groupLabels["NEED_HEALER"], "a group cannot ask for roles")
+check(not groupLabels["SOLO"], "a group was offered the line for being alone")
+check(groupContext.subtitle == "3 of 5", "the group is described as %s", groupContext.subtitle)
+
+-- The line names what the group actually holds.
+ns.Engine:Request("LFG", "NEED_MORE", groupContext.ctx)
+local recruiting = ns.Engine:GetCurrent()
+check(recruiting:find("warrior") or recruiting:find("priest") or recruiting:find("2"),
+      "the recruiting line says nothing about the group: %s", recruiting)
+check(not recruiting:find("{"), "the recruiting line left a placeholder: %s", recruiting)
+
+-- It goes out on the channel, and only when that channel is joined.
+local beforeLFG = #sent
+ns.SendPhrase("Testing the channel.", "LFG")
+check(#sent == beforeLFG + 1, "the LFG line did not go out")
+check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
+
+-- Not being in the channel yet is not a refusal: asking for a group is asking
+-- to be where groups are found, so it joins and then speaks.
+lfgChannelId = 0
+joined = {}
+local beforeUnjoined = #sent
+ns.SendPhrase("Let me in.", "LFG")
+check(joined[1] == "LookingForGroup", "it did not join the channel")
+check(#sent == beforeUnjoined + 1, "it did not speak after joining")
+check(sent[#sent].channel == "CHANNEL", "after joining it went out on %s", sent[#sent].channel)
+
+-- And it is never said aloud to whoever is standing next to you instead.
+lfgChannelId = 0
+JoinChannelByName = function() end      -- a join that does not take
+local beforeFailed = #sent
+ns.SendPhrase("Nobody is listening.", "LFG")
+check(#sent == beforeFailed, "a failed join shouted the advert somewhere else")
+JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
+lfgChannelId = 4
+group = {}
 
 print(errors == 0 and "UI SMOKE: ALL CHECKS PASSED" or ("UI SMOKE: " .. errors .. " FAILURES"))
 print(string.format("messages sent during the whole run: %d (all via explicit Send calls)", #sent))

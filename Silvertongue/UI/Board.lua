@@ -129,6 +129,12 @@ function Board:AcquireRow(index)
     row.label:SetJustifyH("LEFT")
 
     row:SetScript("OnClick", function(self)
+        if self.setDungeon then
+            ns.SetDungeon(self.setDungeon)
+            -- Reopened rather than closed: you picked it to then say something.
+            self.board:Open(self.board.anchorControl, ns.Contexts:Group())
+            return
+        end
         if self.entry then Board.Pick(self.board, self.entry, self) end
         if self.action then
             if not UnitExists("target") then return end
@@ -187,13 +193,24 @@ function Board:Open(anchor, context)
                 y = y + 4
                 emitted = false
             end
+        elseif entry.setDungeon then
+            -- A setting rather than something to say: it changes what the
+            -- adverts name and closes nothing.
+            local row = self:AcquireRow(index)
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT", PAD, -y)
+            row.label:SetText(entry.label)
+            row.label:SetTextColor(0.75, 0.75, 0.75)
+            row.entry, row.action, row.setDungeon = nil, nil, entry.setDungeon
+            row:Show()
+            index, y, emitted = index + 1, y + ROW_H, true
         else
             local row = self:AcquireRow(index)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", PAD, -y)
             row.label:SetText(entry[3])
             row.label:SetTextColor(1, 1, 1)
-            row.entry, row.action = entry, nil
+            row.entry, row.action, row.setDungeon = entry, nil, nil
             row:Show()
             index, y, emitted = index + 1, y + ROW_H, true
         end
@@ -217,7 +234,7 @@ function Board:Open(anchor, context)
             row:SetPoint("TOPLEFT", PAD, -y)
             row.label:SetText(action.label)
             row.label:SetTextColor(1, 0.82, 0)
-            row.entry, row.action = nil, action
+            row.entry, row.action, row.setDungeon = nil, action, nil
             row:Show()
             index, y = index + 1, y + ROW_H
         end

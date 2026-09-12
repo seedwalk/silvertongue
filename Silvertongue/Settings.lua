@@ -9,6 +9,8 @@ ns.CHANNELS = {
     { key = "RAID",          label = "Raid" },
     { key = "INSTANCE_CHAT", label = "Instance" },
     { key = "WHISPER",       label = "Whisper" },
+    { key = "LFG",           label = "LookingForGroup" },
+    { key = "GUILD",         label = "Guild" },
     { key = "YELL",          label = "Yell" },
     { key = "EMOTE",         label = "Emote" },
 }
@@ -34,6 +36,7 @@ ns.defaults = {
         minimap        = { hide = false, minimapPos = 220 },
         anchorsEnabled = true,
         menus          = {},
+        lfgDungeon     = nil,
         anchors        = {},
     },
 }
@@ -57,8 +60,20 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
         DoEmote(emote, emoteTarget)
     end
 
-    -- Resolve first: this is what turns a whisper at an Alliance target or a
-    -- creature back into say. Checking it after would let those through.
+    -- Before the fallback below: an advert with nowhere to go must not be
+    -- shouted at whoever happens to be standing next to you instead.
+    if channel == "LFG" then
+        local id = ns.LookingForGroupChannel()
+        if id then
+            SendChatMessage(text, "CHANNEL", nil, id)
+        else
+            ns.JoinLookingForGroupAndSend(text)
+        end
+        return "LFG"
+    end
+
+    -- Resolve: this is what turns a whisper at an Alliance target or a creature
+    -- back into say. Checking it after would let those through.
     channel = ns.ResolveChannel(channel)
 
     if channel == "WHISPER" then
@@ -175,8 +190,46 @@ function ns.IsChannelAvailable(key)
         return IsInInstance() and IsInGroup()
     elseif key == "WHISPER" then
         return ns.CanWhisperTarget()
+    elseif key == "LFG" then
+        return true     -- not joined yet is not a reason to hide it; we join
+    elseif key == "GUILD" then
+        return IsInGuild and IsInGuild() and true or false
     end
     return true
+end
+
+-- The number of the LookingForGroup channel, or nil when it is not joined.
+function ns.LookingForGroupChannel()
+    if not GetChannelName then return nil end
+    local id = GetChannelName("LookingForGroup")
+    if id and id > 0 then return id end
+    return nil
+end
+
+-- Joins the channel and then speaks. Pressing "looking for a group" is a clear
+-- statement that you want to be in the channel where groups are found, so being
+-- refused for not having joined it would be pedantry.
+--
+-- The join does not take effect the instant it is asked for, so the line waits
+-- a moment for the channel to answer rather than going out into nothing.
+function ns.JoinLookingForGroupAndSend(text)
+    if not JoinChannelByName then return end
+    JoinChannelByName("LookingForGroup")
+
+    local function speak()
+        local id = ns.LookingForGroupChannel()
+        if id then
+            SendChatMessage(text, "CHANNEL", nil, id)
+        elseif ns.addon then
+            ns.addon:Print("Could not join the LookingForGroup channel, so that went nowhere.")
+        end
+    end
+
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0.6, speak)
+    else
+        speak()
+    end
 end
 
 -- You can only whisper a player on your own side. Alliance, creatures and an

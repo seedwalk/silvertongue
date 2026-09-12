@@ -31,6 +31,7 @@ local PLAYER_ICONS = {
     GENERAL  = "Interface\\Icons\\INV_Misc_GroupLooking",
     FACTION  = "Interface\\Icons\\Ability_Warrior_BattleShout",
     ATTITUDE = "Interface\\Icons\\Spell_Shadow_PsychicScream",
+    GROUP    = "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
 }
 
 -- Spell icons carry a border in the texture. Trimming it is what stops them
@@ -230,7 +231,7 @@ end
 -- Your own portrait: four categories.
 --------------------------------------------------------------------------------
 
-local PLAYER_TABS = { "GENERAL", "FACTION", "CLASS", "ATTITUDE" }
+local PLAYER_TABS = { "GENERAL", "FACTION", "CLASS", "ATTITUDE", "GROUP" }
 
 function Anchors:CreatePlayer()
     if self.playerBuilt then return end
@@ -248,19 +249,27 @@ function Anchors:CreatePlayer()
 
     self.fanControls = {}
     for _, tabKey in ipairs(PLAYER_TABS) do
-        local context = ns.Contexts:Player(tabKey)
+        local context = (tabKey == "GROUP") and ns.Contexts:Group()
+            or ns.Contexts:Player(tabKey)
         -- A character with no class or faction phrases gets no icon for it, and
         -- the arc closes up rather than leaving a gap in the ring.
         if context then
             local iconSpec = (tabKey == "CLASS") and { classOf = "player" }
                 or PLAYER_ICONS[tabKey]
             local control = createLabel("PLAYER_" .. tabKey, nil,
-                { point = "CENTER", x = 0, y = 0 }, iconSpec, context.subtitle,
+                { point = "CENTER", x = 0, y = 0 }, iconSpec,
+                (tabKey == "GROUP") and "Group" or context.subtitle,
                 function(self)
-                    local fresh = ns.Contexts:Player(tabKey)
+                    -- Rebuilt on click: the group changes, and so does what is
+                    -- worth asking for.
+                    local fresh = (tabKey == "GROUP") and ns.Contexts:Group()
+                        or ns.Contexts:Player(tabKey)
                     if fresh then playerBoard():Toggle(self, fresh) end
                 end)
-            tooltip(control, context.subtitle, "The " .. context.subtitle .. " phrases.")
+            local label = (tabKey == "GROUP") and "Group" or context.subtitle
+            tooltip(control, label, (tabKey == "GROUP")
+                and "Looking for a group, or for people to fill yours."
+                or ("The " .. context.subtitle .. " phrases."))
             self.fanControls[#self.fanControls + 1] = control
         end
     end

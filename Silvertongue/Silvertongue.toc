@@ -31,6 +31,8 @@ RP\Classes.lua
 RP\Races.lua
 RP\Target.lua
 RP\Self.lua
+RP\Dungeons.lua
+RP\Group.lua
 RP\Emotes.lua
 
 UI\Window.lua

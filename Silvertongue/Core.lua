@@ -2,6 +2,59 @@
 
 local ADDON, ns = ...
 
+-- Reports which of the group-finder's frames and functions this client
+-- actually has. None of the installed addons touch the LFG tool, so there was
+-- no evidence to read: rather than guess at names and ship something that
+-- silently does nothing, this asks the client directly.
+function ns.ProbeLFG()
+    local CANDIDATES = {
+        "LFGBrowseFrame", "LFGBrowseFrameButton1", "LFGBrowseSearchEntry1",
+        "LFGParentFrame", "LFGFrame", "LookingForGroupFrame", "LFGListFrame",
+        "LFGBrowseFrameScrollFrame", "LFGBrowseFrameColumnHeader1",
+        "SocialBrowseFrame", "GroupFinderFrame", "PVEFrame",
+        "LFGListSearchPanel", "LFGListFrame",
+    }
+    local FUNCTIONS = {
+        "LFGBrowseSearchEntry_OnClick", "SearchLFGGetResults", "SearchLFGGetNumResults",
+        "GetLFGRoles", "SetLFGRoles", "SendWho", "C_LFGList", "GetNumLFGResults",
+        "LFGBrowseFrame_UpdateResults",
+    }
+
+    ns.addon:Print("--- frames ---")
+    for _, name in ipairs(CANDIDATES) do
+        local frame = _G[name]
+        if frame then
+            local kind = type(frame)
+            if kind == "table" and frame.GetObjectType then
+                kind = frame:GetObjectType()
+            end
+            ns.addon:Print("  " .. name .. " = " .. kind)
+        end
+    end
+
+    ns.addon:Print("--- functions ---")
+    for _, name in ipairs(FUNCTIONS) do
+        if _G[name] then ns.addon:Print("  " .. name .. " = " .. type(_G[name])) end
+    end
+
+    -- The LookingForGroup channel, if joined.
+    local id = GetChannelName and GetChannelName("LookingForGroup")
+    ns.addon:Print("--- LookingForGroup channel id: " .. tostring(id) .. " (0 means not joined)")
+
+    -- Anything global whose name mentions the group finder, so a name nobody
+    -- guessed still turns up.
+    ns.addon:Print("--- other globals mentioning LFG ---")
+    local found = 0
+    for name, value in pairs(_G) do
+        if type(name) == "string" and found < 25
+           and (name:find("^LFG") or name:find("^LookingForGroup")) then
+            found = found + 1
+            ns.addon:Print("  " .. name)
+        end
+    end
+    ns.addon:Print("--- end of probe ---")
+end
+
 -- One key binding: open and close the panel, under its own heading in
 -- Esc -> Key Bindings. This client's binding UI reads the XML `category`
 -- attribute as a full global name and looks up BINDING_ plus the rest, so the
@@ -115,6 +168,8 @@ function Silvertongue:HandleSlash(input)
         self:Print(self.db.profile.anchorsEnabled
             and "Frame controls shown. Right-click and drag to move them."
             or "Frame controls hidden.")
+    elseif arg == "lfgprobe" then
+        ns.ProbeLFG()
     elseif arg == "config" or arg == "phrases" or arg == "library" then
         ns.Config:Toggle()
     elseif TAB_ARGS[arg] then
@@ -127,7 +182,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [config|anchors|general|party|target|faction|class|attitude|minimap]")
+        self:Print("Usage: /silvertongue [config|anchors|general|party|target|faction|class|attitude|minimap|lfgprobe]")
     end
 end
 

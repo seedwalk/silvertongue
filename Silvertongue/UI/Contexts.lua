@@ -69,6 +69,62 @@ function Contexts:Target()
     }
 end
 
+local TO_LFG   = { key = "LFG",   label = "LFG",   hint = "Goes to the LookingForGroup channel, joining it if you have not." }
+local TO_GUILD = { key = "GUILD", label = "Guild", hint = "Asks your guild first, which is usually where groups come from." }
+
+-- Looking for a group, or looking for people to fill one. The line talks about
+-- you, so the context is built from your own character rather than a target.
+function Contexts:Group()
+    local composition = ns.Engine:GroupComposition()
+    local ctx = ns.Engine:BuildPlayerContext()
+    ctx.have, ctx.needs = composition.have, composition.needs
+    ctx.dungeon = ns.CurrentDungeon()
+
+    local inGroup = IsInGroup()
+    local intents = {}
+
+    if not inGroup then
+        intents[#intents + 1] = { "LFG", "SOLO", "Looking for a group" }
+        intents[#intents + 1] = { "LFG", "OFFER", "Answer a listing" }
+    else
+        -- What is worth asking for is yours to say: the classes in a group are
+        -- known, but who is actually tanking or healing is not.
+        intents[#intents + 1] = { "LFG", "NEED_MORE",   "Need " .. composition.needs .. " more" }
+        intents[#intents + 1] = ns.SEP
+        intents[#intents + 1] = { "LFG", "NEED_TANK",   "Need a tank" }
+        intents[#intents + 1] = { "LFG", "NEED_HEALER", "Need a healer" }
+        intents[#intents + 1] = { "LFG", "NEED_DPS",    "Need damage" }
+        intents[#intents + 1] = ns.SEP
+        intents[#intents + 1] = { "LFG", "FULL",        "We are full" }
+    end
+
+    local channels = { TO_LFG }
+    if IsInGuild and IsInGuild() then channels[#channels + 1] = TO_GUILD end
+    channels[#channels + 1] = SAY_ALOUD
+    if inGroup then channels[#channels + 1] = SAY_TO_PARTY end
+
+    -- Which dungeon the advert names. Without one it reads "LFG anything",
+    -- which is honest but finds nobody, so the nearest few to your level are
+    -- offered right here rather than hidden in a settings panel.
+    intents[#intents + 1] = ns.SEP
+    for _, dungeon in ipairs(ns.NearbyDungeons(ctx.level, 5)) do
+        local current = (ctx.dungeon == dungeon.name)
+        intents[#intents + 1] = {
+            setDungeon = dungeon.name,
+            label = (current and "> " or "") .. dungeon.name,
+        }
+    end
+
+    return {
+        key      = "GROUP:" .. tostring(ctx.dungeon) .. ":" .. tostring(inGroup),
+        title    = "Looking for a group",
+        subtitle = inGroup and (composition.size .. " of 5") or "On your own",
+        intents  = intents,
+        ctx      = ctx,
+        channels = channels,
+    }
+end
+
 -- One of the four categories hanging off your own portrait.
 function Contexts:Player(tabKey)
     local category, intents

@@ -349,7 +349,38 @@ function Engine:Format(template, ctx)
     text = text:gsub("{name}", ctx.name or "friend")
     text = text:gsub("{race}", ctx.raceName or "warrior")
     text = text:gsub("{class}", ctx.className or "fighter")
+    -- Group-finding lines speak about you and about the group you have.
+    text = text:gsub("{level}", tostring(ctx.level or ""))
+    text = text:gsub("{have}", ctx.have or "no one yet")
+    text = text:gsub("{needs}", tostring(ctx.needs or ""))
+    text = text:gsub("{dungeon}", ctx.dungeon or "anything")
     return text
+end
+
+-- Who you are, for lines that talk about yourself rather than someone else.
+function Engine:BuildPlayerContext()
+    local ctx = self:BuildUnitContext("player") or {}
+    ctx.level = UnitLevel and UnitLevel("player") or nil
+    return ctx
+end
+
+-- What the group actually holds, counted rather than guessed: the classes are
+-- known, the specs are not, so the line never claims a role nobody said they
+-- were playing.
+function Engine:GroupComposition()
+    local myClass = UnitClass("player")
+    local classes = { myClass }
+    for _, unit in ipairs(ns.GroupUnits and ns.GroupUnits() or {}) do
+        local className = UnitClass(unit)
+        if className then classes[#classes + 1] = className end
+    end
+
+    local size = #classes
+    return {
+        have  = table.concat(classes, ", "):lower(),
+        size  = size,
+        needs = math.max(0, 5 - size),
+    }
 end
 
 -- Picks from the pool, avoiding anything said recently and never repeating the
@@ -541,6 +572,7 @@ function Engine:Sections()
         { category = "PERSON",   label = "To a person"    },
         { category = "TARGET",   label = "To your target" },
         { category = "ENEMY",    label = "To an enemy"    },
+        { category = "LFG",      label = "Looking for a group" },
     }
 
     local faction = self:GetPlayerFaction()
