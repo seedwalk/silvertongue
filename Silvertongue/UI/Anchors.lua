@@ -99,9 +99,11 @@ end
 
 -- A speech bubble: the gossip icon the game already uses for "talk to this".
 local function createIcon(key, parent, default, onClick)
-    -- Parented to the frame it belongs to, not to the screen, so it hides when
-    -- that frame does and draws at the same level as the rest of the interface.
-    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, parent or UIParent)
+    -- On the screen, not on the anchor. Some of the things these hang off are
+    -- font strings rather than frames -- a player's level text, for one -- and
+    -- a frame cannot be parented to one of those: the client refuses with
+    -- "Wrong object type for function" and the addon does not load.
+    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
 
     -- Where the unit frames live, and no higher. It used to sit at the very top
     -- of the draw order so that pressing a bubble while a menu was open would

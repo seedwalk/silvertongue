@@ -123,6 +123,15 @@ end
 passthrough.SetFontObject = function(self, font) self.__font = font end
 
 function CreateFrame(kind, name, parent, template)
+    -- A frame can only be parented to a frame. Parenting one to a font string
+    -- -- a player's level text, say -- is refused by the client with "Wrong
+    -- object type for function", and the addon fails to load at all.
+    if parent ~= nil and type(parent) == "table" and parent.__kind then
+        local kindOf = parent.__kind
+        if kindOf == "FontString" or kindOf == "Texture" or kindOf == "Font" then
+            error("Wrong object type for function: parented a frame to a " .. kindOf, 2)
+        end
+    end
     local f = newMock(kind, name)
     f.__templated = template ~= nil
     if name then _G[name] = f end
