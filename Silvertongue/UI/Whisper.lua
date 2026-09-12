@@ -476,8 +476,10 @@ function Whisper:RefreshLog(frame)
     -- apart took a round trip through the game every time.
     if #lines == 0 then
         frame.log:AddMessage("|cff808080Nothing said yet. It is kept from here on.|r")
+        frame.empty = true
         return
     end
+    frame.empty = false
 
     local from = math.max(1, #lines - Log_MAX_SHOWN + 1)
     for i = from, #lines do
@@ -487,6 +489,12 @@ end
 
 function Whisper:Append(frame, entry)
     if not frame.log then return end
+    -- The first line arriving has to take the notice with it, or the window
+    -- reads "Nothing said yet" above the thing that was just said.
+    if frame.empty then
+        frame.log:Clear()
+        frame.empty = false
+    end
     local me = UnitName and UnitName("player") or "you"
     frame.log:AddMessage(ns.Log:Format(entry, frame.name, me))
 end
@@ -541,7 +549,7 @@ end
 -- an account, not a character: the same person may be on a different character
 -- tomorrow, and the whisper still reaches them.
 function Whisper:Key(name, bnetID)
-    return bnetID and ("bn:" .. bnetID) or name
+    return bnetID and ("bn:" .. bnetID) or ns.ConversationKey(name)
 end
 
 function Whisper:Open(name, said, bnetID)

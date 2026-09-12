@@ -329,6 +329,24 @@ function ns.UnitFullName(unit)
     return name
 end
 
+-- The name a conversation is filed under: the character, without the realm.
+--
+-- I argued against this at first, because names are only unique within a realm
+-- and two people called Faithshade on connected realms would share a window.
+-- The argument that beats it is that the two sides do not agree on the name.
+-- A unit answers "Faithshade" while chat says "Faithshade-Dreamscythe", or the
+-- reverse, and which of them carries the realm depends on the client, the realm
+-- connection and where the name came from. Filing under one and looking up
+-- under the other loses the conversation, and that has now happened twice.
+--
+-- Stripping it means the two sides always meet. The realm is not thrown away:
+-- what is displayed and what a whisper is addressed to are still the full name
+-- exactly as it arrived, so a cross-realm whisper still reaches them.
+function ns.ConversationKey(name)
+    if not name then return nil end
+    return (tostring(name):gsub("%-.*$", ""))
+end
+
 -- A player of the other side.
 --
 -- This is not the same question as "can I attack them", and assuming it was is

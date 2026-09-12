@@ -34,7 +34,7 @@ end
 -- account, because the same person on another character is the same
 -- conversation.
 function Log:Key(name, bnetID)
-    return bnetID and ("bn:" .. bnetID) or name
+    return bnetID and ("bn:" .. bnetID) or ns.ConversationKey(name)
 end
 
 function Log:Record(key, text, incoming)

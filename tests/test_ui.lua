@@ -2057,7 +2057,7 @@ guild[1] = { name = "Arthuruno-Dreamscythe", level = 70, className = "Priest" }
 whisperEvent("CHAT_MSG_WHISPER", "test", "Arthuruno-Dreamscythe",
     nil, nil, nil, nil, nil, nil, nil, nil, nil, "Player-4-ABC")
 ns.Whisper:Open("Arthuruno-Dreamscythe")
-local cross = ns.Whisper:Windows()["Arthuruno-Dreamscythe"]
+local cross = ns.Whisper:Windows()["Arthuruno"]
 -- The race comes from the message, the level from the roster, and neither on
 -- its own would have made that line.
 check(cross.subtitle:GetText() == "Human Priest, 70",
@@ -2118,6 +2118,37 @@ check(shown:find("first line", 1, true) ~= nil, "the first line did not appear: 
 check(shown:find("Nothing said yet", 1, true) == nil,
       "the placeholder stayed once there was a conversation")
 ns.Whisper:Close("Hollow")
+
+end
+
+do
+-- The two sides do not agree on the name. A unit answers "Faithshade" while
+-- chat says "Faithshade-Dreamscythe", and which one carries the realm depends
+-- on the client and the realm connection -- so the conversation is filed under
+-- the character and the realm is stripped for the key alone. This is the bug
+-- fede hit: window opened from the target, whisper sent, nothing recorded.
+ns.Log:Clear("Faithshade")
+ns.Whisper:Open("Faithshade")                      -- as a unit names them
+whisperEvent("CHAT_MSG_WHISPER_INFORM", "Hello", "Faithshade-Dreamscythe")  -- as chat does
+local same = ns.Whisper:Windows()["Faithshade"]
+check(same ~= nil, "the window went missing")
+check(#ns.Log:Lines("Faithshade") == 1,
+      "the realm on one side and not the other lost the line: %d", #ns.Log:Lines("Faithshade"))
+local said = table.concat(same.log.__lines or {}, "\n")
+check(said:find("Hello", 1, true) ~= nil, "the line never reached the window: %s", said)
+-- And the notice goes with it, rather than sitting above what was just said.
+check(said:find("Nothing said yet", 1, true) == nil,
+      "the empty notice stayed above the conversation: %s", said)
+
+-- The other way round too, which is the same bug mirrored.
+ns.Whisper:Close("Faithshade")
+ns.Log:Clear("Tanaris")
+whisperEvent("CHAT_MSG_WHISPER", "you there?", "Tanaris-Dreamscythe")
+ns.Whisper:Open("Tanaris")
+check(table.concat(ns.Whisper:Windows()["Tanaris"].log.__lines or {}, "\n")
+        :find("you there?", 1, true) ~= nil,
+      "a conversation recorded with a realm was not found without one")
+ns.Whisper:Close("Tanaris")
 
 end
 
@@ -2334,7 +2365,7 @@ check(doorway ~= nil, "no way to open a window on a cross-realm player")
 doorway.run()
 check(ns.Whisper:IsOpen("Arthuruno-Dreamscythe"),
       "opening from the target made a second window under a different name")
-local reopened = ns.Whisper:Windows()["Arthuruno-Dreamscythe"]
+local reopened = ns.Whisper:Windows()["Arthuruno"]
 check(table.concat(reopened.log.__lines or {}, "\n"):find("hey", 1, true) ~= nil,
       "the window opened from the target showed an empty conversation")
 ns.Whisper:Close("Arthuruno-Dreamscythe")
