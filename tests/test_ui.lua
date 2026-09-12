@@ -132,7 +132,6 @@ GetChannelName = function(name) return (name == "LookingForGroup") and lfgChanne
 JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
 -- Runs straight away so the test can see what the delayed send does.
 C_Timer = { After = function(_, fn) fn() end }
-IsInGuild = function() return true end
 UnitIsGroupLeader = function() return true end
 local assignedRoles = {}
 UnitGroupRolesAssigned = function(unit) return assignedRoles[unit] or "NONE" end
@@ -154,6 +153,52 @@ ScrollUtil = {
     AddReleasedFrameCallback = function() end,
 }
 GetInstanceInfo = function() return "" end
+
+-- The chat message filters and our own link type.
+local filters = {}
+function ChatFrame_AddMessageEventFilter(event, fn)
+    filters[event] = filters[event] or {}
+    table.insert(filters[event], fn)
+end
+local linkHandlers = {}
+LinkUtil = {
+    RegisterLinkHandler = function(kind, fn)
+        if linkHandlers[kind] then error("duplicate link handler for " .. kind) end
+        linkHandlers[kind] = fn
+    end,
+    IsLinkHandlerRegistered = function(kind) return linkHandlers[kind] ~= nil end,
+}
+-- Runs one message through every filter, the way the chat frame does.
+local function deliver(event, message, author)
+    local out, name = message, author
+    for _, fn in ipairs(filters[event] or {}) do
+        local blocked, newMessage, newAuthor = fn(nil, event, out, name)
+        if blocked then return nil end
+        out, name = newMessage or out, newAuthor or name
+    end
+    return out
+end
+local function clickLink(link) return linkHandlers.silvertongue(link) end
+
+-- The guild roster: level and class, and deliberately no race, because
+-- GetGuildRosterInfo does not return one.
+local guild = {}
+IsInGuild = function() return true end
+GetNumGuildMembers = function() return #guild end
+GetGuildRosterInfo = function(i)
+    local m = guild[i]
+    if not m then return nil end
+    return m.name, "Member", 1, m.level, m.className
+end
+
+local whoSent = {}
+local whoResults = {}
+Enum = { SocialWhoOrigin = { Chat = 1 } }
+C_FriendList = {
+    SendWho = function(query) whoSent[#whoSent + 1] = query end,
+    GetNumWhoResults = function() return #whoResults end,
+    GetWhoInfo = function(i) return whoResults[i] end,
+}
 
 -- The stock scrolling-list helpers the config window uses.
 local scrollOffset = setmetatable({}, { __mode = "k" })
@@ -237,8 +282,8 @@ local function load(file) return assert(loadfile(DIR .. file))("Silvertongue", n
 load("Settings.lua")
 for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Rogue","Warrior","Paladin",
                     "Hunter","Priest","Mage","Warlock","Druid","Attitude","Classes","Races",
-                    "Target","Self","Alliance","Dungeons","Group","Emotes"}) do load("RP/"..f..".lua") end
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+                    "Target","Self","Alliance","Dungeons","Group","Whisper","Emotes"}) do load("RP/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 load("Core.lua")
 
 local addon = ns.addon
@@ -617,7 +662,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 
 check(labelFor("CLASS") == "Rogue", "rogue got class tab labelled %s", tostring(labelFor("CLASS")))
@@ -651,7 +696,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelFor("CLASS") == nil, "a class with no phrases was given a tab")
 addon.__cmd("shaman")   -- must not land on a tab that does not exist
@@ -668,7 +713,7 @@ ns.Engine:ForgetPlayer()
 ns.Window.frame = nil
 ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 
 local xml = io.open(DIR .. "Bindings.xml"):read("*a")
 local declared = {}
@@ -713,7 +758,7 @@ _G.__player = { name = "Silvertongue", className = "Shaman", classToken = "SHAMA
                 raceName = "Orc", raceToken = "Orc", faction = "Horde" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelOf("FACTION") == "Horde", "a Horde character got the %s tab", tostring(labelOf("FACTION")))
 ns.Tabs:Select("FACTION")
@@ -724,7 +769,7 @@ _G.__player = { name = "Alaric", className = "Rogue", classToken = "ROGUE",
                 raceName = "Human", raceToken = "Human", faction = "Alliance" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 check(labelOf("FACTION") == "Alliance", "an Alliance character got the %s tab", tostring(labelOf("FACTION")))
 ns.Tabs:Select("FACTION")
@@ -738,7 +783,7 @@ _G.__player = { name = "Silvertongue", className = "Shaman", classToken = "SHAMA
                 raceName = "Orc", raceToken = "Orc", faction = "Horde" }
 ns.Engine:ForgetPlayer()
 ns.Window.frame, ns.TargetUI.headers, ns.PartyUI.headers = nil, nil, nil
-for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
+for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse","Whisper","ChatLinks"}) do load("UI/"..f..".lua") end
 ns.Window:Show("GENERAL")
 addon.db.profile.custom = {}
 
@@ -1550,6 +1595,145 @@ ns.LFGBrowse.hooked = false
 ns.LFGBrowse:Watch()
 check(not ns.LFGBrowse.hooked, "it claimed to hook a browser that is not there")
 ScrollUtil = realScrollUtil
+
+
+-- ---------------------------------------------------------------------------
+-- The whisper window: a person who is not a frame.
+-- ---------------------------------------------------------------------------
+
+local sentBefore = #sent
+
+-- A whisper arrives. The line keeps its text and gains our mark, and nothing
+-- opens on its own: a window appearing because somebody typed at you takes a
+-- corner of the screen without being asked.
+local line = deliver("CHAT_MSG_WHISPER", "can you make me a portal?", "Grumgar")
+check(line ~= nil, "the filter swallowed a whisper out of the chat frame")
+check(line:find("can you make me a portal?", 1, true) ~= nil,
+      "the whisper lost its text: %s", tostring(line))
+check(line:find("|Hsilvertongue:Grumgar|h", 1, true) ~= nil,
+      "the whisper carried no clickable mark: %s", tostring(line))
+check(not ns.Whisper:IsOpen("Grumgar"), "a whisper opened a window by itself")
+
+-- Your own guild line does not need a button to answer yourself.
+local mine = deliver("CHAT_MSG_GUILD", "anyone for SM?", "Silvertongue")
+check(mine:find("silvertongue:", 1, true) == nil, "our own guild line got a mark")
+
+local theirs = deliver("CHAT_MSG_GUILD", "anyone for SM?", "Kelda")
+check(theirs:find("|Hsilvertongue:Kelda|h", 1, true) ~= nil, "a guild line got no mark")
+
+-- Switching whispers off leaves the line exactly as it came.
+addon.db.profile.chatIcons.whisper = false
+local plain = deliver("CHAT_MSG_WHISPER", "hello?", "Grumgar")
+check(plain == "hello?", "a switched-off mark still changed the line: %s", tostring(plain))
+addon.db.profile.chatIcons.whisper = true
+
+-- Clicking the mark is what opens the window.
+clickLink("silvertongue:Grumgar")
+check(ns.Whisper:IsOpen("Grumgar"), "clicking the mark opened no window")
+local window = ns.Whisper:Windows()["Grumgar"]
+check(window.__point ~= nil, "the window was built with no anchor")
+check(window.title:GetText() == "Grumgar", "the window is not titled with their name")
+
+-- We know nothing about a stranger, so one /who goes out, once.
+check(#whoSent == 1, "expected one who lookup, got %d", #whoSent)
+check(whoSent[1]:find("Grumgar", 1, true) ~= nil,
+      "the lookup did not ask about them: %s", tostring(whoSent[1]))
+-- The server throttles these hard, so asking twice about the same name has to
+-- be refused at the source rather than merely never happening to be called.
+clickLink("silvertongue:Grumgar")
+ns.Whisper:Open("Grumgar")
+for _ = 1, 5 do ns.AskWho("Grumgar") end
+check(#whoSent == 1, "the who lookup was repeated %d times", #whoSent)
+
+-- When it answers, the header fills in without the window being reopened.
+whoResults = { { fullName = "Grumgar", level = 41, raceStr = "Orc", classStr = "Shaman" } }
+ns.ReadWhoResults()
+check(window.subtitle:GetText() == "Orc Shaman, 41",
+      "the who answer did not reach the header: %s", tostring(window.subtitle:GetText()))
+
+-- A guildmate is known without asking anyone: level and class, and no race,
+-- because the roster does not carry one.
+guild[1] = { name = "Kelda", level = 38, className = "Priest" }
+ns.Whisper:Open("Kelda")
+local kelda = ns.Whisper:Windows()["Kelda"]
+check(kelda.subtitle:GetText() == "Priest, 38",
+      "a guildmate was described as: %s", tostring(kelda.subtitle:GetText()))
+
+-- Two windows at once, which is the whole reason they are per person.
+check(ns.Whisper:IsOpen("Grumgar") and ns.Whisper:IsOpen("Kelda"),
+      "two conversations could not be open at the same time")
+
+-- A further whisper updates the open window instead of opening another.
+deliver("CHAT_MSG_WHISPER", "still there?", "Grumgar")
+check(window.said:GetText():find("still there?", 1, true) ~= nil,
+      "an open window ignored the next whisper")
+
+-- Speaking: every intent must produce a line, and none of it may reach chat.
+local whisperContext = ns.Contexts:Whisper("Grumgar")
+check(whisperContext ~= nil, "no context for a whisper")
+check(#whisperContext.intents > 0, "the whisper menu came out empty")
+local board = ns.Board:New("WHISPER:Grumgar")
+board:Open(window.speak, whisperContext)
+for _, entry in ipairs(whisperContext.intents) do
+    if entry ~= ns.SEP then
+        board:Pick(entry, nil)
+        check(ns.Display.edit:GetText() ~= "", "WHISPER.%s produced nothing", entry[2])
+        check(ns.Display.edit:GetText():find("{") == nil,
+              "WHISPER.%s left a placeholder unfilled: %s", entry[2], ns.Display.edit:GetText())
+    end
+end
+check(#sent == sentBefore, "%d messages escaped while building whisper phrases",
+      #sent - sentBefore)
+
+-- The channels: whisper always, guild only for a guildmate, and never say or
+-- yell -- the whole point is that they are somewhere else.
+local function channelKeys(context)
+    local keys = {}
+    for _, channel in ipairs(context.channels) do keys[#keys + 1] = channel.key end
+    return table.concat(keys, ",")
+end
+check(channelKeys(whisperContext) == "WHISPER",
+      "a stranger offered: %s", channelKeys(whisperContext))
+check(channelKeys(ns.Contexts:Whisper("Kelda")) == "WHISPER,GUILD",
+      "a guildmate offered: %s", channelKeys(ns.Contexts:Whisper("Kelda")))
+
+-- No gesture. A bow aimed at someone who is not on your screen plays to an
+-- empty room, and DoEmote would name a unit the client cannot see.
+local emotesBefore = #emoted
+board:Pick({ "WHISPER", "THANK", "Thank" }, nil)
+check(not ns.Display.emoteCheck:IsShown(), "a whisper offered a gesture")
+ns.Display:Send("WHISPER")
+check(#emoted == emotesBefore, "a whisper fired an emote at nobody")
+check(#sent == sentBefore + 1, "pressing whisper did not send exactly one line")
+check(sent[#sent].channel == "WHISPER" and sent[#sent].to == "Grumgar",
+      "the line went to %s on %s", tostring(sent[#sent].to), tostring(sent[#sent].channel))
+
+-- The target's door into the same window, for someone who has not spoken yet.
+target = { name = "Vaelen", className = "Paladin", classToken = "PALADIN",
+           raceName = "Blood Elf", raceToken = "BLOODELF" }
+ns.TargetUI:Refresh()
+local targetContext = ns.Contexts:Target()
+local opener
+for _, action in ipairs(targetContext.actions or {}) do
+    if action.label == "Open a window" then opener = action end
+end
+check(opener ~= nil, "the target has no way to open a conversation")
+check(opener.local_ == true, "opening our own window claims to act on them")
+opener.run()
+check(ns.Whisper:IsOpen("Vaelen"), "the target's opener opened nothing")
+
+-- A hostile target has nobody to whisper, so the door is not there.
+target = { name = "Snarl", hostile = true }
+ns.TargetUI:Refresh()
+local hostile = ns.Contexts:Target()
+check(hostile.actions == nil, "a hostile target offered a private conversation")
+target = nil
+ns.TargetUI:Refresh()
+
+-- Closing is the one X in the addon, and it takes its menu with it.
+ns.Whisper:Close("Grumgar")
+check(not ns.Whisper:IsOpen("Grumgar"), "the window did not close")
+check(not board:IsShown(), "closing the window left its menu on screen")
 
 print(errors == 0 and "UI SMOKE: ALL CHECKS PASSED" or ("UI SMOKE: " .. errors .. " FAILURES"))
 print(string.format("messages sent during the whole run: %d (all via explicit Send calls)", #sent))

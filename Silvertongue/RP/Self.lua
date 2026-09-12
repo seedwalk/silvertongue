@@ -109,6 +109,12 @@ ns.Phrases.SELF.CLASS = {
                 "You brought that to a fight with a shaman, {name}? Bold.",
             },
         },
+        WHISPER = {
+            FAVOUR = {
+                "I can do that, {name}. Come to me and I will set it down.",
+                "Yes. Stand near me and you will feel it.",
+            },
+        },
     },
 
     ROGUE = {
@@ -199,6 +205,13 @@ ns.Phrases.SELF.CLASS = {
                 "You never saw me coming, {name}. You still do not.",
             },
         },
+        WHISPER = {
+            FAVOUR = {
+                "I can open it, {name}. Bring it to me and ask no questions.",
+                "Locks are not a problem. Come and find me.",
+                "Yes. I will open it, and I will not look inside. Probably.",
+            },
+        },
     },
 
     WARRIOR = {
@@ -264,6 +277,13 @@ ns.Phrases.SELF.CLASS = {
         TARGET = {
             HELLO = { "The Light keep you, {name}." },
             OFFER = { "{name}, I can shield you or mend you. Say which." },
+        },
+        WHISPER = {
+            FAVOUR = {
+                "I can bless you, {name}. Stand still.",
+                "Yes. Come here and I will see to it.",
+                "Gladly, {name}. It costs me nothing to help you.",
+            },
         },
     },
 
@@ -331,6 +351,13 @@ ns.Phrases.SELF.CLASS = {
             HELLO = { "Peace, {name}. You look like you have been walking a while." },
             OFFER = { "{name}, I can mend that. Hold still." },
         },
+        WHISPER = {
+            FAVOUR = {
+                "I can buff you, {name}. Stand still for one moment.",
+                "Yes. Come to me and I will see you right.",
+                "I can do that, {name}. The Light is not in short supply.",
+            },
+        },
     },
 
     MAGE = {
@@ -363,6 +390,15 @@ ns.Phrases.SELF.CLASS = {
         TARGET = {
             HELLO = { "{name}. Do you need a portal? Everyone needs a portal." },
             OFFER = { "{name}, I can feed you or send you somewhere. Your choice." },
+        },
+        -- What people whisper a mage for, in the order they ask for it.
+        WHISPER = {
+            FAVOUR = {
+                "I can portal you, {name}. Come to a city and stand still.",
+                "Food and water, {name}? Say when and where.",
+                "Yes. Walk to me and try not to die on the way.",
+            },
+            BUSY = { "{name}, I am not a taxi service. Today I am, but say it nicely." },
         },
     },
 
@@ -397,6 +433,15 @@ ns.Phrases.SELF.CLASS = {
             HELLO = { "{name}. Yes, it is looking at you. Ignore it." },
             OFFER = { "{name}, take a stone. It costs you nothing and me very little." },
         },
+        -- The summon. It is always the summon.
+        WHISPER = {
+            FAVOUR = {
+                "I can summon you, {name}. I need two others to help me pull.",
+                "A healthstone, {name}? Take it and stop dying.",
+                "Yes. Find me two bodies for the ritual and you are there.",
+            },
+            BUSY = { "{name}, everyone wants a summon and nobody wants to help cast it." },
+        },
     },
 
     DRUID = {
@@ -429,6 +474,13 @@ ns.Phrases.SELF.CLASS = {
         TARGET = {
             HELLO = { "Well met, {name}. The season is kind today." },
             OFFER = { "{name}, I can mend you or ward you. Say which." },
+        },
+        WHISPER = {
+            FAVOUR = {
+                "I can help, {name}. Where are you standing?",
+                "Yes. Give me a moment to change shape and I am with you.",
+                "That I can do. Come to me, or tell me where to go.",
+            },
         },
     },
 }

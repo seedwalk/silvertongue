@@ -35,6 +35,7 @@ local function menuList()
         { key = "TARGET_HOSTILE",  label = "Target, hostile",  builtin = function() return ns.TARGET_HOSTILE end },
         { key = "PERSON",          label = "A party member",   builtin = function() return ns.PERSON_INTENTS end },
         { key = "PARTY_ALL",       label = "The whole group",  builtin = function() return ns.PartyEveryoneIntents() end },
+        { key = "WHISPER",         label = "A whisper",        builtin = function() return ns.WHISPER_INTENTS end },
     }
 
     local kept = {}

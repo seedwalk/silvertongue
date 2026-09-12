@@ -40,6 +40,7 @@ RP\Target.lua
 RP\Self.lua
 RP\Dungeons.lua
 RP\Group.lua
+RP\Whisper.lua
 RP\Emotes.lua
 
 UI\Window.lua
@@ -53,5 +54,7 @@ UI\Display.lua
 UI\Contexts.lua
 UI\Anchors.lua
 UI\LFGBrowse.lua
+UI\Whisper.lua
+UI\ChatLinks.lua
 
 Core.lua

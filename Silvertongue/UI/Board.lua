@@ -139,6 +139,12 @@ function Board:AcquireRow(index)
         end
         if self.entry then Board.Pick(self.board, self.entry, self) end
         if self.action then
+            -- Opening one of our own windows acts on a name we already hold, so
+            -- it does not need a selection the way inviting or trading does.
+            if self.action.local_ then
+                pcall(self.action.run)
+                return
+            end
             if not UnitExists("target") then return end
             pcall(self.action.run, UnitName("target"))
         end
@@ -148,7 +154,9 @@ function Board:AcquireRow(index)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText(self.action.label)
         GameTooltip:AddLine(self.action.tip, 1, 1, 1, true)
-        GameTooltip:AddLine("Acts immediately -- they still have to accept.", 0.7, 0.7, 0.7, true)
+        if not self.action.local_ then
+            GameTooltip:AddLine("Acts immediately -- they still have to accept.", 0.7, 0.7, 0.7, true)
+        end
         GameTooltip:Show()
     end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)

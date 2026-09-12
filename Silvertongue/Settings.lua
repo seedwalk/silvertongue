@@ -38,6 +38,11 @@ ns.defaults = {
         menus          = {},
         lfgDungeon     = nil,
         anchors        = {},
+        -- Which chat lines get the bubble beside the name. Guild is on because
+        -- a guild line is a person you can answer; if it turns into noise it is
+        -- one switch away.
+        chatIcons      = { whisper = true, guild = true },
+        whisperAnchor  = nil,
     },
 }
 

@@ -158,7 +158,12 @@ function Display:Show(board, category, intent, text, row)
 end
 
 function Display:RefreshEmote(text)
-    local emote = ns.Engine:EmoteFor(state.category, state.intent, text)
+    -- Some contexts have nobody to gesture at. A whisper goes to someone who is
+    -- not on your screen, so bowing plays the animation to an empty room and
+    -- names a target the client cannot see.
+    local context = state.board and state.board.context
+    local emote = (not (context and context.noEmote))
+        and ns.Engine:EmoteFor(state.category, state.intent, text) or nil
     state.emote = emote
 
     if not emote then

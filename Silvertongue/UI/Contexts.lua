@@ -63,6 +63,18 @@ function Contexts:Target()
     end
     channels = leadWithParty(channels)
 
+    -- Until this existed a conversation could only begin if they spoke first:
+    -- the window was born from a chat line. This is the other door.
+    local actions
+    if info.isPlayer and not info.hostile and ns.CanWhisperTarget("target") then
+        actions = { {
+            label = "Open a window",
+            tip = "Opens a small window for " .. info.name .. ", to talk to them privately.",
+            local_ = true,
+            run = function() ns.Whisper:Open(info.name) end,
+        } }
+    end
+
     return {
         key         = "TARGET:" .. info.name,
         title       = info.name,
@@ -72,6 +84,7 @@ function Contexts:Target()
         recipient   = info.name,
         emoteTarget = info.name,
         channels    = channels,
+        actions     = actions,
         grouped     = grouped,
         isPlayer    = info.isPlayer,
         hostile     = info.hostile,
@@ -132,6 +145,66 @@ function Contexts:Group()
         intents  = intents,
         ctx      = ctx,
         channels = channels,
+    }
+end
+
+-- Is this name on your guild roster? Decides whether answering them in guild
+-- chat is even offered.
+local function isGuildmate(name)
+    if not name or not IsInGuild or not IsInGuild() then return false end
+    if not GetNumGuildMembers or not GetGuildRosterInfo then return false end
+    for i = 1, (GetNumGuildMembers() or 0) do
+        if GetGuildRosterInfo(i) == name then return true end
+    end
+    return false
+end
+
+local IN_GUILD = { key = "GUILD", label = "Guild",
+                   hint = "Everyone in the guild reads it, them included." }
+
+-- One person, reached by name rather than by a frame. This is what the whisper
+-- window speaks through.
+--
+-- Two things are deliberately missing. There is no Say and no Yell: the point
+-- of this context is that the person is somewhere else, and shouting into your
+-- own room reaches nobody who matters. And there is no gesture -- a bow aimed
+-- at someone who is not on your screen plays to an empty room, so the whole
+-- emote row is switched off rather than left on to mislead.
+function Contexts:Whisper(name)
+    if not name or name == "" then return nil end
+
+    local list = {}
+    for _, pair in ipairs(ns.ResolveMenu("WHISPER", ns.WHISPER_INTENTS)) do
+        if pair == ns.SEP then
+            list[#list + 1] = ns.SEP
+        elseif ns.Engine:HasAnyPhrase("WHISPER", pair[1]) then
+            list[#list + 1] = { "WHISPER", pair[1], pair[2] }
+        end
+    end
+
+    local channels = { { key = "WHISPER", label = "Whisper",
+                         hint = "Only " .. name .. " reads it." } }
+    -- Addressing a guildmate by name in guild chat is a normal thing to do, and
+    -- the line already carries their name either way. The channel only decides
+    -- who else hears it.
+    if isGuildmate(name) then channels[#channels + 1] = IN_GUILD end
+
+    local info = ns.IdentifyPlayer and ns.IdentifyPlayer(name)
+    local subtitle
+    if info then
+        subtitle = ((info.raceName or "") .. " " .. (info.className or "")):gsub("^%s+", "")
+        if subtitle == "" then subtitle = nil end
+    end
+
+    return {
+        key       = "WHISPER:" .. name,
+        title     = name,
+        subtitle  = subtitle,
+        intents   = list,
+        ctx       = { name = name },
+        recipient = name,
+        channels  = channels,
+        noEmote   = true,
     }
 end
 

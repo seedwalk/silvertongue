@@ -162,10 +162,12 @@ function Silvertongue:OnEnable()
     self:RegisterEvent("GROUP_ROSTER_UPDATE", function()
         ns.PartyUI:Refresh()
         ns.Anchors:UpdateParty()
+        ns.Whisper:RefreshAll()
     end)
     self:RegisterEvent("PLAYER_TARGET_CHANGED", function()
         ns.TargetUI:Refresh()
         ns.Anchors:UpdateTarget()
+        ns.Whisper:RefreshAll()
     end)
     self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
         ns.Anchors:Refresh()
@@ -174,6 +176,10 @@ function Silvertongue:OnEnable()
     -- The group browser is loaded on demand, so the row bubbles wait for it.
     self:RegisterEvent("ADDON_LOADED", function(_, name) ns.LFGBrowse:OnAddonLoaded(name) end)
     self:RegisterEvent("LFG_LIST_SEARCH_RESULTS_RECEIVED", function() ns.LFGBrowse:Watch() end)
+    -- Whose turn it is to be reachable changes with your selection and your
+    -- group, and the window's invite and trade buttons say so.
+    self:RegisterEvent("WHO_LIST_UPDATE", function() ns.ReadWhoResults() end)
+    ns.ChatLinks:Register()
     ns.Anchors:Refresh()
 end
 
