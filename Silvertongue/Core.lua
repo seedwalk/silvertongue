@@ -34,6 +34,51 @@ function ns.Probe()
     ns.ProbeLFG()
 end
 
+-- Joining the LookingForGroup channel has now failed twice for two different
+-- reasons I inferred rather than measured. This measures: which of the calls
+-- exist, what the channel id is before and after, what the join returned, and
+-- what the client thinks you are in.
+function ns.ProbeJoin()
+    local NAME = "LookingForGroup"
+    local say = function(line) ns.addon:Print(line) end
+
+    say("--- join probe ---")
+    say("  JoinPermanentChannel: " .. type(JoinPermanentChannel))
+    say("  JoinChannelByName:    " .. type(JoinChannelByName))
+    say("  JoinTemporaryChannel: " .. type(JoinTemporaryChannel))
+    say("  C_ChatInfo:           " .. type(C_ChatInfo))
+    if C_ChatInfo then
+        say("  C_ChatInfo.JoinChannelByName: " .. type(C_ChatInfo.JoinChannelByName))
+    end
+    say("  channel id before: " .. tostring(GetChannelName and GetChannelName(NAME)))
+
+    if JoinPermanentChannel then
+        local frame = (FCF_GetCurrentChatFrame and FCF_GetCurrentChatFrame()) or DEFAULT_CHAT_FRAME
+        local frameID = (FCF_GetCurrentChatFrameID and FCF_GetCurrentChatFrameID())
+            or (frame and frame.GetID and frame:GetID()) or 1
+        say("  chat frame id: " .. tostring(frameID))
+        local ok, a, b = pcall(JoinPermanentChannel, NAME, nil, frameID, 1)
+        say("  JoinPermanentChannel -> ok=" .. tostring(ok)
+            .. " a=" .. tostring(a) .. " b=" .. tostring(b))
+        if ok and frame and frame.AddChannel then
+            local added = pcall(frame.AddChannel, frame, NAME)
+            say("  frame:AddChannel -> ok=" .. tostring(added))
+        end
+    end
+
+    local function after()
+        say("  channel id after: " .. tostring(GetChannelName and GetChannelName(NAME)))
+        if GetChannelList then
+            local list = { GetChannelList() }
+            local parts = {}
+            for i = 1, #list do parts[#parts + 1] = tostring(list[i]) end
+            say("  channels: " .. (table.concat(parts, ", "):sub(1, 220)))
+        end
+        say("--- end of join probe ---")
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(1.5, after) else after() end
+end
+
 function ns.ProbeLFG()
     local CANDIDATES = {
         "LFGBrowseFrame", "LFGBrowseFrameButton1", "LFGBrowseSearchEntry1",
@@ -238,6 +283,8 @@ function Silvertongue:HandleSlash(input)
             or "Frame controls hidden.")
     elseif arg == "probe" or arg == "lfgprobe" then
         ns.Probe()
+    elseif arg == "joindebug" then
+        ns.ProbeJoin()
     elseif arg == "chatdebug" then
         ns.ChatLinks:Debug(12)
     elseif arg == "config" or arg == "phrases" or arg == "library" then
@@ -252,7 +299,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug|joindebug]")
     end
 end
 
