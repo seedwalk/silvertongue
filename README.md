@@ -147,8 +147,11 @@ It sits against the row you clicked, and is cut to fit the phrase.
 
 ### Finding a group
 
-A speech bubble next to the refresh button in the **Looking For Group** window,
-because that is the only place you ever want it.
+Open the **Looking For Group** window and list yourself. Your own row grows a
+speech bubble, and that is where advertising lives — there was a second bubble
+on the window itself and it was removed, because everything it offered was on
+that row already, with worse information: it guessed the dungeon from your level
+while the row reads it off your listing.
 
 It puts your advert on the **LookingForGroup** channel, in character:
 
@@ -177,14 +180,24 @@ class could actually take. That is the first thing a group leader reads for.
 Specs are not readable, so this stays something you choose to say rather than
 something inferred about you.
 
-**The channel.** If you are not in **LookingForGroup**, it joins you, because
+**Which dungeon.** The one your listing names. The game publishes it, so there
+is nothing to guess and nothing to pick: if you are listed for Scarlet Library,
+an advert for Razorfen Kraul because it suits your level is simply wrong. With
+no listing you get a short picker of the dungeons nearest your level.
+
+**The channel.** If you are not in **LookingForGroup** it joins you, because
 pressing "looking for a group" is a clear statement that you want to be where
-groups are found. It also makes sure a chat window is actually carrying the
-channel — being in one and seeing it are different things, and advertising
+groups are found — and it makes sure a chat window is actually carrying the
+channel, since being in one and seeing it are different things. Advertising
 somewhere you cannot read is not advertising: the replies come back there.
 
-The line is never said aloud to whoever is standing next to you instead. If the
-channel cannot be reached it says so and sends nothing.
+Joining and speaking cannot happen in the same press. A public channel will not
+take a line without a real click behind it, and once the join has come back the
+click is over — so the first press joins and says that the next one will send.
+In practice it rarely comes up, because opening the row is itself a click and
+the channel is ready by the time you have picked a line.
+
+The line is never said aloud to whoever is standing next to you instead.
 
 ### In the group browser
 
@@ -256,7 +269,7 @@ Press it and that person gets **a window of their own**:
   weeks later and it is still there. Five hundred lines per person, a hundred
   and twenty people, nothing older than six months — generous enough for months
   of conversation and bounded enough that the saved variables file does not grow
-  forever. The `−` folds it away when three open transcripts are too much screen.
+  forever.
 - **There is a line to type in**, because it is a whisper window. It never takes
   the keyboard on its own: you click in to type, and Escape or Enter hands the
   keys back. Autofocus here would mean pressing W to walk and writing a *w* into
