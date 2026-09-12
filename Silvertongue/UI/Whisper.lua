@@ -48,8 +48,61 @@ local openCount = 0
 -- which is why the header is built to read correctly with only a name in it.
 -- ---------------------------------------------------------------------------
 
-local whoCache = {}          -- name -> { className, raceName, level }
 local whoAsked = {}          -- name -> true, so one lookup per name per session
+local whoPending = {}        -- name -> true while the server has not answered
+
+-- What we have ever learned about somebody, kept across sessions. Once you have
+-- met Rhottyn you have met him: the window opens knowing he is a troll shaman
+-- rather than asking the server again and showing nothing meanwhile.
+local function people()
+    local db = ns.addon and ns.addon.db
+    if not db then return nil end
+    db.profile.people = db.profile.people or {}
+    return db.profile.people
+end
+
+-- Keeps the store from growing without limit. Everyone you have ever spoken to
+-- is not worth remembering; the last few hundred are.
+local PEOPLE_MAX = 300
+
+local function forget_oldest()
+    local store = people()
+    if not store then return end
+    local count = 0
+    for _ in pairs(store) do count = count + 1 end
+    while count > PEOPLE_MAX do
+        local oldestName, oldestSeen
+        for name, info in pairs(store) do
+            if not oldestSeen or (info.seen or 0) < oldestSeen then
+                oldestName, oldestSeen = name, info.seen or 0
+            end
+        end
+        if not oldestName then return end
+        store[oldestName] = nil
+        count = count - 1
+    end
+end
+
+-- Names confirmed during this session. What is in the store is otherwise a
+-- memory of unknown age, and a memory has to say so; something the server told
+-- us five seconds ago does not.
+local confirmed = {}
+
+-- Everything we learn, from wherever we learn it, lands here.
+function ns.RememberPlayer(name, info)
+    if not name or not info then return end
+    local store = people()
+    if not store then return end
+
+    local known = store[name] or {}
+    known.className = info.className or known.className
+    known.raceName  = info.raceName  or known.raceName
+    known.level     = info.level     or known.level
+    known.seen      = time and time() or known.seen
+    store[name] = known
+    confirmed[name] = true
+    forget_oldest()
+end
 
 local function fromUnit(unit, name)
     if not UnitExists(unit) then return nil end
@@ -87,52 +140,154 @@ function ns.IdentifyPlayer(name)
     end
     for _, unit in ipairs(units) do
         local info = fromUnit(unit, name)
-        if info then return info end
+        if info then
+            ns.RememberPlayer(name, info)
+            return info
+        end
     end
 
-    return whoCache[name] or fromGuild(name)
+    local store = people()
+    local remembered = store and store[name]
+    local guild = fromGuild(name)
+
+    -- The roster is current and the store may be months old, so what the roster
+    -- knows wins -- but it never carries a race, so a remembered one fills that
+    -- gap rather than being thrown away.
+    if guild then
+        return {
+            className = guild.className or (remembered and remembered.className),
+            raceName  = remembered and remembered.raceName,
+            level     = guild.level or (remembered and remembered.level),
+            seen      = remembered and remembered.seen,
+            stale     = false,
+        }
+    end
+
+    if remembered then
+        local copy = {}
+        for key, value in pairs(remembered) do copy[key] = value end
+        copy.stale = not confirmed[name]
+        return copy
+    end
+    return nil
 end
 
 -- One /who per name per session. The server throttles these hard: asking on
 -- every window would get the later ones answered with nothing, so a name is
 -- asked about once and the answer kept.
+--
+-- The part that is easy to get wrong, and that I did get wrong: a who result
+-- only reaches the who LIST when SetWhoToUi is on. With it off -- which is the
+-- default, and what the game leaves it as whenever the Social window is shut --
+-- the answer is printed into the chat frame as text instead, GetNumWhoResults
+-- stays at zero, and the lookup appears to do nothing at all. Which is exactly
+-- what it appeared to do.
+--
+-- It is switched back off after reading, because leaving it on would swallow
+-- the player's own /who into a list they are not looking at.
 function ns.AskWho(name)
-    if not name or whoAsked[name] or whoCache[name] then return end
+    if not name or whoAsked[name] then return end
     if not C_FriendList or not C_FriendList.SendWho then return end
     whoAsked[name] = true
-    -- The exact-name tag. Without it the server pattern-matches and answers
-    -- with everyone whose name merely starts this way.
-    C_FriendList.SendWho("n-\"" .. name .. "\"", Enum and Enum.SocialWhoOrigin
+    whoPending[name] = true
+
+    if C_FriendList.SetWhoToUi and not (WhoFrame and WhoFrame:IsShown()) then
+        C_FriendList.SetWhoToUi(true)
+    end
+
+    -- Blizzard's own exact-name tag, used verbatim: a name typed without it is
+    -- treated as a prefix and answered with everybody who merely starts the
+    -- same way.
+    local query = WHO_TAG_EXACT and (WHO_TAG_EXACT .. name) or ("n-\"" .. name .. "\"")
+    C_FriendList.SendWho(query, Enum and Enum.SocialWhoOrigin
         and Enum.SocialWhoOrigin.Chat or nil)
 end
 
 function ns.ReadWhoResults()
     if not C_FriendList or not C_FriendList.GetNumWhoResults then return end
+
     local count = C_FriendList.GetNumWhoResults() or 0
     for i = 1, count do
         local info = C_FriendList.GetWhoInfo(i)
         if info and info.fullName then
-            whoCache[info.fullName] = {
+            ns.RememberPlayer(info.fullName, {
                 className = info.classStr,
                 raceName  = info.raceStr,
                 level     = info.level,
-            }
+            })
+            whoPending[info.fullName] = nil
             local window = windows[info.fullName]
             if window then Whisper:RefreshHeader(window) end
         end
     end
+
+    -- Anything still waiting was not found: offline, another faction, or a name
+    -- that does not exist. Saying so beats a header that waits forever.
+    for name in pairs(whoPending) do
+        whoPending[name] = nil
+        local window = windows[name]
+        if window then Whisper:RefreshHeader(window) end
+    end
+
+    if C_FriendList.SetWhoToUi and not (WhoFrame and WhoFrame:IsShown()) then
+        C_FriendList.SetWhoToUi(false)
+    end
 end
 
--- "Orc Shaman, 41" from whatever parts turned up, and nothing at all when none
--- did. Half a description is better than a line of placeholders.
-local function describe(info)
-    if not info then return nil end
-    local who = ((info.raceName or "") .. " " .. (info.className or "")):gsub("^%s+", "")
-    if who == "" then
-        return info.level and ("Level " .. info.level) or nil
+function ns.IsLookingUp(name)
+    return whoPending[name] == true
+end
+
+-- "seen 3 days ago". Rough on purpose: the point is whether this is current or
+-- a memory, not the hour it happened.
+function ns.SeenAgo(when)
+    if not when or not time then return nil end
+    local gap = time() - when
+    if gap < 3600 then return "seen just now" end
+    if gap < 86400 then
+        local hours = math.floor(gap / 3600)
+        return "seen " .. hours .. (hours == 1 and " hour ago" or " hours ago")
     end
-    if info.level then return who .. ", " .. info.level end
-    return who
+    local days = math.floor(gap / 86400)
+    if days < 30 then return "seen " .. days .. (days == 1 and " day ago" or " days ago")
+    end
+    local months = math.floor(days / 30)
+    return "seen " .. months .. (months == 1 and " month ago" or " months ago")
+end
+
+-- "Orc Shaman, 41" from whatever parts turned up, and never an empty line.
+--
+-- Every part of this can be missing and each gap is said rather than hidden. A
+-- guildmate has no race because the roster does not carry one; a stranger has
+-- nothing at all until the server answers; somebody you met months ago has
+-- everything, but out of date, and saying when you last saw them is the
+-- difference between a fact and a guess.
+local function describe(name, info)
+    if not info then
+        if ns.IsLookingUp(name) then return "Looking them up..." end
+        return "Unknown"
+    end
+
+    local who = ((info.raceName or "") .. " " .. (info.className or "")):gsub("^%s+", "")
+    local parts = {}
+    if who ~= "" then parts[#parts + 1] = who end
+    if info.level then
+        parts[#parts + 1] = (who ~= "" and ", " or "level ") .. info.level
+    end
+
+    local line = table.concat(parts)
+    if line == "" then
+        if ns.IsLookingUp(name) then return "Looking them up..." end
+        return "Unknown"
+    end
+
+    -- Remembered rather than current. Without this the window would state a
+    -- level from three months ago as though it were true today.
+    if info.stale then
+        local ago = ns.SeenAgo(info.seen)
+        if ago then line = line .. " - " .. ago end
+    end
+    return line
 end
 
 -- ---------------------------------------------------------------------------
@@ -276,7 +431,7 @@ end
 
 function Whisper:RefreshHeader(frame)
     frame.title:SetText(frame.name)
-    frame.subtitle:SetText(describe(ns.IdentifyPlayer(frame.name)) or "")
+    frame.subtitle:SetText(describe(frame.name, ns.IdentifyPlayer(frame.name)))
 end
 
 function Whisper:Open(name, said)

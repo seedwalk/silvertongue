@@ -193,12 +193,20 @@ end
 
 local whoSent = {}
 local whoResults = {}
+local whoToUi = false
 Enum = { SocialWhoOrigin = { Chat = 1 } }
+WHO_TAG_EXACT = "n-\""
 C_FriendList = {
-    SendWho = function(query) whoSent[#whoSent + 1] = query end,
-    GetNumWhoResults = function() return #whoResults end,
-    GetWhoInfo = function(i) return whoResults[i] end,
+    -- A who answer only reaches the list when this is on. Off, which is the
+    -- default, the server prints it into the chat frame instead and the list
+    -- stays empty -- which is what the window was showing.
+    SendWho = function(query) whoSent[#whoSent + 1] = { query = query, toUi = whoToUi } end,
+    SetWhoToUi = function(value) whoToUi = value and true or false end,
+    GetNumWhoResults = function() return whoToUi and #whoResults or 0 end,
+    GetWhoInfo = function(i) return whoToUi and whoResults[i] or nil end,
 }
+local now = 1757000000
+time = function() return now end
 
 -- The stock scrolling-list helpers the config window uses.
 local scrollOffset = setmetatable({}, { __mode = "k" })
@@ -1680,8 +1688,13 @@ check(window.title:GetText() == "Grumgar", "the window is not titled with their 
 
 -- We know nothing about a stranger, so one /who goes out, once.
 check(#whoSent == 1, "expected one who lookup, got %d", #whoSent)
-check(whoSent[1]:find("Grumgar", 1, true) ~= nil,
-      "the lookup did not ask about them: %s", tostring(whoSent[1]))
+check(whoSent[1].query:find("Grumgar", 1, true) ~= nil,
+      "the lookup did not ask about them: %s", tostring(whoSent[1].query))
+-- The lookup is worthless unless the answer is routed to the list first.
+check(whoSent[1].toUi == true,
+      "the lookup went out with the answer routed to chat, where we cannot read it")
+check(whoSent[1].query:find("n-", 1, true) == 1,
+      "the lookup did not ask for an exact name: %s", whoSent[1].query)
 -- The server throttles these hard, so asking twice about the same name has to
 -- be refused at the source rather than merely never happening to be called.
 clickLink("silvertongue:Grumgar")
@@ -1694,6 +1707,61 @@ whoResults = { { fullName = "Grumgar", level = 41, raceStr = "Orc", classStr = "
 ns.ReadWhoResults()
 check(window.subtitle:GetText() == "Orc Shaman, 41",
       "the who answer did not reach the header: %s", tostring(window.subtitle:GetText()))
+
+-- Nobody we have ever heard of says so, rather than showing a blank line.
+ns.Whisper:Open("Nobody")
+local nobody = ns.Whisper:Windows()["Nobody"]
+check(nobody.subtitle:GetText() == "Looking them up...",
+      "a stranger showed: %s", tostring(nobody.subtitle:GetText()))
+-- The server answers without them in it: not found, and the header says so
+-- instead of waiting forever.
+whoResults = {}
+ns.ReadWhoResults()
+check(nobody.subtitle:GetText() == "Unknown",
+      "a name the server did not know showed: %s", tostring(nobody.subtitle:GetText()))
+ns.Whisper:Close("Nobody")
+
+-- What we learn is kept. Closing the window and opening it months later must
+-- not throw away that Rhottyn is a troll -- and must not claim the level is
+-- current either.
+ns.Whisper:Close("Grumgar")
+local stored = addon.db.profile.people["Grumgar"]
+check(stored ~= nil and stored.raceName == "Orc" and stored.level == 41,
+      "what the server told us about Grumgar was not kept")
+
+-- Somebody met before this session, never seen since: remembered, and dated.
+addon.db.profile.people["Rhottyn"] = {
+    className = "Shaman", raceName = "Troll", level = 44, seen = now - 86400 * 3,
+}
+ns.Whisper:Open("Rhottyn")
+local rhottyn = ns.Whisper:Windows()["Rhottyn"]
+check(rhottyn.subtitle:GetText() == "Troll Shaman, 44 - seen 3 days ago",
+      "a remembered person showed: %s", tostring(rhottyn.subtitle:GetText()))
+ns.Whisper:Close("Rhottyn")
+
+-- Seeing them for real replaces the memory and drops the date: this is no
+-- longer something we recall, it is something we can see.
+target = { name = "Rhottyn", className = "Shaman", classToken = "SHAMAN",
+           raceName = "Troll", raceToken = "TROLL" }
+ns.Whisper:Open("Rhottyn")
+check(rhottyn.subtitle:GetText() == "Troll Shaman, 36",
+      "seeing them in person still read as a memory: %s", tostring(rhottyn.subtitle:GetText()))
+target = nil
+ns.Whisper:Close("Rhottyn")
+
+-- The store is bounded, and it is the oldest that goes.
+for i = 1, 340 do
+    ns.RememberPlayer("Filler" .. i, { className = "Rogue", level = i })
+    addon.db.profile.people["Filler" .. i].seen = now - (400 - i) * 86400
+end
+local kept = 0
+for _ in pairs(addon.db.profile.people) do kept = kept + 1 end
+check(kept <= 300, "the store grew to %d people", kept)
+check(addon.db.profile.people["Filler1"] == nil, "the oldest entry was kept")
+check(addon.db.profile.people["Filler340"] ~= nil, "the newest entry was dropped")
+
+-- Put Grumgar's window back: the checks further down are about it.
+ns.Whisper:Open("Grumgar")
 
 -- A guildmate is known without asking anyone: level and class, and no race,
 -- because the roster does not carry one.
