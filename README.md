@@ -28,9 +28,10 @@ have an extra folder in between, the game will not see it.
 
 There is nothing to configure. It works on any character the moment it loads.
 
-**Which build to take.** Releases tagged `v0.1.0` are finished; `rc-0.1.0` are
-candidates that pass the tests but have had less time in a real game. Both
-install identically.
+**Which build to take.** A tag like `v0.2.0` is a finished release; `rc-0.2.0`
+is a candidate that passes the tests but has had less time in a real game. Both
+install identically, and the download button on the site always points at
+whichever is newest.
 
 **Updating.** Replace the folder. Your own phrases, your menu order and where
 you dragged things live in the game's saved variables, not in the addon folder,
@@ -405,7 +406,7 @@ game API stubbed: that the TOC and the file tree agree, that the phrase library
 holds together, and that the interface behaves — including that nothing reaches
 chat except through an explicit send. They run on every push.
 
-Releases are cut by tagging. `rc-0.1.0` publishes a pre-release, `v0.1.0` a
+Releases are cut by tagging. `rc-0.2.0` publishes a pre-release, `v0.2.0` a
 finished one, and the zip contains only the addon folder. The version in the TOC
 is stamped from the tag, so it is never out of step.
 
