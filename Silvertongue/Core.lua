@@ -16,6 +16,17 @@ function ns.Probe()
         ns.addon:Print("  control " .. i .. ": "
             .. (control and (control:IsShown() and "shown" or "hidden") or "never built"))
     end
+    ns.addon:Print("--- conversations kept ---")
+    local kept, lines = 0, 0
+    for key, entries in pairs(ns.addon.db.profile.log or {}) do
+        kept = kept + 1
+        lines = lines + #entries
+        if kept <= 8 then
+            ns.addon:Print("  " .. key .. ": " .. #entries .. " lines")
+        end
+    end
+    ns.addon:Print("  " .. kept .. " conversations, " .. lines .. " lines in total")
+
     ns.ProbeLFG()
 end
 

@@ -280,7 +280,11 @@ UnitFactionGroup = function(u)
     return (m and m.faction) or "Horde"
 end
 UnitExists   = function(u) return u ~= nil and resolve(u) ~= nil end
-UnitName     = function(u) local m = resolve(u); return m and m.name end
+UnitName     = function(u)
+    local m = resolve(u)
+    if not m then return nil end
+    return m.name, m.realm
+end
 UnitClass    = function(u) local m = resolve(u); return m and m.className, m and m.classToken end
 UnitRace     = function(u) local m = resolve(u); return m and m.raceName, m and m.raceToken end
 UnitIsUnit   = function(a, b) local x, y = resolve(a), resolve(b); return x ~= nil and x == y end
@@ -2030,6 +2034,30 @@ check(ns.CanWhisperTarget("target") == false, "it thought it could whisper the o
 -- The gesture is the half that does cross: an emote is an animation, and it
 -- arrives in the reader's own language.
 check(allianceContext.emoteTarget == "Aeluneth", "the gesture was not aimed at them")
+
+-- Somebody on a connected realm. Chat calls them Arthuruno-Dreamscythe and the
+-- unit calls them Arthuruno, and filing the conversation under one while
+-- looking it up under the other is how a transcript came up empty for exactly
+-- the people most likely to have one.
+target = { name = "Arthuruno", realm = "Dreamscythe", className = "Priest",
+           classToken = "PRIEST", raceName = "Human", raceToken = "Human" }
+ns.TargetUI:Refresh()
+whisperEvent("CHAT_MSG_WHISPER", "hey", "Arthuruno-Dreamscythe")
+local fromTarget = ns.Contexts:Target()
+local doorway
+for _, action in ipairs(fromTarget.actions or {}) do
+    if action.label == "Open a window" then doorway = action end
+end
+check(doorway ~= nil, "no way to open a window on a cross-realm player")
+doorway.run()
+check(ns.Whisper:IsOpen("Arthuruno-Dreamscythe"),
+      "opening from the target made a second window under a different name")
+local reopened = ns.Whisper:Windows()["Arthuruno-Dreamscythe"]
+check(table.concat(reopened.log.__lines or {}, "\n"):find("hey", 1, true) ~= nil,
+      "the window opened from the target showed an empty conversation")
+ns.Whisper:Close("Arthuruno-Dreamscythe")
+target = nil
+ns.TargetUI:Refresh()
 
 -- A hostile target has nobody to whisper, so the door is not there.
 target = { name = "Snarl", hostile = true }

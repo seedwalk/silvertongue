@@ -110,7 +110,7 @@ end
 
 local function fromUnit(unit, name)
     if not UnitExists(unit) then return nil end
-    if UnitName(unit) ~= name then return nil end
+    if ns.UnitFullName(unit) ~= name then return nil end
     local className = UnitClass(unit)
     local raceName  = UnitRace(unit)
     return {
@@ -439,7 +439,7 @@ function Whisper:Build(name, bnetID)
     frame.input = input
 
     frame.trade:SetScript("OnClick", function()
-        if UnitExists("target") and UnitName("target") == name and InitiateTrade then
+        if ns.UnitFullName("target") == name and InitiateTrade then
             InitiateTrade("target")
         end
     end)
@@ -598,13 +598,13 @@ function Whisper:UpdateActions(frame)
         return
     end
 
-    local targeted = UnitExists("target") and UnitName("target") == frame.name
+    local targeted = ns.UnitFullName("target") == frame.name
     frame.trade:SetEnabled(targeted and true or false)
     frame.trade.icon:SetAlpha(targeted and 0.85 or 0.3)
 
     local already = false
     for _, unit in ipairs(ns.GroupUnits and ns.GroupUnits() or {}) do
-        if UnitName(unit) == frame.name then already = true end
+        if ns.UnitFullName(unit) == frame.name then already = true end
     end
     frame.invite:SetEnabled(not already)
     frame.invite.icon:SetAlpha(already and 0.3 or 0.85)

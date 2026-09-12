@@ -688,7 +688,9 @@ function Engine:BuildUnitContext(unit)
     local raceName, raceToken   = UnitRace(unit)
     return {
         unit       = unit,
-        name       = UnitName(unit),
+        -- With the realm attached when there is one, so this name matches the
+        -- one chat uses and a conversation files under a single key.
+        name       = ns.UnitFullName(unit),
         className  = className,
         classToken = classToken,
         raceName   = raceName,

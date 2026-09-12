@@ -258,6 +258,21 @@ function ns.JoinLookingForGroupAndSend(text)
     end
 end
 
+-- A unit's name as chat writes it.
+--
+-- UnitName drops the realm, and the chat events never do: a whisper from
+-- somebody on a connected realm arrives as "Arthuruno-Dreamscythe" while the
+-- unit behind it answers "Arthuruno". Anything that files a conversation under
+-- one and looks it up under the other finds nothing, which is how a transcript
+-- came up empty for exactly the people most likely to have one.
+function ns.UnitFullName(unit)
+    if not unit or not UnitExists(unit) then return nil end
+    local name, realm = UnitName(unit)
+    if not name then return nil end
+    if realm and realm ~= "" then return name .. "-" .. realm end
+    return name
+end
+
 -- A player of the other side.
 --
 -- This is not the same question as "can I attack them", and assuming it was is
