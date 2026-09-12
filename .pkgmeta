@@ -1,0 +1,21 @@
+# How the CurseForge packager builds the zip. The addon lives in a subfolder of
+# this repo, so the folder is moved up to the root of the package: what the
+# player unzips has to be Silvertongue/, not Silvertongue/Silvertongue/.
+package-as: Silvertongue
+
+move-folders:
+  Silvertongue/Silvertongue: Silvertongue
+
+# Everything here is for working on the addon, not for running it.
+ignore:
+  - .github
+  - .gitignore
+  - docs
+  - tests
+  - todos
+  - install.sh
+  - CLAUDE.md
+
+# The libraries are vendored on purpose: checked in, versioned with the addon,
+# and they load whether or not anything else is installed. No externals.
+enable-nolib-creation: no

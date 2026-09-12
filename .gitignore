@@ -8,3 +8,6 @@ CLAUDE.md
 
 # Working notes, not part of the addon.
 todos/
+
+# The CurseForge packager builds here.
+.release/
