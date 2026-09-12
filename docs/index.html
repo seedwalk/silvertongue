@@ -237,8 +237,9 @@ tailwind.config = {
       </div>
 
       <figure class="reveal">
-        <!-- docs/img/menu.png, if supplied: a real capture replaces the drawing. -->
-        <img src="img/menu.png" alt="The menu open beside a targeted player" class="hidden w-full rounded-xl border border-white/10 shadow-2xl"
+        <!-- The real thing. The drawing below it is the fallback, and removes
+             itself the moment this loads. -->
+        <img src="img/shot-menu.jpg" alt="The menu open beside a targeted player" class="hidden w-full rounded-xl border border-white/10 shadow-2xl"
              onload="this.classList.remove('hidden'); var d=document.getElementById('menu-drawing'); if(d) d.remove()"
              onerror="this.remove()">
 
@@ -480,6 +481,51 @@ tailwind.config = {
       library, never as a copy of it — so new phrases in later versions still reach you,
       underneath your own.
     </p>
+  </div>
+</section>
+
+<div class="hairline mx-auto h-px max-w-5xl"></div>
+
+<!-- ══════════════════ what it looks like ══════════════════ -->
+<section class="px-6 py-28 sm:py-36">
+  <div class="mx-auto max-w-6xl">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="reveal text-[11px] uppercase tracking-[0.28em] text-silver-500">In the game</p>
+      <h2 class="reveal mt-5 font-display text-[clamp(1.8rem,5vw,2.7rem)] leading-tight text-white">
+        None of this is a mockup
+      </h2>
+    </div>
+
+    <div class="mt-14 grid gap-8 lg:grid-cols-2">
+      <figure class="reveal">
+        <img src="img/shot-whisper.jpg" alt="A whisper window: the conversation, the menu of things to answer with, and the line it produced"
+             loading="lazy" class="w-full rounded-xl border border-white/10 shadow-2xl">
+        <figcaption class="mt-3 text-sm leading-relaxed text-slate-400">
+          A whisper window. The conversation is kept, the menu answers what people actually ask,
+          and the line it produced is waiting on the Whisper button — which is the send.
+        </figcaption>
+      </figure>
+
+      <figure class="reveal" style="transition-delay:.08s">
+        <img src="img/shot-lfg.jpg" alt="A row of the group browser offering the role that listing is short of"
+             loading="lazy" class="w-full rounded-xl border border-white/10 shadow-2xl">
+        <figcaption class="mt-3 text-sm leading-relaxed text-slate-400">
+          A listing in the group browser. It read what they are running and what they are short
+          of, and offers only the place your class could fill.
+        </figcaption>
+      </figure>
+
+      <figure class="reveal lg:col-span-2" style="transition-delay:.16s">
+        <img src="img/shot-library.jpg" alt="The library, showing every line with the layer it came from"
+             loading="lazy" class="w-full rounded-xl border border-white/10 shadow-2xl">
+        <figcaption class="mt-3 text-sm leading-relaxed text-slate-400">
+          The library. Every line this character can say, each one tagged with where it came
+          from — <span class="text-slate-200">shared</span> or
+          <span class="text-slate-200">your race</span> — because that tag is what decides who a
+          change applies to when you drop it or write your own.
+        </figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 

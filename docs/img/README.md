@@ -10,8 +10,18 @@ Both are Blizzard's, used on a non-commercial fan page for an addon for their
 game. If either fails to load the page still works: the hero falls back to the
 drawn ridgeline and the logo removes itself.
 
-Still open: `menu.png`, a real capture of a menu open beside a targeted player.
-The page draws a mockup until that file exists, and swaps it in on load.
+Screenshots, all taken in the game rather than drawn:
+
+- `shot-menu.jpg` — the fan on a target with its menu open. Replaces the drawn
+  mockup in the second section, which removes itself when this loads.
+- `shot-whisper.jpg` — a whisper window: the conversation, the menu of things to
+  answer with, and the line it produced waiting on the send.
+- `shot-lfg.jpg` — a listing row offering the role that listing is short of.
+- `shot-library.jpg` — the library, with the origin tag beside every line, which
+  is the thing that explains scoping without a paragraph about it.
+
+JPEG at 88, capped at 1100 wide and never enlarged: a screenshot scaled up is a
+screenshot with soft text, and interface text is the whole point of these.
 
 - `logo.png` — the project mark at 400x400, for CurseForge's project avatar and
   anywhere else a file is wanted. The same speech bubble the page draws as SVG,
