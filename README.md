@@ -96,9 +96,22 @@ What the phrases offer depends on who they are:
 | Someone in your group | the same, minus asking to group — they already are |
 | A warlock | all of the above plus Distrust, Demon and Fel Magic |
 | An NPC | greetings and courtesies. No innkeeper is going to accept your duel |
-| Anything hostile | Challenge, Taunt, Mock, Respect, Victory, Warning |
+| The other faction | Challenge, Taunt, Mock, Respect, Victory, Warning |
+| Anything hostile | the same six |
 
 An enemy gets **Respect** on purpose. A worthy opponent deserves a word.
+
+**The other faction is not a friend just because you cannot hit him.** An
+Alliance player standing peacefully in a neutral zone cannot be attacked, and
+an earlier version therefore offered him a group invite. Whose side they are on
+is a different question from whether a fight is possible, and it is the one that
+decides what is worth saying.
+
+Speaking to them is still worth doing, though not for them: cross-faction speech
+arrives as gibberish, so the only channels offered are Say and Yell and the
+tooltips say plainly that your own side nearby is the audience. What does cross
+is the **gesture** — an emote is an animation and a sentence in the reader's own
+language, so a bow or a rude one lands when nothing typed does.
 
 ### In a group
 
@@ -158,8 +171,20 @@ are any, and otherwise falls back to naming the classes — which are always
 true. It never reads a role off a class: a warrior might be fury, and claiming
 you have a tank when you do not is how a group wastes an evening.
 
-If you have not joined the LookingForGroup channel, the line simply will not
-send. It is never said aloud to whoever is standing next to you instead.
+**Roles.** On your own the advert can say what you would be doing — *"LFG
+Scarlet Monastery, healing. Troll shaman, 36"* — and only for the roles your
+class could actually take. That is the first thing a group leader reads for.
+Specs are not readable, so this stays something you choose to say rather than
+something inferred about you.
+
+**The channel.** If you are not in **LookingForGroup**, it joins you, because
+pressing "looking for a group" is a clear statement that you want to be where
+groups are found. It also makes sure a chat window is actually carrying the
+channel — being in one and seeing it are different things, and advertising
+somewhere you cannot read is not advertising: the replies come back there.
+
+The line is never said aloud to whoever is standing next to you instead. If the
+channel cannot be reached it says so and sends nothing.
 
 ### In the group browser
 
@@ -184,11 +209,85 @@ actually short of, and that your class could fill** — a shaman is offered the
 open healer and damage places, never the tank one.
 
 `Invite them` only appears when the game would allow it — a lone player, and you
-in a position to invite. On **your own** listing the whole menu flips: it
-recruits for you rather than offering to join yourself.
+in a position to invite.
+
+On **your own** listing you get both halves, because both are true: the listing
+is the group you are forming, so asking for what it is short of belongs there —
+and while you are still the only one in it, you are also somebody offering
+himself. Alone, the advert about you leads; once somebody has joined, recruiting
+does.
 
 Nothing here searches on your own behalf: it reads whatever your own refresh
 brought back.
+
+### Whispers
+
+A whisper is the one conversation the addon could not reach. The person is not
+your target, not in your group, not in a listing — they are a line of text that
+scrolls away, and once it has scrolled there is nothing left to click.
+
+So whispers, guild lines and the lines the game writes itself grow the bubble
+beside the name:
+
+```
+[Baddiebolts] 💬 has invited you to join a group.
+[Diego Viñas] 💬 (Olfer) has come online.
+```
+
+Press it and that person gets **a window of their own**:
+
+```
+┌──────────────────────────────────────┐
+│ 💬 Rhottyn                      − ✕ │
+│    Troll Shaman, 44 - seen 3 days ago│
+│                                      │
+│ 13:36 Rhottyn: can you make me one?  │
+│ 13:36 Gromkar: I can do that. Where? │
+│                                      │
+│ 💬 👥 🪙                             │
+│ [                                  ] │
+└──────────────────────────────────────┘
+```
+
+- **One per person, several at once**, draggable, and they stay put while you do
+  other things. This is the only window in the addon with an ✕, because
+  everything else behaves like a context menu and closes when you click away.
+- **The conversation is kept**, both sides, across sessions. Open somebody six
+  weeks later and it is still there. Five hundred lines per person, a hundred
+  and twenty people, nothing older than six months — generous enough for months
+  of conversation and bounded enough that the saved variables file does not grow
+  forever. The `−` folds it away when three open transcripts are too much screen.
+- **There is a line to type in**, because it is a whisper window. It never takes
+  the keyboard on its own: you click in to type, and Escape or Enter hands the
+  keys back. Autofocus here would mean pressing W to walk and writing a *w* into
+  somebody's whisper.
+- **Speak** opens the phrases — answering things people *ask*, which the party
+  lines never covered: *on my way*, *in a moment*, *cannot right now*, *where are
+  you*, and *yes, I can do that*, which is layered by your class because what
+  people pester you for depends on what you can do. Mages get portals, warlocks
+  summons, rogues locks.
+- **No gesture goes out with a whisper.** A bow aimed at someone who is not on
+  your screen plays to an empty room.
+- **Invite** works by name. **Trade** is off unless they are standing next to
+  you and selected, which in a whisper is the exception.
+
+**Who they are** is pieced together from whatever the game will say, and every
+gap is stated rather than hidden. Every chat message carries the sender's GUID,
+which is race and class for nothing and works across realms; the guild roster
+adds level; a Battle.net friend the client simply knows outright. A line that is
+remembered rather than current is dated — *seen 3 days ago* — because stating a
+level from three months ago as though it were true today is worse than saying
+nothing. If nothing is known, it says **Unknown**.
+
+**Battle.net friends** get a window too, keyed by account rather than by
+character, since the same friend is somebody else tomorrow and the conversation
+is the same one. Those go out through the Battle.net route, so they reach
+someone on the other faction or another realm, where an ordinary whisper would
+simply fail.
+
+The chat bubble can be switched off per kind — whispers, guild, system lines,
+friends — and the target board has an **Open a window** row, which is how a
+conversation starts before they have spoken.
 
 ### Gestures
 
@@ -252,13 +351,15 @@ locked out.
 | `/silvertongue attitude` | on the Attitude tab |
 | `/silvertongue anchors` | show or hide the controls on the unit frames |
 | `/silvertongue minimap` | show or hide the minimap button |
+| `/silvertongue probe` | what the addon found on your frames, and what it has stored |
+| `/silvertongue chatdebug` | print the next chat lines raw, for reporting a bug |
 | `/silver` | short form of all of the above |
 
 ---
 
 ## What you actually get
 
-**Around 1,400 handwritten lines.** No generator, no AI, no templates stitched together.
+**Around 1,600 handwritten lines.** No generator, no AI, no templates stitched together.
 Somebody wrote all of them.
 
 They adapt to who you are and who you are talking to. An orc shaman praising a
@@ -271,11 +372,13 @@ race-and-class pairings have a line that belongs to the pairing rather than to
 either half: a blood elf paladin knows his order took the Light by force, and
 says so where no other paladin does.
 
-**An honest note on the voice.** The shared pool underneath it all is written in
-an orcish register — blunt, proud, ancestor-minded. The race layer colours over
-it, but on any intent a race does not touch, a draenei still borrows an orc's
-cadence. Fixing that means giving a race its own lines outright, which the addon
-supports and which is writing phrases rather than writing code.
+**On the shared voice.** The pool underneath everything was once written in an
+orcish register, and every other race borrowed it. An audit found 18% of it
+carried words belonging to one people — ancestors, spirits, the Horde, brothers
+— so those 63 lines were moved into the orc layer where they belong and the
+other nine races were written up to match on the same intents. The shared pool
+is 369 neutral lines now, and a test fails if a racial word appears in one of
+them. A line that needs a people behind it goes in a race layer.
 
 ---
 
