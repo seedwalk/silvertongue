@@ -111,6 +111,10 @@ PlayerFrame, TargetFrame = newMock("Frame"), newMock("Frame")
 PlayerFrameManaBar = newMock("StatusBar")
 PlayerLevelText = newMock("FontString")
 for i = 1, 4 do _G["PartyMemberFrame" .. i] = newMock("Frame") end
+-- A client where the party frames are named something else entirely.
+local function hidePartyFrames()
+    for i = 1, 4 do _G["PartyMemberFrame" .. i] = nil end
+end
 
 local emoted = {}
 function DoEmote(token, target) emoted[#emoted + 1] = { token, target } end
@@ -1513,6 +1517,17 @@ check(type(listing.rebuild) == "function", "someone else's listing never rereads
 check(own.rebuild() ~= nil, "rereading your own listing returned nothing")
 listings[9] = nil
 check(own.rebuild() == nil, "a listing that went away still reread as present")
+
+-- A control with no frame to hang off must still land somewhere on screen.
+-- Built without an anchor it is simply invisible, which is what happened when
+-- the party frames were not named what the code expected.
+for i = 1, 4 do
+    local control = _G["SilvertongueAnchorPARTY" .. i]
+    check(control ~= nil, "party control %d was never built", i)
+    check(control.__point ~= nil, "party control %d was built with no anchor", i)
+end
+check(_G.SilvertongueAnchorPARTY_ALL ~= nil, "the group control was never built")
+check(_G.SilvertongueAnchorPARTY_ALL.__point ~= nil, "the group control has no anchor")
 
 -- Advertising for a group lives in the group window, not on your portrait.
 for _, control in ipairs(ns.Anchors.fanControls) do

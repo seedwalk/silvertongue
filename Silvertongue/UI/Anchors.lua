@@ -400,14 +400,29 @@ end
 -- The group: one icon per member, plus one for the group as a whole.
 --------------------------------------------------------------------------------
 
+-- The party frames have been renamed more than once across versions, so try the
+-- shapes that exist rather than one guess. Returning nil is not fatal: the
+-- caller falls back to the screen, where the control can at least be seen and
+-- dragged somewhere useful.
+local function partyMemberFrame(i)
+    return _G["PartyMemberFrame" .. i]
+        or (_G.PartyFrame and _G.PartyFrame["MemberFrame" .. i])
+        or _G["CompactPartyFrameMember" .. i]
+        or nil
+end
+
 function Anchors:CreateParty()
     if self.partyBuilt then return end
     self.partyBuilt = true
 
     for i = 1, 4 do
-        local frame = _G["PartyMemberFrame" .. i]
-        local control = createIcon("PARTY" .. i, frame,
-            { point = "TOPLEFT", relPoint = "TOPRIGHT", x = -8, y = -4 },
+        local frame = partyMemberFrame(i)
+        -- Anchored to the member's frame when there is one; otherwise stacked
+        -- down the left of the screen, roughly where those frames live.
+        local default = frame
+            and { point = "TOPLEFT", relPoint = "TOPRIGHT", x = -8, y = -4 }
+            or { point = "TOPLEFT", relPoint = "TOPLEFT", x = 30, y = -190 - (i - 1) * 50 }
+        local control = createIcon("PARTY" .. i, frame or UIParent, default,
             function(self)
                 local unit = "party" .. i
                 if not UnitExists(unit) then return end
@@ -420,8 +435,11 @@ function Anchors:CreateParty()
 
     -- The group as a whole. Its own control, above the party block: when the
     -- group wipes you are looking there, not at your own portrait.
-    local control = createIcon("PARTY_ALL", PartyMemberFrame1,
-        { point = "BOTTOMLEFT", relPoint = "TOPLEFT", x = 8, y = 10 },
+    local first = partyMemberFrame(1)
+    local allDefault = first
+        and { point = "BOTTOMLEFT", relPoint = "TOPLEFT", x = 8, y = 10 }
+        or { point = "TOPLEFT", relPoint = "TOPLEFT", x = 30, y = -170 }
+    local control = createIcon("PARTY_ALL", first or UIParent, allDefault,
         function(self)
             partyBoard():Toggle(self, ns.Contexts:PartyAll())
         end)
@@ -465,6 +483,17 @@ function Anchors:SetFanOpen(open)
         if self.fanOpen and enabled() then control:Show() else control:Hide() end
     end
     if not self.fanOpen then playerBoard():Close() end
+end
+
+-- Reports what the party controls actually attached to.
+function Anchors:DescribeParty()
+    local lines = {}
+    for i = 1, 4 do
+        local frame = partyMemberFrame(i)
+        lines[#lines + 1] = "  member " .. i .. ": "
+            .. (frame and (frame:GetName() or "an unnamed frame") or "no frame found, using the screen")
+    end
+    return lines
 end
 
 function Anchors:SetEnabled(on)

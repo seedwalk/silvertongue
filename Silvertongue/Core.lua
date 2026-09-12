@@ -6,6 +6,19 @@ local ADDON, ns = ...
 -- actually has. None of the installed addons touch the LFG tool, so there was
 -- no evidence to read: rather than guess at names and ship something that
 -- silently does nothing, this asks the client directly.
+function ns.Probe()
+    ns.addon:Print("--- party frames ---")
+    for _, line in ipairs(ns.Anchors:DescribeParty()) do ns.addon:Print(line) end
+    ns.addon:Print("  in a group: " .. tostring(IsInGroup()) .. ", in a raid: " .. tostring(IsInRaid()))
+    ns.addon:Print("  controls on: " .. tostring(ns.addon.db.profile.anchorsEnabled))
+    for i = 1, 4 do
+        local control = _G["SilvertongueAnchorPARTY" .. i]
+        ns.addon:Print("  control " .. i .. ": "
+            .. (control and (control:IsShown() and "shown" or "hidden") or "never built"))
+    end
+    ns.ProbeLFG()
+end
+
 function ns.ProbeLFG()
     local CANDIDATES = {
         "LFGBrowseFrame", "LFGBrowseFrameButton1", "LFGBrowseSearchEntry1",
@@ -175,8 +188,8 @@ function Silvertongue:HandleSlash(input)
         self:Print(self.db.profile.anchorsEnabled
             and "Frame controls shown. Right-click and drag to move them."
             or "Frame controls hidden.")
-    elseif arg == "lfgprobe" then
-        ns.ProbeLFG()
+    elseif arg == "probe" or arg == "lfgprobe" then
+        ns.Probe()
     elseif arg == "config" or arg == "phrases" or arg == "library" then
         ns.Config:Toggle()
     elseif TAB_ARGS[arg] then
@@ -189,7 +202,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|lfgprobe]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe]")
     end
 end
 
