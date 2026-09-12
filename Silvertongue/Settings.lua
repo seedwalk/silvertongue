@@ -247,10 +247,11 @@ end
 function ns.JoinLookingForGroupAndSend(text)
     local NAME = "LookingForGroup"
 
-    local frame = (FCF_GetCurrentChatFrame and FCF_GetCurrentChatFrame()) or DEFAULT_CHAT_FRAME
-    local frameID = (FCF_GetCurrentChatFrameID and FCF_GetCurrentChatFrameID())
-        or (frame and frame.GetID and frame:GetID())
-        or 1
+    -- The main chat window, not "the current" one. The probe answered 10 for
+    -- current, which is a temporary window -- adding the channel there would
+    -- join you to a channel whose lines land somewhere you are not looking.
+    local frame = DEFAULT_CHAT_FRAME
+    local frameID = (frame and frame.GetID and frame:GetID()) or 1
 
     if JoinPermanentChannel then
         JoinPermanentChannel(NAME, nil, frameID, 1)

@@ -38,6 +38,28 @@ end
 -- reasons I inferred rather than measured. This measures: which of the calls
 -- exist, what the channel id is before and after, what the join returned, and
 -- what the client thinks you are in.
+-- Sends one line to the LookingForGroup channel through exactly the call the
+-- addon uses, and says which id it used.
+--
+-- This exists because the join turned out to be a red herring: the probe showed
+-- fede already in the channel, as id 2, so the join branch never ran and
+-- whatever failed failed on the send itself. A blocked call cannot be caught by
+-- pcall -- the client prints its own line and stops -- so the only way to tell
+-- a block from a silent no-op is to watch whether this reaches the channel.
+function ns.ProbeChannelSend()
+    local id = ns.LookingForGroupChannel()
+    ns.addon:Print("--- channel send probe ---")
+    ns.addon:Print("  LookingForGroup id: " .. tostring(id))
+    if not id then
+        ns.addon:Print("  not in the channel, so there is nothing to test here")
+        return
+    end
+    ns.addon:Print("  calling SendChatMessage(..., \"CHANNEL\", nil, " .. id .. ")")
+    SendChatMessage("Silvertongue test, ignore me.", "CHANNEL", nil, id)
+    ns.addon:Print("  the call returned. If nothing appeared in channel " .. id
+        .. ", the client refused it.")
+end
+
 function ns.ProbeJoin()
     local NAME = "LookingForGroup"
     local say = function(line) ns.addon:Print(line) end
@@ -283,6 +305,8 @@ function Silvertongue:HandleSlash(input)
             or "Frame controls hidden.")
     elseif arg == "probe" or arg == "lfgprobe" then
         ns.Probe()
+    elseif arg == "sendtest" then
+        ns.ProbeChannelSend()
     elseif arg == "joindebug" then
         ns.ProbeJoin()
     elseif arg == "chatdebug" then
@@ -299,7 +323,7 @@ function Silvertongue:HandleSlash(input)
         end
         self:Print(hidden and "Minimap button hidden." or "Minimap button shown.")
     else
-        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug|joindebug]")
+        self:Print("Usage: /silvertongue [panel|anchors|general|party|target|faction|class|attitude|minimap|probe|chatdebug|joindebug|sendtest]")
     end
 end
 
