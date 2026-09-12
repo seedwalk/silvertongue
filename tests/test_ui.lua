@@ -1672,8 +1672,12 @@ do
     -- and while you are the only one in it you are also somebody offering
     -- himself. An earlier version picked one and took the recruiting away.
     check(offered.SOLO ~= nil, "your own listing did not offer to advertise you")
-    check(offered.NEED_MORE ~= nil and offered.NEED_TANK ~= nil,
+    -- Alone it recruits with the solo lines, which ask for the role without
+    -- reciting a roster of one person.
+    check(offered.NEED_MORE_SOLO ~= nil and offered.NEED_TANK_SOLO ~= nil,
           "your own listing stopped offering to recruit")
+    check(offered.NEED_TANK == nil,
+          "on your own it asked for a tank while listing what 'we' have")
 
     -- Alone, the advert about you leads.
     local firstSolo, firstNeed
@@ -1702,6 +1706,16 @@ do
     check(advert:find("^LFG ") ~= nil, "the advert does not open with LFG: %s", advert)
     check(advert:find("{") == nil, "the advert left a placeholder: %s", advert)
 
+    -- And the line itself never says "we" about one person.
+    local board9b = ns.Board:New("Listing")
+    board9b:Open(nil, solo)
+    board9b:Pick({ "LFG", "NEED_TANK_SOLO", "Ask for a tank" }, nil)
+    local ask = ns.Display.edit:GetText()
+    check(ask:lower():find("tank", 1, true) ~= nil, "the tank ask never says tank: %s", ask)
+    check(ask:lower():find("we have", 1, true) == nil,
+          "on your own it still recited what 'we' have: %s", ask)
+    check(ask:find("{") == nil, "the ask left a placeholder: %s", ask)
+
     -- Once somebody joins, it is a group, and then recruiting is the point.
     listings[9].numMembers = 2
     local joined = ns.LFGBrowse:BuildContext(9)
@@ -1710,6 +1724,7 @@ do
         if entry ~= ns.SEP then now2[entry[2]] = true end
     end
     check(now2.NEED_MORE ~= nil, "a listing with two in it stopped recruiting")
+    check(now2.NEED_MORE_SOLO == nil, "two people still used the on-your-own lines")
     check(now2.SOLO ~= nil, "a group of two could no longer say it is looking")
     -- With somebody in it, recruiting leads instead.
     local leadSolo, leadNeed
@@ -2002,6 +2017,7 @@ check(transcript:find("on my way", 1, true) ~= nil, "our own reply was not recor
 check(transcript:find("Silvertongue:", 1, true) ~= nil,
       "our own reply is not marked as ours: %s", transcript)
 
+do
 -- An empty conversation says so rather than showing an empty box. Nothing
 -- recorded and nothing rendered look identical otherwise, and telling them
 -- apart was costing a round trip through the game each time.
@@ -2022,6 +2038,8 @@ check(shown:find("first line", 1, true) ~= nil, "the first line did not appear: 
 check(shown:find("Nothing said yet", 1, true) == nil,
       "the placeholder stayed once there was a conversation")
 ns.Whisper:Close("Hollow")
+
+end
 
 -- A whisper with no window open is still written down: the conversation is the
 -- record, not the window.

@@ -132,13 +132,17 @@ function LFGBrowse:BuildOwnListingContext(result)
     -- Recruiting: everything at once, then the roles the game says are still
     -- open. Asking for a healer you already have is how a listing gets ignored.
     local function recruit(list)
+        -- Alone, the lines that recite what the group holds read as a roster of
+        -- yourself: "need a tank, we have 1 dps" is one person describing
+        -- himself in the plural. The solo pools ask for the role and stop.
+        local suffix = alone and "_SOLO" or ""
         if result.short then
-            list[#list + 1] = { "LFG", "NEED_MORE", "Fill the group" }
+            list[#list + 1] = { "LFG", "NEED_MORE" .. suffix, "Fill the group" }
         end
         local ROLE_NEED = {
-            TANK    = { "NEED_TANK",   "Ask for a tank"   },
-            HEALER  = { "NEED_HEALER", "Ask for a healer" },
-            DAMAGER = { "NEED_DPS",    "Ask for damage"   },
+            TANK    = { "NEED_TANK" .. suffix,   "Ask for a tank"   },
+            HEALER  = { "NEED_HEALER" .. suffix, "Ask for a healer" },
+            DAMAGER = { "NEED_DPS" .. suffix,    "Ask for damage"   },
         }
         for _, role in ipairs(result.openRoles or {}) do
             local need = ROLE_NEED[role]

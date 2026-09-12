@@ -68,6 +68,41 @@ ns.Phrases.LFG = {
         "LFG {dungeon} -- {level} {race} {class}, dps and no fuss.",
     },
 
+    -- The same asks, for when the listing holds only you. The ones below recite
+    -- what the group has, which reads as a lie when the group is one person:
+    -- "need a tank, we have 1 dps" is a roster of yourself.
+    NEED_MORE_SOLO = {
+        "LFM {dungeon}. It is just me so far -- everything is open.",
+        "LFM {dungeon}, starting from nothing. Whisper me and we build it.",
+        "LFM {dungeon} -- I have the listing and nobody in it yet. Come and fix that.",
+        "LFM {dungeon}. First one in picks the pace.",
+        "LFM {dungeon}, all four places open. I am not fussy.",
+    },
+
+    NEED_TANK_SOLO = {
+        "LFM {dungeon} -- need a tank. I will build the rest around you.",
+        "LFM {dungeon}, tank wanted first. Everything else follows.",
+        "LFM {dungeon} -- looking for a tank to start with. Whisper me.",
+        "LFM {dungeon}. Give me a tank and I will find the rest.",
+        "LFM {dungeon} -- a tank and this group happens.",
+    },
+
+    NEED_HEALER_SOLO = {
+        "LFM {dungeon} -- need a healer. I will build the rest around you.",
+        "LFM {dungeon}, healer wanted first. The rest is easy to find.",
+        "LFM {dungeon} -- looking for a healer to start with. Whisper me.",
+        "LFM {dungeon}. Give me a healer and the rest follows.",
+        "LFM {dungeon} -- a healer and we are halfway there.",
+    },
+
+    NEED_DPS_SOLO = {
+        "LFM {dungeon} -- need damage. Whisper me.",
+        "LFM {dungeon}, looking for damage to start with.",
+        "LFM {dungeon} -- damage wanted. I am building this from scratch.",
+        "LFM {dungeon}. Damage first, the rest as it comes.",
+        "LFM {dungeon} -- room for damage. Say the word and you are in.",
+    },
+
     NEED_MORE = {
         "LFM {dungeon}, need {missing} -- we have {have}.",
         "LFM {dungeon}. {have} so far, still need {missing}. Who is coming?",
