@@ -44,7 +44,8 @@ A small speech bubble sits under your level. Press it and four rows fan out:
  😱 Attitude     when you have an opinion
 ```
 
-Press it again and they fold away. Pick one and its menu opens beside it.
+Press it again and they fold away. Pick one and its menu opens beside it. They
+start folded every session: at rest this is meant to be one small icon.
 
 ### On your target
 
@@ -72,23 +73,23 @@ the group wipes you are looking at the party frames, not at your own portrait.
 Picking anything opens the confirmation:
 
 ```
-┌──────────────────────────────────────────────┐
-│                                            ✕ │
-│   "Well fought, Gromkar. The spirits         │
-│    favored your blade."                      │
-│   [x] applauds before Gromkar                │
-│                                              │
-│  [R]                      [ Say ]  [ Yell ]  │
-└──────────────────────────────────────────────┘
+ Praise  ┌──────────────────────────────────────┐
+ Respect │ "Well fought, Gromkar."              │
+ Joke    │ [x] applauds before Gromkar          │
+         │              [Say] [Yell] [Reword]   │
+         └──────────────────────────────────────┘
 ```
+
+It sits against the row you clicked, and is cut to fit the phrase.
 
 - **The channel buttons send.** One click picks how it goes out and says it.
 - **You never choose a channel.** Opening from the party means it goes to party
   chat; from a target, it is said aloud. The button's tooltip says where.
-- **`R` says it differently.** Same meaning, new words. So does clicking the
-  same menu row again.
+- **`Reword` says it differently.** Same meaning, new words. So does clicking
+  the same menu row again.
 - **The line is editable.** Click the text and change it before sending.
-- **Drag it anywhere.** It remembers. Put it at the top of your screen.
+- **Click anywhere else to dismiss it**, menu and all — the way a right-click
+  menu behaves. Speaking closes it too.
 
 ### Gestures
 

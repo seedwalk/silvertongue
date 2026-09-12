@@ -63,9 +63,11 @@ passthrough.SetSize = function(self, w, h)
 end
 passthrough.SetWidth  = function(self, w)
     if type(w) ~= "number" then error("bad argument to SetWidth (" .. tostring(w) .. ")", 2) end
+    self.__w = w
 end
 passthrough.SetHeight = function(self, h)
     if type(h) ~= "number" then error("bad argument to SetHeight (" .. tostring(h) .. ")", 2) end
+    self.__h = h
 end
 passthrough.SetPoint = function(self, point, a, b, c, d)
     if not VALID_POINTS[point] then
@@ -90,6 +92,9 @@ passthrough.GetFontStringReal = function(self)
     return self.__fs
 end
 passthrough.CreateFontString = function(self) return newMock("fontstring") end
+-- Roughly what the small font measures, which is all the layout needs.
+passthrough.GetStringWidth = function(self) return #(self.__text or "") * 5.5 end
+passthrough.SetNormalTexture = function(self, path) self.__normalTexture = path end
 passthrough.GetNormalTexture = function(self) return newMock("texture") end
 passthrough.IsMouseOver = function() return false end
 
@@ -932,7 +937,7 @@ check(ns.Contexts:PartyMember("party1").channels[1].key == "PARTY", "a member co
 
 -- At rest the portrait carries one bubble and nothing else. Pressing it fans
 -- the categories out; pressing it again folds them away.
-addon.db.profile.playerFanOpen = false
+ns.Anchors.fanOpen = false
 ns.Anchors:Refresh()
 check(ns.Anchors.hub ~= nil, "no bubble was built on the portrait")
 check(ns.Anchors.hub:IsShown(), "the bubble is hidden")
@@ -946,7 +951,8 @@ ns.Anchors:ToggleFan()
 for _, control in ipairs(ns.Anchors.fanControls) do
     check(control:IsShown(), "a category icon stayed hidden after opening the fan")
 end
-check(addon.db.profile.playerFanOpen, "the fan state was not remembered")
+-- Deliberately not persisted: the resting state is one bubble.
+check(addon.db.profile.playerFanOpen == nil, "the fan state is being saved")
 
 ns.Anchors:ToggleFan()
 check(not ns.Anchors.fanControls[1]:IsShown(), "the fan did not fold away")
@@ -978,6 +984,19 @@ check(ns.Display:IsShown(), "picking an intent did not open the display")
 check(ns.Display.edit:GetText():find("Gromkar", 1, true), "the display did not name the target")
 check(#sent == beforeBoards, "picking an intent sent something")
 
+-- Two rows, cut to the phrase rather than a fixed size.
+check(ns.Display.frame.__h and ns.Display.frame.__h <= 56,
+      "the display is %s tall", tostring(ns.Display.frame.__h))
+-- Reroll is an icon, not a word: it must carry a texture and a tooltip.
+check(ns.Display.rerollButton.__normalTexture ~= nil, "the reroll button has no icon")
+check(ns.Display.rerollButton:GetScript("OnEnter") ~= nil, "the reroll icon has no tooltip")
+local shortWidth = ns.Display.frame.__w
+ns.Display:Layout(string.rep("a very long line indeed ", 8))
+check(ns.Display.frame.__w > shortWidth, "a longer phrase did not widen the strip")
+local cappedWidth = ns.Display.frame.__w
+ns.Display:Layout(string.rep("a very long line indeed ", 40))
+check(ns.Display.frame.__w == cappedWidth, "the strip kept growing past its cap")
+
 -- Picking the same intent again rerolls rather than repeating.
 local first = ns.Display.edit:GetText()
 targetBoard:Pick({ "PERSON", "PRAISE", "Praise" })
@@ -989,15 +1008,21 @@ ns.Display:Send("SAY")
 check(#sent == beforeSend + 1, "the channel button did not send")
 check(sent[#sent].channel == "SAY", "it went out on %s", sent[#sent].channel)
 check(not ns.Display:IsShown(), "the display stayed open after speaking")
-check(targetBoard:IsShown(), "the menu closed itself after speaking")
+check(not targetBoard:IsShown(), "speaking left the menu open")
 
--- The menu stays up after speaking, so a conversation does not need it
--- reopened between every line.
+-- Clicking away closes everything: an X in a corner is not how a context menu
+-- is dismissed.
 targetBoard:Open(ns.Anchors.targetControl, ns.Contexts:Target())
 targetBoard:Pick({ "PERSON", "THANK", "Thank" })
-ns.Display:Send("SAY")
-check(targetBoard:IsShown(), "the menu closed itself after speaking")
-targetBoard:Close()
+check(SilvertongueClickCatcher:IsShown(), "nothing was catching clicks outside the menu")
+-- Neither the menu nor the line carries a close button: clicking away is the
+-- gesture, and a fifth way to dismiss would just take room.
+check(not targetBoard.closeButton, "the menu still has a close button")
+check(not ns.Display.closeButton, "the line still has a close button")
+SilvertongueClickCatcher:GetScript("OnMouseDown")(SilvertongueClickCatcher)
+check(not targetBoard:IsShown(), "clicking away left the menu open")
+check(not ns.Display:IsShown(), "clicking away left the line on screen")
+check(not SilvertongueClickCatcher:IsShown(), "the catcher stayed up with nothing open")
 
 -- The gesture fires with the line, and only when it is left on.
 emoted = {}
@@ -1117,7 +1142,8 @@ check(ns.Engine:EmoteFor("GENERAL", "THANKS", libraryRow.phrase) == nil,
       "the picker could not clear a gesture")
 addon.db.profile.custom = {}
 
-check(#sent == beforeSend + 4, "something spoke outside the explicit sends")
+-- Three explicit sends in this section, and nothing else may have spoken.
+check(#sent == beforeSend + 3, "something spoke outside the explicit sends")
 
 -- 18. Rearranging a menu, and the reconciliation that keeps it from freezing.
 addon.db.profile.menus = {}

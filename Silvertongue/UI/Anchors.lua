@@ -100,6 +100,9 @@ end
 -- A speech bubble: the gossip icon the game already uses for "talk to this".
 local function createIcon(key, parent, default, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
+    -- Above the click catcher, so pressing a bubble while a menu is open
+    -- switches to it rather than being swallowed as a click outside.
+    control:SetFrameStrata("DIALOG")
     control:SetSize(16, 16)
     control.anchorKey = key
 
@@ -134,6 +137,7 @@ end
 -- takes about as much room.
 local function createLabel(key, parent, default, tabKey, text, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
+    control:SetFrameStrata("DIALOG")
     control:SetSize(FAN_WIDTH, PLAYER_ICON_SIZE)
     control.anchorKey = key
 
@@ -343,15 +347,17 @@ end
 --------------------------------------------------------------------------------
 
 function Anchors:ToggleFan()
-    self:SetFanOpen(not ns.addon.db.profile.playerFanOpen)
+    self:SetFanOpen(not self.fanOpen)
 end
 
+-- Not remembered between sessions. At rest this is meant to be one bubble, and
+-- a menu that was left open an hour ago is not a preference worth restoring.
 function Anchors:SetFanOpen(open)
-    ns.addon.db.profile.playerFanOpen = open and true or false
+    self.fanOpen = open and true or false
     for _, control in ipairs(self.fanControls or {}) do
-        if open and enabled() then control:Show() else control:Hide() end
+        if self.fanOpen and enabled() then control:Show() else control:Hide() end
     end
-    if not open then playerBoard():Close() end
+    if not self.fanOpen then playerBoard():Close() end
 end
 
 function Anchors:SetEnabled(on)
@@ -367,7 +373,7 @@ function Anchors:Refresh()
     if self.hub then
         if enabled() then self.hub:Show() else self.hub:Hide() end
     end
-    self:SetFanOpen(enabled() and ns.addon.db.profile.playerFanOpen)
+    self:SetFanOpen(enabled() and self.fanOpen)
     self:UpdateTarget()
     self:UpdateParty()
 end

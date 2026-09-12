@@ -34,7 +34,6 @@ ns.defaults = {
         minimap        = { hide = false, minimapPos = 220 },
         anchorsEnabled = true,
         menus          = {},
-        playerFanOpen  = false,
         anchors        = {},
     },
 }

@@ -25,6 +25,46 @@ local MAX_ROWS   = 26
 
 local instances = {}
 
+-- A transparent sheet over the world, shown while any menu is open. Clicking
+-- anywhere that is not the menu closes everything.
+--
+-- An X in a corner is the wrong gesture for something that behaves like a
+-- context menu: nobody aims for it, they click away and expect it gone. It
+-- sits below the menus and above the world, so the menus and the controls that
+-- open them still take their own clicks.
+local catcher
+
+local function ensureCatcher()
+    if catcher then return catcher end
+
+    catcher = CreateFrame("Frame", "SilvertongueClickCatcher", UIParent)
+    catcher:SetAllPoints(UIParent)
+    catcher:SetFrameStrata("HIGH")
+    catcher:EnableMouse(true)
+    catcher:Hide()
+    catcher:SetScript("OnMouseDown", function()
+        ns.Board:CloseAll()
+    end)
+    return catcher
+end
+
+-- Up while anything is open, down the moment nothing is.
+local function updateCatcher()
+    ensureCatcher()
+    for _, board in pairs(instances) do
+        if board:IsShown() then
+            catcher:Show()
+            return
+        end
+    end
+    catcher:Hide()
+end
+
+function Board:CloseAll()
+    for _, board in pairs(instances) do board:Close() end
+    if ns.Display then ns.Display:Close() end
+end
+
 function Board:New(key)
     if instances[key] then return instances[key] end
     local board = setmetatable({ key = key, rows = {} }, Board)
@@ -50,7 +90,7 @@ function Board:Create()
 
     local f = CreateFrame("Frame", "SilvertongueBoard" .. self.key, UIParent, "BackdropTemplate")
     f:SetWidth(WIDTH)
-    f:SetFrameStrata("DIALOG")
+    f:SetFrameStrata("DIALOG")    -- above the click catcher
     f:SetToplevel(true)
     f:SetBackdrop({
         bgFile   = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
@@ -63,10 +103,11 @@ function Board:Create()
     f:Hide()
     self.frame = f
 
-    local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    close:SetSize(20, 20)
-    close:SetPoint("TOPRIGHT", -1, -1)
-    close:SetScript("OnClick", function() self:Close() end)
+    -- No close button. Clicking away dismisses it, pressing the control that
+    -- opened it dismisses it, Escape dismisses it, and speaking dismisses it.
+    -- An X in the corner was a fifth way that nobody reaches for, on a frame
+    -- with no room to spare.
+    tinsert(UISpecialFrames, f:GetName())
 
     self.actionDivider = makeDivider(f)
     self.groupDividers = {}
@@ -88,7 +129,7 @@ function Board:AcquireRow(index)
     row.label:SetJustifyH("LEFT")
 
     row:SetScript("OnClick", function(self)
-        if self.entry then Board.Pick(self.board, self.entry) end
+        if self.entry then Board.Pick(self.board, self.entry, self) end
         if self.action then
             if not UnitExists("target") then return end
             pcall(self.action.run, UnitName("target"))
@@ -198,6 +239,7 @@ function Board:Open(anchor, context)
         self.frame:SetPoint("CENTER")
     end
     self.frame:Show()
+    updateCatcher()
 end
 
 function Board:Close()
@@ -207,6 +249,7 @@ function Board:Close()
     self.anchorControl = nil
     if self.frame then self.frame:Hide() end
     if ns.Display and ns.Display:BelongsTo(self) then ns.Display:Close() end
+    updateCatcher()
 end
 
 function Board:IsShown()
@@ -223,7 +266,7 @@ end
 
 -- Picking fills the confirmation display. Picking the same intent again rerolls
 -- it. Nothing here speaks.
-function Board:Pick(entry)
+function Board:Pick(entry, row)
     if not entry or not self.context then return end
     local category, intent = entry[1], entry[2]
 
@@ -238,7 +281,7 @@ function Board:Pick(entry)
     end
     if not text then return end
 
-    ns.Display:Show(self, category, intent, text)
+    ns.Display:Show(self, category, intent, text, row)
 end
 
 -- Speaking leaves the menu up. It closes on its own control, its X, or Escape,
