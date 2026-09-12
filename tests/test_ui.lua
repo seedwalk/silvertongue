@@ -1499,49 +1499,36 @@ check(#sent == beforeLFG + 1, "the LFG line did not go out")
 check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
 
 -- Not being in the channel yet is not a refusal: asking for a group is asking
--- to be where groups are found, so it joins and then speaks.
+-- to be where groups are found, so it joins. What it must NOT do is then speak
+-- from a timer once the join answers: a public channel refuses a line with no
+-- click behind it, and by then the click is over. That is the error that
+-- survived three fixes aimed at the wrong thing.
 lfgChannelId = 0
-joined = {}
+for i = #joined, 1, -1 do table.remove(joined, i) end
 local beforeUnjoined = #sent
-ns.SendPhrase("Let me in.", "LFG")
+local used = ns.SendPhrase("Let me in.", "LFG")
 check(joined[1] and joined[1].name == "LookingForGroup", "it did not join the channel")
-check(#sent == beforeUnjoined + 1, "it did not speak after joining")
-check(sent[#sent].channel == "CHANNEL", "after joining it went out on %s", sent[#sent].channel)
+check(joined[1].how == "permanent", "it joined with the call the client no longer uses")
+check(used == nil, "it claimed to have spoken while joining")
+check(#sent == beforeUnjoined, "it spoke from outside a click: %d lines", #sent - beforeUnjoined)
 
-do
-    -- A join takes as long as the server takes. It waits for the channel to
-    -- answer rather than for a number of seconds somebody guessed, which is
-    -- what made the advert go out before the channel existed.
-    lfgChannelId = 0
-    local answerAfter = 4          -- the server takes four rounds to come back
-    local asked = 0
-    local realGet = GetChannelName
-    GetChannelName = function(name)
-        if name ~= "LookingForGroup" then return 0 end
-        asked = asked + 1
-        return (asked > answerAfter) and 4 or 0
-    end
-
-    local before = #sent
-    ns.SendPhrase("LFG Scarlet Monastery.", "LFG")
-    check(#sent == before + 1, "it gave up before the channel answered")
-    check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
-    check(asked > answerAfter, "it did not keep asking: %d attempts", asked)
-
-    GetChannelName = realGet
-    lfgChannelId = 4
-end
-
--- And it is never said aloud to whoever is standing next to you instead.
-lfgChannelId = 0
-local realJoin = JoinPermanentChannel
-JoinPermanentChannel = function() end      -- a join that does not take
-local beforeFailed = #sent
-ns.SendPhrase("Nobody is listening.", "LFG")
-check(#sent == beforeFailed, "a failed join shouted the advert somewhere else")
-JoinPermanentChannel = realJoin
+-- And the press after it works, because by then there is a channel.
 lfgChannelId = 4
+local second = ns.SendPhrase("Let me in.", "LFG")
+check(second == "LFG" and #sent == beforeUnjoined + 1,
+      "the second press did not send")
+
 group = {}
+
+-- Opening something that advertises is itself a click, so the channel is joined
+-- then and the second press never comes up in practice.
+lfgChannelId = 0
+for i = #joined, 1, -1 do table.remove(joined, i) end
+ns.PrepareLookingForGroup()
+check(#joined == 1, "opening the advert did not get the channel ready")
+lfgChannelId = 4
+ns.PrepareLookingForGroup()
+check(#joined == 1, "it joined again when already in the channel")
 
 -- 20. The group browser. Reading a listing, and speaking to whoever posted it.
 listings[7] = {
@@ -1748,8 +1735,9 @@ do
     check(joined[1].name == "LookingForGroup", "it joined %s", tostring(joined[1].name))
     check(#carried == 1 and carried[1] == "LookingForGroup",
           "no chat frame was told to carry the channel")
-    check(#sent == before + 1, "the advert did not go out after joining")
-    check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
+    -- And it stops there. Speaking once the join comes back would be speaking
+    -- from outside the click, which a public channel refuses.
+    check(#sent == before, "it spoke while joining: %d lines", #sent - before)
     lfgChannelId = 4
 end
 

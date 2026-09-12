@@ -90,14 +90,21 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
     -- shouted at whoever happens to be standing next to you instead.
     if channel == "LFG" then
         local id = ns.LookingForGroupChannel()
-        if id then
-            -- Before speaking, not after: the first thing that happens next is
-            -- somebody answering, and it has to land somewhere you are looking.
-            ns.EnsureChannelVisible("LookingForGroup")
-            SendChatMessage(text, "CHANNEL", nil, id)
-        else
-            ns.JoinLookingForGroupAndSend(text)
+        if not id then
+            -- Join now and let the next press speak. Sending from a timer once
+            -- the join answers is refused outright: the click is over by then,
+            -- and a public channel will not take a line without one behind it.
+            ns.JoinLookingForGroup()
+            if ns.addon then
+                ns.addon:Print("Joined LookingForGroup. Press it once more and it goes out.")
+            end
+            return nil
         end
+
+        -- Before speaking, not after: the first thing that happens next is
+        -- somebody answering, and it has to land somewhere you are looking.
+        ns.EnsureChannelVisible("LookingForGroup")
+        SendChatMessage(text, "CHANNEL", nil, id)
         return "LFG"
     end
 
@@ -265,30 +272,24 @@ function ns.EnsureChannelVisible(name)
     return true
 end
 
--- Joins the channel and then speaks. Pressing "looking for a group" is a clear
--- statement that you want to be in the channel where groups are found, so being
--- refused for not having joined it would be pedantry.
+-- Joins the channel, and does NOT then speak.
 --
--- This joins the way the game's own /join does. JoinChannelByName is the older
--- call and the client's own code does not use it anywhere -- the slash command,
--- the channel frame and the add-channel dialog all use JoinPermanentChannel and
--- then tell a chat frame to carry the channel. Joining without that second half
--- leaves you in a channel whose messages appear nowhere.
+-- This is the whole lesson of the day. Sending to a public channel needs a
+-- hardware event behind it -- a real click or keypress -- which is how the game
+-- keeps spam bots off the channels. Pressing the button is such an event, so
+-- speaking straight from the click works and always did. Waiting for the join to
+-- come back and speaking from a timer is not: by then the click is over and the
+-- client refuses the line, which is the "Interface action failed because of an
+-- AddOn" that survived three attempts at fixing the wrong thing.
 --
--- Then it waits for the channel to answer rather than for a number of seconds I
--- picked. A join takes as long as the server takes, and a fixed wait is either
--- too long every time or too short exactly when the server is busy -- which is
--- when you most want the advert to land. So it asks every so often whether the
--- channel has a number yet, and speaks the moment it does.
-local JOIN_TRIES    = 12
-local JOIN_INTERVAL = 0.4
-
-function ns.JoinLookingForGroupAndSend(text)
+-- So no wait of any length could have worked. Waiting was the bug. The join
+-- happens, the channel is made visible, and it says plainly that the next press
+-- will send -- one extra click, once, the first time you advertise in a session.
+function ns.JoinLookingForGroup()
     local NAME = "LookingForGroup"
 
     -- The main chat window, not "the current" one. The current one can be a
-    -- temporary window -- adding the channel there would join you to a channel
-    -- whose lines land somewhere you are not looking.
+    -- temporary window, whose lines land somewhere you are not looking.
     local frame = DEFAULT_CHAT_FRAME
     local frameID = (frame and frame.GetID and frame:GetID()) or 1
 
@@ -298,40 +299,20 @@ function ns.JoinLookingForGroupAndSend(text)
     elseif JoinChannelByName then
         JoinChannelByName(NAME)
     else
+        return false
+    end
+    return true
+end
+
+-- Called when you open something that advertises, which is itself a click, so
+-- by the time you pick a line the channel is usually already there and the
+-- second press never comes up.
+function ns.PrepareLookingForGroup()
+    if ns.LookingForGroupChannel() then
+        ns.EnsureChannelVisible("LookingForGroup")
         return
     end
-
-    local tries = 0
-    local function attempt()
-        local id = ns.LookingForGroupChannel()
-        if id then
-            -- Again after joining: the window has to be carrying it before the
-            -- line goes out, or you will not see your own advert or the replies.
-            ns.EnsureChannelVisible(NAME)
-            SendChatMessage(text, "CHANNEL", nil, id)
-            return
-        end
-
-        tries = tries + 1
-        if tries >= JOIN_TRIES then
-            if ns.addon then
-                ns.addon:Print("The LookingForGroup channel did not answer, so that went nowhere. "
-                    .. "Try /join LookingForGroup and say it again.")
-            end
-            return
-        end
-
-        if C_Timer and C_Timer.After then
-            C_Timer.After(JOIN_INTERVAL, attempt)
-        end
-    end
-
-    -- Never immediately: the join has only just been asked for.
-    if C_Timer and C_Timer.After then
-        C_Timer.After(JOIN_INTERVAL, attempt)
-    else
-        attempt()
-    end
+    ns.JoinLookingForGroup()
 end
 
 -- A unit's name as chat writes it.

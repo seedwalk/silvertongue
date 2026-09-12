@@ -272,6 +272,7 @@ local function attach(row)
             local id = self:GetParent() and self:GetParent().resultID
             local context = id and ns.LFGBrowse:BuildContext(id)
             if context then
+                ns.PrepareLookingForGroup()
                 listingBoard():Toggle(self, context)
             else
                 ns.LFGBrowse:Explain(id)
@@ -344,6 +345,7 @@ function LFGBrowse:AttachHeader(browse)
     end)
     button:SetScript("OnLeave", function() icon:SetAlpha(0.8); GameTooltip:Hide() end)
     button:SetScript("OnClick", function(self)
+        ns.PrepareLookingForGroup()
         ns.Board:New("Group"):Toggle(self, ns.Contexts:Group())
     end)
 
