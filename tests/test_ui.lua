@@ -1630,9 +1630,23 @@ do
     for _, entry in ipairs(solo.intents) do
         if entry ~= ns.SEP then offered[entry[2]] = true end
     end
+    -- Both, because both are true: the listing is the group you are forming,
+    -- and while you are the only one in it you are also somebody offering
+    -- himself. An earlier version picked one and took the recruiting away.
     check(offered.SOLO ~= nil, "your own listing did not offer to advertise you")
-    check(offered.NEED_TANK == nil and offered.NEED_MORE == nil,
-          "a listing with only you in it offered to recruit for a group")
+    check(offered.NEED_MORE ~= nil and offered.NEED_TANK ~= nil,
+          "your own listing stopped offering to recruit")
+
+    -- Alone, the advert about you leads.
+    local firstSolo, firstNeed
+    for i, entry in ipairs(solo.intents) do
+        if entry ~= ns.SEP then
+            if not firstSolo and entry[2]:find("^SOLO") then firstSolo = i end
+            if not firstNeed and entry[2]:find("^NEED") then firstNeed = i end
+        end
+    end
+    check(firstSolo and firstNeed and firstSolo < firstNeed,
+          "on your own, recruiting came before offering yourself")
 
     -- A shaman can offer to heal or to hit things, and not to tank. The role is
     -- the word a group leader actually reads for.
@@ -1658,7 +1672,17 @@ do
         if entry ~= ns.SEP then now2[entry[2]] = true end
     end
     check(now2.NEED_MORE ~= nil, "a listing with two in it stopped recruiting")
-    check(now2.SOLO == nil, "a group of two still advertised one person")
+    check(now2.SOLO ~= nil, "a group of two could no longer say it is looking")
+    -- With somebody in it, recruiting leads instead.
+    local leadSolo, leadNeed
+    for i, entry in ipairs(joined.intents) do
+        if entry ~= ns.SEP then
+            if not leadSolo and entry[2]:find("^SOLO") then leadSolo = i end
+            if not leadNeed and entry[2]:find("^NEED") then leadNeed = i end
+        end
+    end
+    check(leadSolo and leadNeed and leadNeed < leadSolo,
+          "with two in the group, offering yourself still came first")
     listings[9].numMembers = 1
 end
 

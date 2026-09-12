@@ -97,12 +97,13 @@ end
 
 -- Your own listing.
 --
--- It used to assume that having one meant forming a group. It does not: on your
--- own, a listing is you advertising yourself, and the row offered to recruit for
--- a group that was one person. So a listing with nobody else in it speaks about
--- you -- race, class, level, the dungeon, and the role you would take, which is
--- the first thing anyone reads for -- and only once somebody has joined does it
--- turn into recruiting for what is missing.
+-- Two things are true at once and an earlier version of this picked one. Your
+-- listing is the group you are forming, so asking for what it is short of
+-- belongs here -- and while you are still the only one in it, you are also a
+-- person offering himself, which is the half that was missing entirely.
+--
+-- So both are offered. What changes with the size is only the order: alone, the
+-- advert about you comes first; once somebody has joined, recruiting does.
 function LFGBrowse:BuildOwnListingContext(result)
     local ctx = ns.Engine:BuildPlayerContext()
     ctx.dungeon = result.activity or ns.CurrentDungeon()
@@ -110,65 +111,52 @@ function LFGBrowse:BuildOwnListingContext(result)
     ctx.missing = result.short or "more"
     ctx.needs   = math.max(0, 5 - (result.members or 1))
 
-    local intents = {}
+    local alone = (result.members or 1) <= 1
 
-    if (result.members or 1) <= 1 then
-        intents[#intents + 1] = { "LFG", "SOLO", "Looking for a group" }
-
+    -- Offering yourself: the plain advert, then the roles your class could
+    -- actually take. The role is the first thing a group leader reads for.
+    local function advertiseSelf(list)
+        list[#list + 1] = { "LFG", "SOLO", "Looking for a group" }
         local ROLE_SOLO = {
             { "TANK",    "SOLO_TANK",   "Looking, as a tank"   },
             { "HEALER",  "SOLO_HEALER", "Looking, as a healer" },
             { "DAMAGER", "SOLO_DPS",    "Looking, as damage"   },
         }
-        local added = false
         for _, role in ipairs(ROLE_SOLO) do
             if ns.CanFillRole(role[1]) then
-                if not added then
-                    intents[#intents + 1] = ns.SEP
-                    added = true
-                end
-                intents[#intents + 1] = { "LFG", role[2], role[3] }
+                list[#list + 1] = { "LFG", role[2], role[3] }
             end
         end
+    end
 
-        local channels = { { key = "LFG", label = "LFG",
-                             hint = "Goes to the LookingForGroup channel, joining it if you have not." } }
-        if IsInGuild and IsInGuild() then
-            channels[#channels + 1] = { key = "GUILD", label = "Guild",
-                                        hint = "Asks your guild first." }
+    -- Recruiting: everything at once, then the roles the game says are still
+    -- open. Asking for a healer you already have is how a listing gets ignored.
+    local function recruit(list)
+        if result.short then
+            list[#list + 1] = { "LFG", "NEED_MORE", "Fill the group" }
         end
-        channels[#channels + 1] = { key = "SAY", label = "Say",
-                                    hint = "Everyone nearby hears it." }
-
-        return {
-            key      = "LISTING:SELF",
-            title    = "Your listing",
-            subtitle = result.activity or "On your own",
-            intents  = intents,
-            ctx      = ctx,
-            channels = channels,
+        local ROLE_NEED = {
+            TANK    = { "NEED_TANK",   "Ask for a tank"   },
+            HEALER  = { "NEED_HEALER", "Ask for a healer" },
+            DAMAGER = { "NEED_DPS",    "Ask for damage"   },
         }
+        for _, role in ipairs(result.openRoles or {}) do
+            local need = ROLE_NEED[role]
+            if need then list[#list + 1] = { "LFG", need[1], need[2] } end
+        end
     end
 
-    -- The heading above already says what is missing; repeating it on the row
-    -- says nothing. This one asks for all of it at once, the rows below ask for
-    -- one role.
-    if result.short then
-        intents[#intents + 1] = { "LFG", "NEED_MORE", "Fill the group" }
-        intents[#intents + 1] = ns.SEP
+    local intents = {}
+    if alone then
+        advertiseSelf(intents)
+        if #intents > 0 then intents[#intents + 1] = ns.SEP end
+        recruit(intents)
+    else
+        recruit(intents)
+        if #intents > 0 then intents[#intents + 1] = ns.SEP end
+        advertiseSelf(intents)
     end
-
-    -- Only the roles actually open. Asking for a healer you already have is
-    -- how a listing gets ignored.
-    local ROLE_NEED = {
-        TANK   = { "NEED_TANK",   "Ask for a tank"   },
-        HEALER = { "NEED_HEALER", "Ask for a healer" },
-        DAMAGER= { "NEED_DPS",    "Ask for damage"   },
-    }
-    for _, role in ipairs(result.openRoles or {}) do
-        local need = ROLE_NEED[role]
-        if need then intents[#intents + 1] = { "LFG", need[1], need[2] } end
-    end
+    if intents[#intents] == ns.SEP then table.remove(intents) end
 
     local subtitle = result.activity or "Your listing"
     if result.short then subtitle = subtitle .. " - need " .. result.short end
