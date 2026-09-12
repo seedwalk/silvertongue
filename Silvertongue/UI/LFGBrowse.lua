@@ -246,8 +246,24 @@ function LFGBrowse:BuildContext(resultID)
     }
 end
 
+-- A real listing row, as the client builds them: LFGBrowseSearchEntryTemplate
+-- carries all of these. The scroll box hands out other frames too, and hanging
+-- a bubble on every one of them is how they ended up scattered over the window
+-- in places that are not rows at all.
+local function isResultRow(frame)
+    return frame ~= nil
+        and frame.Name ~= nil
+        and frame.Level ~= nil
+        and frame.ActivityName ~= nil
+end
+
+-- Every bubble we made, so the probe can say which of the things on screen are
+-- ours and which belong to the game.
+local attached = {}
+
 -- The bubble itself, one per recycled row.
 local function attach(row)
+    if not isResultRow(row) then return end
     if not row.silvertongue then
         local button = CreateFrame("Button", nil, row)
         button:SetSize(14, 14)
@@ -293,9 +309,22 @@ local function attach(row)
         end
 
         row.silvertongue = button
+        attached[#attached + 1] = button
     end
 
     row.silvertongue:Show()
+end
+
+function LFGBrowse:DescribeIcons()
+    local lines = { "  row bubbles built: " .. #attached }
+    for i, button in ipairs(attached) do
+        local parent = button:GetParent()
+        local name = parent and parent.Name and parent.Name.GetText and parent.Name:GetText()
+        lines[#lines + 1] = "   " .. i .. ": on " .. tostring(name or "?")
+            .. (button:IsShown() and " (shown)" or " (hidden)")
+    end
+    lines[#lines + 1] = "  header bubble: " .. (LFGBrowse.headerButton and "built" or "no")
+    return lines
 end
 
 local function release(row)
@@ -333,11 +362,13 @@ function LFGBrowse:AttachHeader(browse)
     icon:SetAlpha(0.8)
 
     -- Beside the refresh button, which is the other thing you press here.
+    -- Clear of the controls along that row: beside the refresh button it landed
+    -- on top of the dungeon dropdown.
     button:ClearAllPoints()
     if _G.LFGBrowseFrameRefreshButton then
-        button:SetPoint("RIGHT", _G.LFGBrowseFrameRefreshButton, "LEFT", -4, 0)
+        button:SetPoint("TOP", _G.LFGBrowseFrameRefreshButton, "BOTTOM", 0, -4)
     else
-        button:SetPoint("TOPRIGHT", browse, "TOPRIGHT", -40, -30)
+        button:SetPoint("TOPRIGHT", browse, "TOPRIGHT", -14, -60)
     end
 
     button:SetScript("OnEnter", function(self)

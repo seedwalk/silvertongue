@@ -99,10 +99,17 @@ end
 
 -- A speech bubble: the gossip icon the game already uses for "talk to this".
 local function createIcon(key, parent, default, onClick)
-    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
-    -- Above the click catcher, so pressing a bubble while a menu is open
-    -- switches to it rather than being swallowed as a click outside.
-    control:SetFrameStrata("FULLSCREEN_DIALOG")
+    -- Parented to the frame it belongs to, not to the screen, so it hides when
+    -- that frame does and draws at the same level as the rest of the interface.
+    local control = CreateFrame("Button", "SilvertongueAnchor" .. key, parent or UIParent)
+
+    -- Where the unit frames live, and no higher. It used to sit at the very top
+    -- of the draw order so that pressing a bubble while a menu was open would
+    -- switch to it rather than be swallowed by the click catcher -- and the
+    -- price of that was five bubbles floating over the group browser, through
+    -- a window they should have been behind. Two clicks to switch menus is the
+    -- cheaper of the two.
+    control:SetFrameStrata("MEDIUM")
     control:SetSize(16, 16)
     control.anchorKey = key
 
@@ -164,7 +171,7 @@ end
 
 local function createLabel(key, parent, default, iconSpec, text, onClick)
     local control = CreateFrame("Button", "SilvertongueAnchor" .. key, UIParent)
-    control:SetFrameStrata("FULLSCREEN_DIALOG")
+    control:SetFrameStrata("MEDIUM")
     control:SetSize(FAN_WIDTH, PLAYER_ICON_SIZE)
     control.anchorKey = key
 

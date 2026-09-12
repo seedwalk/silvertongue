@@ -104,6 +104,11 @@ passthrough.GetStringWidth = function(self) return #(self.__text or "") * 5.5 en
 passthrough.SetNormalTexture = function(self, path) self.__normalTexture = path end
 passthrough.GetNormalTexture = function(self) return newMock("texture") end
 passthrough.IsMouseOver = function() return false end
+passthrough.GetFrameLevel = function(self) return self.__level or 1 end
+passthrough.SetFrameLevel = function(self, level)
+    if type(level) ~= "number" then error("bad argument to SetFrameLevel", 2) end
+    self.__level = level
+end
 -- A ScrollingMessageFrame keeps its own lines; the tests read them back.
 passthrough.AddMessage = function(self, text)
     self.__lines = self.__lines or {}
@@ -1802,6 +1807,38 @@ check(_G.SilvertongueAnchorPARTY_ALL.__point ~= nil, "the group control has no a
 for _, control in ipairs(ns.Anchors.fanControls) do
     check(control.entry == nil or control.entry.key ~= "GROUP",
           "the portrait still carries the group row")
+end
+
+-- The bubble goes on listing rows and on nothing else. The scroll box hands out
+-- other frames too, and hanging one on every frame it offers is how they ended
+-- up scattered over the window in places that are not rows.
+do
+    local attachTo = nil
+    _G.LFGBrowseFrame = _G.LFGBrowseFrame or newMock("Frame", "LFGBrowseFrame")
+    _G.LFGBrowseFrame.ScrollBox = newMock("Frame")
+    ScrollUtil.AddAcquiredFrameCallback = function(_, fn) attachTo = fn end
+    ScrollUtil.AddReleasedFrameCallback = function() end
+    ns.LFGBrowse.hooked = false
+    ns.LFGBrowse:Hook()
+    check(attachTo ~= nil, "the browser hook was never installed")
+
+    local realRow = newMock("Button")
+    realRow.Name = newMock("FontString")
+    realRow.Level = newMock("FontString")
+    realRow.ActivityName = newMock("FontString")
+    attachTo(nil, realRow)
+    check(realRow.silvertongue ~= nil, "a listing row got no bubble")
+
+    -- Bare tables, because the mock synthesises any PascalCase name it is asked
+    -- for -- which would hand back a Name and a Level for anything at all and
+    -- make this check pass while testing nothing.
+    local notARow = { GetFrameLevel = function() return 1 end }
+    attachTo(nil, notARow)
+    check(notARow.silvertongue == nil, "something that is not a row got a bubble")
+
+    local halfRow = { GetFrameLevel = function() return 1 end, Name = newMock("FontString") }
+    attachTo(nil, halfRow)
+    check(halfRow.silvertongue == nil, "a frame with only a name got a bubble")
 end
 
 -- A row that cannot be read says so rather than doing nothing.

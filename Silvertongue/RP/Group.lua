@@ -114,26 +114,26 @@ ns.Phrases.LFG = {
 
     NEED_TANK = {
         "LFM {dungeon}, need a tank -- we have {have}.",
-        "LFM {dungeon}. Looking for someone who can hold a line. {have} so far.",
+        "LFM {dungeon}. Looking for a tank -- someone who can hold a line. {have} so far.",
         "LFM {dungeon} -- tank wanted. The rest of us are {have} and none of us want the job.",
         "LFM {dungeon}, need a tank. {have} behind you, and we will keep you standing.",
-        "LFM {dungeon}. We have {have}. What we do not have is anyone willing to be hit.",
+        "LFM {dungeon}, need a tank. We have {have}, and none of us wants to be hit.",
     },
 
     NEED_HEALER = {
         "LFM {dungeon}, need a healer -- we have {have}.",
-        "LFM {dungeon}. Need someone to keep us alive. Currently {have}.",
+        "LFM {dungeon}. Need a healer to keep us alive. Currently {have}.",
         "LFM {dungeon} -- healer wanted. We are {have}, and we bleed like anyone else.",
         "LFM {dungeon}, one healer and we are away. We have {have}.",
-        "LFM {dungeon}. {have} so far, and nobody who can mend us. That seems unwise.",
+        "LFM {dungeon}, need a healer. {have} so far, and nobody who can mend us.",
     },
 
     NEED_DPS = {
         "LFM {dungeon}, need {needs} dps -- we have {have}.",
-        "LFM {dungeon}. Need someone who hits things. {have} already here.",
-        "LFM {dungeon} -- room for {needs} who can kill quickly. We are {have}.",
+        "LFM {dungeon}. Need {needs} dps. {have} already here.",
+        "LFM {dungeon} -- room for {needs} dps who can kill quickly. We are {have}.",
         "LFM {dungeon}, {needs} dps. {have} so far. Bring a weapon and know how to use it.",
-        "LFM {dungeon}. Two hands and a sharp edge, that is all we ask. {needs} places.",
+        "LFM {dungeon}, {needs} dps. Two hands and a sharp edge, that is all we ask.",
     },
 
     -- Answering someone else's listing.

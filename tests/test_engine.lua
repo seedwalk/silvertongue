@@ -240,6 +240,34 @@ for _, category in ipairs({"GENERAL", "PARTY", "ATTITUDE", "PERSON", "TARGET", "
     end
 end
 
+-- An advert asking for a role has to name it. "Looking for someone who can hold
+-- a line" is a nice sentence and nobody scanning the channel for a tank will
+-- ever see it: people read these by searching for the word.
+local ROLE_WORDS = {
+    TANK   = { "tank" },
+    HEALER = { "heal" },
+    DPS    = { "dps", "damage" },
+}
+for intent, lines in pairs(ns.Phrases.LFG) do
+    -- Only the lines that go out to a channel. An OFFER is whispered to one
+    -- person who already knows what they listed and what they are short of, so
+    -- "I will mend you through Scarlet Monastery" is clearer there than a
+    -- keyword would be.
+    for role, words in pairs(ROLE_WORDS) do
+        if intent:find(role, 1, true) and intent:sub(1, 5) ~= "OFFER" then
+            for _, line in ipairs(lines) do
+                local said = false
+                for _, word in ipairs(words) do
+                    if line:lower():find(word, 1, true) then said = true end
+                end
+                if not said then
+                    fail("LFG.%s never says what it is asking for: %s", intent, line)
+                end
+            end
+        end
+    end
+end
+
 -- No shared pool may still carry class-specific words for everyone.
 local LEAKS = { "totem", "Totem", "the elements", "The elements" }
 for _, category in ipairs({"GENERAL", "PARTY", "HORDE", "ATTITUDE", "PERSON", "TARGET", "ENEMY"}) do

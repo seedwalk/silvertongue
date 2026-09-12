@@ -31,6 +31,9 @@ function ns.Probe()
     end
     ns.addon:Print("  " .. kept .. " conversations, " .. lines .. " lines in total")
 
+    ns.addon:Print("--- group browser bubbles ---")
+    for _, line in ipairs(ns.LFGBrowse:DescribeIcons()) do ns.addon:Print(line) end
+
     ns.ProbeLFG()
 end
 
