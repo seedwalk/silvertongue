@@ -156,6 +156,25 @@ function ns.IdentifyBattleNet(bnetID)
     }
 end
 
+-- The best source of the lot, and the one I missed: every chat message carries
+-- the sender's GUID, and a GUID is enough for the client to hand back race and
+-- class on the spot.
+--
+-- It beats a /who twice over. It costs nothing and is never throttled, and it
+-- works across realms -- the who service is realm-local, so the one person the
+-- lookup could never answer for is exactly the one whose name arrives with a
+-- realm attached.
+--
+-- It does not carry a level, which is why the guild roster and the lookup are
+-- still worth having: between them a guildmate reads "Human Priest, 70" rather
+-- than "Priest, 70".
+function ns.LearnFromGUID(name, guid)
+    if not name or not guid or not GetPlayerInfoByGUID then return end
+    local ok, className, _, raceName = pcall(GetPlayerInfoByGUID, guid)
+    if not ok or (not className and not raceName) then return end
+    ns.RememberPlayer(name, { className = className, raceName = raceName })
+end
+
 function ns.IdentifyPlayer(name)
     if not name then return nil end
 

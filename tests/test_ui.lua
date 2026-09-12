@@ -142,6 +142,13 @@ end
 UnitInRaid = function() return false end
 UnitLevel = function() return 36 end
 date = function(fmt, when) return "12:00" end
+-- Race and class straight off a chat message's sender GUID.
+local guids = {}
+GetPlayerInfoByGUID = function(guid)
+    local g = guids[guid]
+    if not g then return nil end
+    return g.className, g.classToken, g.raceName, g.raceToken, 2, g.name, g.realm
+end
 local lfgChannelId = 4
 local joined = {}
 GetChannelName = function(name) return (name == "LookingForGroup") and lfgChannelId or 0 end
@@ -1635,6 +1642,10 @@ ScrollUtil = realScrollUtil
 
 local sentBefore = #sent
 
+local function whisperEvent(event, ...)
+    addon.__events[event](event, ...)
+end
+
 -- A whisper arrives. The line keeps its text and gains our mark, and nothing
 -- opens on its own: a window appearing because somebody typed at you takes a
 -- corner of the screen without being asked.
@@ -1787,6 +1798,24 @@ check(addon.db.profile.people["Filler340"] ~= nil, "the newest entry was dropped
 -- Put Grumgar's window back: the checks further down are about it.
 ns.Whisper:Open("Grumgar")
 
+-- Somebody on another realm. The who service is realm-local, so the lookup can
+-- never answer for them -- but their message carries a GUID, and that is enough
+-- for race and class.
+guids["Player-4-ABC"] = { className = "Priest", classToken = "PRIEST",
+                          raceName = "Human", raceToken = "Human",
+                          name = "Arthuruno", realm = "Dreamscythe" }
+guild[1] = { name = "Arthuruno-Dreamscythe", level = 70, className = "Priest" }
+whisperEvent("CHAT_MSG_WHISPER", "test", "Arthuruno-Dreamscythe",
+    nil, nil, nil, nil, nil, nil, nil, nil, nil, "Player-4-ABC")
+ns.Whisper:Open("Arthuruno-Dreamscythe")
+local cross = ns.Whisper:Windows()["Arthuruno-Dreamscythe"]
+-- The race comes from the message, the level from the roster, and neither on
+-- its own would have made that line.
+check(cross.subtitle:GetText() == "Human Priest, 70",
+      "a cross-realm guildmate showed: %s", tostring(cross.subtitle:GetText()))
+ns.Whisper:Close("Arthuruno-Dreamscythe")
+guild[1] = nil
+
 -- A guildmate is known without asking anyone: level and class, and no race,
 -- because the roster does not carry one.
 guild[1] = { name = "Kelda", level = 38, className = "Priest" }
@@ -1802,10 +1831,6 @@ check(ns.Whisper:IsOpen("Grumgar") and ns.Whisper:IsOpen("Kelda"),
 -- ---------------------------------------------------------------------------
 -- The conversation, which outlives the window and the session.
 -- ---------------------------------------------------------------------------
-
-local function whisperEvent(event, ...)
-    addon.__events[event](event, ...)
-end
 
 -- Recorded from the events rather than the chat filters, so a line counts as
 -- said whether or not it reached a chat frame you happen to be watching.

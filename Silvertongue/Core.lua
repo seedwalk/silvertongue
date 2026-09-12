@@ -183,8 +183,17 @@ function Silvertongue:OnEnable()
     -- The conversation is recorded from the events rather than from the chat
     -- filters: a whisper counts as said whether or not it reached a chat frame
     -- you happen to be watching.
-    self:RegisterEvent("CHAT_MSG_WHISPER", function(_, message, author)
+    -- Argument twelve of a chat event is the sender's GUID, which is where the
+    -- race comes from. Nothing else in the game will tell us the race of
+    -- somebody on another realm.
+    self:RegisterEvent("CHAT_MSG_WHISPER", function(_, message, author, ...)
+        ns.LearnFromGUID(author, select(10, ...))
         ns.Whisper:Heard(author, message, true)
+    end)
+    -- Guild chat is listened to only to learn who people are: a guildmate who
+    -- has said anything is then known by race as well as by rank.
+    self:RegisterEvent("CHAT_MSG_GUILD", function(_, _, author, ...)
+        ns.LearnFromGUID(author, select(10, ...))
     end)
     self:RegisterEvent("CHAT_MSG_WHISPER_INFORM", function(_, message, to)
         ns.Whisper:Heard(to, message, false)
