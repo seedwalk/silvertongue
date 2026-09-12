@@ -69,6 +69,8 @@ start folded every session: at rest this is meant to be one small icon.
 
 ### On your target
 
+![The menu open beside a targeted player](docs/img/shot-menu.jpg)
+
 A speech bubble sits under your target's level. Press it and it fans out the
 same way your own does:
 
@@ -205,6 +207,8 @@ The line is never said aloud to whoever is standing next to you instead.
 
 ### In the group browser
 
+![A listing row offering the role that listing is short of](docs/img/shot-lfg.jpg)
+
 Open the **Looking For Group** window and every row grows a small speech bubble
 beside the name. It reads the listing — who posted it, their level and class,
 what they are running, and what they are short of — and offers:
@@ -238,6 +242,8 @@ Nothing here searches on your own behalf: it reads whatever your own refresh
 brought back.
 
 ### Whispers
+
+![A whisper window: the conversation, what to answer with, and the line it produced](docs/img/shot-whisper.jpg)
 
 A whisper is the one conversation the addon could not reach. The person is not
 your target, not in your group, not in a listing — they are a line of text that
@@ -324,6 +330,8 @@ If you use replacement unit frames, this is how you move the bubbles somewhere
 they make sense. `/silvertongue anchors` hides them entirely.
 
 ### Your own phrases
+
+![The library, with the layer each line came from beside it](docs/img/shot-library.jpg)
 
 `/silvertongue` opens the library: everything this character can say, with where
 each line came from. Bind it under **Esc → Key Bindings → Silvertongue**.
