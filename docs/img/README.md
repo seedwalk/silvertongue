@@ -1,17 +1,14 @@
-# Images for the site
+# Images on the site
 
-Every file here is optional. The page falls back to drawn artwork when one is
-missing, so nothing breaks by leaving a slot empty — and nothing has to be
-committed before the site works.
+- `hero.jpg` — the Burning Crusade Classic key art, behind the hero. Resized to
+  2000px and desaturated to about 60%: at full strength the fel green takes over
+  the page and the silver title stops being the brightest thing on it.
+- `tbc-logo.png` — the World of Warcraft: Burning Crusade Classic logo, trimmed
+  to its bounding box and quantised. Shown at 300px.
 
-| File | Where it lands | What works best |
-| --- | --- | --- |
-| `hero.jpg` | Behind the title, at 45% over the drawn ridgeline | Wide and dark, with room in the middle for text. 2400px across is plenty. |
-| `tbc-logo.png` | Above the title | Transparent PNG. It is capped at 320px wide. |
-| `menu.png` | Replaces the drawn menu in section one | **The most valuable one.** The menu open beside a targeted player, with the target's frame in shot. Crop tight. |
+Both are Blizzard's, used on a non-commercial fan page for an addon for their
+game. If either fails to load the page still works: the hero falls back to the
+drawn ridgeline and the logo removes itself.
 
-Screenshots of your own game are the strongest thing you can put here: they are
-the addon actually running, which no drawing can claim.
-
-Taking them: `Print Screen` in game writes to `_anniversary_/Screenshots/`.
-Raising `Interface > Screenshot Quality` first is worth the second it takes.
+Still open: `menu.png`, a real capture of a menu open beside a targeted player.
+The page draws a mockup until that file exists, and swaps it in on load.

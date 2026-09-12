@@ -131,22 +131,23 @@ tailwind.config = {
       <path d="M726 168l26 60h-52z" fill="#0b0f15"/>
     </svg>
 
-    <!-- Drop a wide image at docs/img/hero.jpg and it takes over the background.
-         Nothing breaks if it is absent: the drawn ridgeline below shows through. -->
-    <div class="absolute inset-0 bg-cover bg-center opacity-45"
+    <!-- The Burning Crusade key art. The drawn ridgeline underneath is the
+         fallback if it ever fails to load. -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-[.72]"
          style="background-image:url('img/hero.jpg')"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-night-950/70 via-night-950/45 to-night-950"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-night-950/55 via-night-950/30 to-night-950"></div>
+    <!-- Holds the type legible over the middle of the art without flattening it. -->
+    <div class="absolute inset-0" style="background:radial-gradient(58% 50% at 50% 46%,rgba(7,9,12,.62) 0%,transparent 78%)"></div>
 
     <div id="motes" class="absolute inset-x-0 bottom-0 h-1/2"></div>
     <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-night-950 to-transparent"></div>
   </div>
 
   <div class="relative z-10 flex flex-col items-center text-center">
-    <!-- docs/img/tbc-logo.png, if supplied. Removes itself when missing. -->
-    <img src="img/tbc-logo.png" alt="" onerror="this.remove()"
-         class="mb-6 h-auto w-[min(320px,68vw)] animate-fade drop-shadow-2xl">
+    <img src="img/tbc-logo.png" alt="World of Warcraft: Burning Crusade Classic" onerror="this.remove()"
+         class="mb-6 h-auto w-[min(240px,54vw)] animate-fade opacity-95 drop-shadow-2xl">
 
-    <svg class="mb-8 h-14 w-14 animate-fade" viewBox="0 0 40 40" role="img" aria-label="Silvertongue"><use href="#bubble"/></svg>
+    <svg class="mb-6 h-12 w-12 animate-fade" viewBox="0 0 40 40" role="img" aria-label="Silvertongue"><use href="#bubble"/></svg>
 
     <h1 class="silvertext font-display text-[clamp(2.9rem,11vw,6.5rem)] font-700 leading-[0.95] tracking-tight animate-fade">
       Silvertongue
@@ -161,10 +162,6 @@ tailwind.config = {
       yours to rewrite.
     </p>
 
-    <p class="mt-4 text-[11px] uppercase tracking-[0.28em] text-slate-500 animate-fade" style="animation-delay:.16s">
-      World of Warcraft &nbsp;·&nbsp; Burning Crusade Classic
-    </p>
-
     <div class="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade" style="animation-delay:.22s">
       <a id="download" href="https://github.com/seedwalk/silvertongue/releases"
          class="group rounded-lg border border-silver-500/70 bg-gradient-to-b from-silver-400/25 to-silver-600/10
@@ -172,10 +169,6 @@ tailwind.config = {
                 transition hover:from-silver-400/35 hover:text-silver-100">
         Download the addon
         <span class="ml-1 inline-block transition group-hover:translate-x-0.5">→</span>
-      </a>
-      <a href="https://github.com/seedwalk/silvertongue"
-         class="rounded-lg border border-white/10 px-6 py-3.5 text-slate-300 transition hover:border-white/25 hover:text-white">
-        View source
       </a>
     </div>
 
