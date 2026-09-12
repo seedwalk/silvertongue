@@ -9,6 +9,9 @@ your character said something in character instead of `nice heals bro`.
 
 **Burning Crusade Classic** (Interface 20506).
 
+**[silvertongue on the web](https://seedwalk.github.io/silvertongue/)** — what it
+looks like, and the current download.
+
 ---
 
 ## Install
