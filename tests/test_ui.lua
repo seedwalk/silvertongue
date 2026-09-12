@@ -1,6 +1,6 @@
 -- Mocks just enough of the WoW UI so the whole addon can be loaded and driven.
 -- It will not prove the layout looks right; it does prove no code path nils out.
-local DIR = "/home/fede/sites/shamanolo/Silvertongue/"
+local DIR = "../Silvertongue/"
 local ns = {}
 
 local sent = {}          -- everything that reached "chat"
@@ -670,7 +670,7 @@ ns.TargetUI.headers = nil
 ns.PartyUI.headers = nil
 for _, f in ipairs({"Window","Preview","Tabs","Party","Target","Config","Board","Display","Contexts","Anchors","LFGBrowse"}) do load("UI/"..f..".lua") end
 
-local xml = io.open("../Silvertongue/Bindings.xml"):read("*a")
+local xml = io.open(DIR .. "Bindings.xml"):read("*a")
 local declared = {}
 for name in xml:gmatch('<Binding name="([%w_]+)"') do declared[#declared + 1] = name end
 check(#declared == 1, "expected one binding, Bindings.xml declares %d", #declared)

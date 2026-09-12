@@ -1,0 +1,69 @@
+name: release
+
+# Tagging is the whole trigger. rc-* publishes a pre-release, v* a real one,
+# so promoting a candidate means tagging the same commit with its v name.
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'rc-*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+
+      # No release goes out on a red suite.
+      - name: Run the suites
+        run: LUA=lua5.1 tests/run.sh
+
+      - name: Work out the version
+        id: version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          version="${version#rc-}"
+          case "$tag" in
+            rc-*) prerelease=true ;;
+            *)    prerelease=false ;;
+          esac
+          echo "tag=$tag"               >> "$GITHUB_OUTPUT"
+          echo "version=$version"       >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      # The version in the TOC is what the game shows in its addon list, so it
+      # is stamped from the tag rather than kept in step by hand.
+      - name: Stamp the version into the TOC
+        run: |
+          sed -i "s/^## Version:.*/## Version: ${{ steps.version.outputs.version }}/" \
+            Silvertongue/Silvertongue.toc
+          grep '^## Version:' Silvertongue/Silvertongue.toc
+
+      # Only the addon folder. Everything else in this repo -- tests, workflows,
+      # notes -- is for working on it, not for running it.
+      - name: Build the zip
+        run: |
+          zip -r "Silvertongue-${{ steps.version.outputs.tag }}.zip" Silvertongue
+          unzip -l "Silvertongue-${{ steps.version.outputs.tag }}.zip" | head -5
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Silvertongue-${{ steps.version.outputs.tag }}.zip
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          generate_release_notes: true
+          body: |
+            **Install:** download the zip, and drop the `Silvertongue` folder into
+
+            ```
+            World of Warcraft/_anniversary_/Interface/AddOns/
+            ```
+
+            Restart the client. Burning Crusade Classic, Interface 20506.

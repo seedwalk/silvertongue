@@ -4,4 +4,4 @@
 LUA="${LUA:-lua5.1}"
 command -v "$LUA" >/dev/null 2>&1 || { echo "Set LUA=/path/to/lua (5.1)"; exit 1; }
 cd "$(dirname "$0")" || exit 1
-"$LUA" test_engine.lua && "$LUA" test_ui.lua
+"$LUA" toc.lua && "$LUA" test_engine.lua && "$LUA" test_ui.lua

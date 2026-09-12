@@ -13,13 +13,28 @@ your character said something in character instead of `nice heals bro`.
 
 ## Install
 
-Drop the `Silvertongue` folder into:
+1. Download the latest zip from **[Releases](../../releases)**.
+2. Unzip it. You should have a folder called `Silvertongue`.
+3. Put that folder into your AddOns directory:
 
 ```
-World of Warcraft/_anniversary_/Interface/AddOns/
+World of Warcraft/_anniversary_/Interface/AddOns/Silvertongue/
 ```
 
-Restart the game. That is all — there is nothing to configure before it works.
+4. Restart the game — not `/reload`. New addons are only found at launch.
+
+You should end up with `Interface/AddOns/Silvertongue/Silvertongue.toc`. If you
+have an extra folder in between, the game will not see it.
+
+There is nothing to configure. It works on any character the moment it loads.
+
+**Which build to take.** Releases tagged `v0.1.0` are finished; `rc-0.1.0` are
+candidates that pass the tests but have had less time in a real game. Both
+install identically.
+
+**Updating.** Replace the folder. Your own phrases, your menu order and where
+you dragged things live in the game's saved variables, not in the addon folder,
+so they survive.
 
 ---
 
@@ -269,9 +284,14 @@ supports and which is writing phrases rather than writing code.
 The phrases live in `Silvertongue/RP/` as plain Lua tables. Adding lines, a race,
 a class or a faction is data — no other file needs to change.
 
-`tests/run.sh` runs two suites against the source with the game API stubbed. They
-check the phrase library, the layering, and that nothing reaches chat except
-through an explicit send. `LUA=/path/to/lua5.1 tests/run.sh`.
+`LUA=/path/to/lua5.1 tests/run.sh` runs three checks against the source with the
+game API stubbed: that the TOC and the file tree agree, that the phrase library
+holds together, and that the interface behaves — including that nothing reaches
+chat except through an explicit send. They run on every push.
+
+Releases are cut by tagging. `rc-0.1.0` publishes a pre-release, `v0.1.0` a
+finished one, and the zip contains only the addon folder. The version in the TOC
+is stamped from the tag, so it is never out of step.
 
 ---
 

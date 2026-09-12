@@ -1,5 +1,5 @@
 -- Standalone harness: loads Settings + RP/* with stubs and hammers the engine.
-local DIR = "/home/fede/sites/shamanolo/Silvertongue/"
+local DIR = "../Silvertongue/"
 local ns = {}
 
 -- Minimal WoW API stubs the RP layer touches.

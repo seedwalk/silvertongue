@@ -1,0 +1,29 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The addon targets a client running Lua 5.1, so the suites are written
+      # for it. Anything newer would accept code the game would not.
+      - name: Install Lua 5.1
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+
+      - name: Check every file parses
+        run: |
+          fail=0
+          for f in $(find Silvertongue -name '*.lua' -not -path '*/Libs/*'); do
+            luac5.1 -p "$f" || fail=1
+          done
+          exit $fail
+
+      - name: Run the suites
+        run: LUA=lua5.1 tests/run.sh
