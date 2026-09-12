@@ -152,7 +152,21 @@ end
 local lfgChannelId = 4
 local joined = {}
 GetChannelName = function(name) return (name == "LookingForGroup") and lfgChannelId or 0 end
-JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
+-- The call the client's own /join uses. JoinChannelByName is the older one and
+-- nothing in the game's code calls it any more.
+JoinPermanentChannel = function(name, _, frameID)
+    joined[#joined + 1] = { name = name, how = "permanent", frameID = frameID }
+    lfgChannelId = 4
+    return 1, name
+end
+JoinChannelByName = function(name)
+    joined[#joined + 1] = { name = name, how = "byname" }
+    lfgChannelId = 4
+end
+DEFAULT_CHAT_FRAME = newMock("ScrollingMessageFrame", "DEFAULT_CHAT_FRAME")
+DEFAULT_CHAT_FRAME.GetID = function() return 1 end
+local carried = {}
+DEFAULT_CHAT_FRAME.AddChannel = function(_, name) carried[#carried + 1] = name end
 -- Runs straight away so the test can see what the delayed send does.
 C_Timer = { After = function(_, fn) fn() end }
 UnitIsGroupLeader = function() return true end
@@ -1483,17 +1497,18 @@ lfgChannelId = 0
 joined = {}
 local beforeUnjoined = #sent
 ns.SendPhrase("Let me in.", "LFG")
-check(joined[1] == "LookingForGroup", "it did not join the channel")
+check(joined[1] and joined[1].name == "LookingForGroup", "it did not join the channel")
 check(#sent == beforeUnjoined + 1, "it did not speak after joining")
 check(sent[#sent].channel == "CHANNEL", "after joining it went out on %s", sent[#sent].channel)
 
 -- And it is never said aloud to whoever is standing next to you instead.
 lfgChannelId = 0
-JoinChannelByName = function() end      -- a join that does not take
+local realJoin = JoinPermanentChannel
+JoinPermanentChannel = function() end      -- a join that does not take
 local beforeFailed = #sent
 ns.SendPhrase("Nobody is listening.", "LFG")
 check(#sent == beforeFailed, "a failed join shouted the advert somewhere else")
-JoinChannelByName = function(name) joined[#joined + 1] = name; lfgChannelId = 4 end
+JoinPermanentChannel = realJoin
 lfgChannelId = 4
 group = {}
 
@@ -1684,6 +1699,27 @@ do
     check(leadSolo and leadNeed and leadNeed < leadSolo,
           "with two in the group, offering yourself still came first")
     listings[9].numMembers = 1
+end
+
+do
+    -- Advertising when you are not in the channel yet joins it first, the way
+    -- the game's own /join does -- and then makes a chat frame carry it, or you
+    -- are in a channel whose messages appear nowhere.
+    for i = #joined, 1, -1 do table.remove(joined, i) end
+    for i = #carried, 1, -1 do table.remove(carried, i) end
+    lfgChannelId = 0
+    local before = #sent
+    ns.SendPhrase("LFG Scarlet Monastery -- orc rogue, 36.", "LFG")
+    check(#joined == 1, "joining happened %d times", #joined)
+    check(joined[1] and joined[1].how == "permanent",
+          "it joined with the older call the client no longer uses: %s",
+          joined[1] and joined[1].how)
+    check(joined[1].name == "LookingForGroup", "it joined %s", tostring(joined[1].name))
+    check(#carried == 1 and carried[1] == "LookingForGroup",
+          "no chat frame was told to carry the channel")
+    check(#sent == before + 1, "the advert did not go out after joining")
+    check(sent[#sent].channel == "CHANNEL", "it went out on %s", sent[#sent].channel)
+    lfgChannelId = 4
 end
 
 -- The menu rereads when a line is picked, so changing the dungeon filter with

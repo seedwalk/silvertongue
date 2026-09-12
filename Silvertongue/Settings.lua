@@ -236,11 +236,30 @@ end
 -- statement that you want to be in the channel where groups are found, so being
 -- refused for not having joined it would be pedantry.
 --
+-- This joins the way the game's own /join does. JoinChannelByName is the older
+-- call and the client's own code does not use it anywhere -- the slash command,
+-- the channel frame and the add-channel dialog all use JoinPermanentChannel and
+-- then tell a chat frame to carry the channel. Joining without that second half
+-- leaves you in a channel whose messages appear nowhere.
+--
 -- The join does not take effect the instant it is asked for, so the line waits
 -- a moment for the channel to answer rather than going out into nothing.
 function ns.JoinLookingForGroupAndSend(text)
-    if not JoinChannelByName then return end
-    JoinChannelByName("LookingForGroup")
+    local NAME = "LookingForGroup"
+
+    local frame = (FCF_GetCurrentChatFrame and FCF_GetCurrentChatFrame()) or DEFAULT_CHAT_FRAME
+    local frameID = (FCF_GetCurrentChatFrameID and FCF_GetCurrentChatFrameID())
+        or (frame and frame.GetID and frame:GetID())
+        or 1
+
+    if JoinPermanentChannel then
+        JoinPermanentChannel(NAME, nil, frameID, 1)
+        if frame and frame.AddChannel then frame:AddChannel(NAME) end
+    elseif JoinChannelByName then
+        JoinChannelByName(NAME)
+    else
+        return
+    end
 
     local function speak()
         local id = ns.LookingForGroupChannel()
