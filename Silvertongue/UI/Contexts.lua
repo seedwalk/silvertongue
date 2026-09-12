@@ -316,7 +316,7 @@ function Contexts:PartyMember(unit)
         -- Unit ids shift when someone leaves; the name does not.
         rebuild     = function()
             for _, candidate in ipairs(ns.GroupUnits()) do
-                if UnitName(candidate) == name then
+                if ns.UnitFullName(candidate) == name then
                     return ns.Engine:BuildUnitContext(candidate)
                 end
             end

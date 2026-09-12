@@ -103,7 +103,7 @@ function ns.SendPhrase(text, channel, recipient, emote, emoteTarget)
     channel = ns.ResolveChannel(channel)
 
     if channel == "WHISPER" then
-        local to = recipient or (UnitExists("target") and UnitName("target"))
+        local to = recipient or ns.UnitFullName("target")
         if to then
             SendChatMessage(text, "WHISPER", nil, to)
             return "WHISPER"

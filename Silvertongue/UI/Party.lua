@@ -211,7 +211,7 @@ end
 function PartyUI:ResolveUnit(name)
     if not name then return nil end
     for _, unit in ipairs(ns.GroupUnits()) do
-        if UnitName(unit) == name then return unit end
+        if ns.UnitFullName(unit) == name then return unit end
     end
     return nil
 end
