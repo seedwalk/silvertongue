@@ -103,13 +103,6 @@ function ChatLinks:Filter(kind, event, message, author, ...)
     local me = UnitName and UnitName("player")
     if me and author == me then return false, message, author, ... end
 
-    -- An open window follows the conversation without being asked. It never
-    -- opens one: a window that appears because somebody typed at you takes a
-    -- corner of your screen without permission.
-    if kind == "whisper" and ns.Whisper then
-        ns.Whisper:Heard(author, message)
-    end
-
     return false, mark(author) .. message, author, ...
 end
 

@@ -98,6 +98,15 @@ passthrough.GetStringWidth = function(self) return #(self.__text or "") * 5.5 en
 passthrough.SetNormalTexture = function(self, path) self.__normalTexture = path end
 passthrough.GetNormalTexture = function(self) return newMock("texture") end
 passthrough.IsMouseOver = function() return false end
+-- A ScrollingMessageFrame keeps its own lines; the tests read them back.
+passthrough.AddMessage = function(self, text)
+    self.__lines = self.__lines or {}
+    self.__lines[#self.__lines + 1] = text
+end
+passthrough.Clear = function(self) self.__lines = {} end
+passthrough.SetMaxLines = function(self, n)
+    if type(n) ~= "number" then error("bad argument to SetMaxLines", 2) end
+end
 
 function CreateFrame(kind, name, parent, template)
     local f = newMock(kind, name)
@@ -126,6 +135,7 @@ UnitInParty = function(u)
 end
 UnitInRaid = function() return false end
 UnitLevel = function() return 36 end
+date = function(fmt, when) return "12:00" end
 local lfgChannelId = 4
 local joined = {}
 GetChannelName = function(name) return (name == "LookingForGroup") and lfgChannelId or 0 end
@@ -295,6 +305,7 @@ libs["LibDBIcon-1.0"] = { Register = function() end, Hide = function() end, Show
 
 local function load(file) return assert(loadfile(DIR .. file))("Silvertongue", ns) end
 load("Settings.lua")
+load("Log.lua")
 for _, f in ipairs({"Engine","General","Party","Horde","Shaman","Rogue","Warrior","Paladin",
                     "Hunter","Priest","Mage","Warlock","Druid","Attitude","Classes","Races",
                     "Target","Self","Alliance","Dungeons","Group","Whisper","Emotes"}) do load("RP/"..f..".lua") end
@@ -1782,10 +1793,71 @@ check(kelda.subtitle:GetText() == "Priest, 38",
 check(ns.Whisper:IsOpen("Grumgar") and ns.Whisper:IsOpen("Kelda"),
       "two conversations could not be open at the same time")
 
--- A further whisper updates the open window instead of opening another.
-deliver("CHAT_MSG_WHISPER", "still there?", "Grumgar")
-check(window.said:GetText():find("still there?", 1, true) ~= nil,
-      "an open window ignored the next whisper")
+-- ---------------------------------------------------------------------------
+-- The conversation, which outlives the window and the session.
+-- ---------------------------------------------------------------------------
+
+local function whisperEvent(event, ...)
+    addon.__events[event](event, ...)
+end
+
+-- Recorded from the events rather than the chat filters, so a line counts as
+-- said whether or not it reached a chat frame you happen to be watching.
+whisperEvent("CHAT_MSG_WHISPER", "still there?", "Grumgar")
+local transcript = table.concat(window.log.__lines or {}, "\n")
+check(transcript:find("still there?", 1, true) ~= nil,
+      "an open window ignored the next whisper: %s", transcript)
+check(transcript:find("Grumgar", 1, true) ~= nil,
+      "the line does not say who said it: %s", transcript)
+
+-- Both sides of it, and told apart.
+whisperEvent("CHAT_MSG_WHISPER_INFORM", "on my way", "Grumgar")
+transcript = table.concat(window.log.__lines or {}, "\n")
+check(transcript:find("on my way", 1, true) ~= nil, "our own reply was not recorded")
+check(transcript:find("Silvertongue:", 1, true) ~= nil,
+      "our own reply is not marked as ours: %s", transcript)
+
+-- A whisper with no window open is still written down: the conversation is the
+-- record, not the window.
+whisperEvent("CHAT_MSG_WHISPER", "you around?", "Faranell")
+check(not ns.Whisper:IsOpen("Faranell"), "a whisper opened a window by itself")
+check(#ns.Log:Lines("Faranell") == 1, "a whisper with no window open was lost")
+-- And it is there when you finally open one.
+ns.Whisper:Open("Faranell")
+local late = ns.Whisper:Windows()["Faranell"]
+check(table.concat(late.log.__lines or {}, "\n"):find("you around?", 1, true) ~= nil,
+      "opening a window later did not show what was already said")
+ns.Whisper:Close("Faranell")
+
+-- Folding it away turns the window back into the strip it was, and the choice
+-- is remembered for the next one.
+ns.Whisper:ToggleLog(window)
+check(window.collapsed == true, "the conversation did not fold away")
+check(not window.log:IsShown(), "the conversation is folded but still showing")
+check(addon.db.profile.whisperCollapsed == true, "the fold was not remembered")
+ns.Whisper:ToggleLog(window)
+check(window.log:IsShown(), "the conversation did not come back")
+
+-- The bound. Not privacy -- the file is read and written whole at login and
+-- logout, so a store that only grows costs time at both ends forever.
+for i = 1, ns.Log.MAX_PER_PERSON + 60 do
+    ns.Log:Record("Talker", "line " .. i, true)
+end
+local talked = ns.Log:Lines("Talker")
+check(#talked == ns.Log.MAX_PER_PERSON, "one conversation grew to %d lines", #talked)
+check(talked[#talked].m == "line " .. (ns.Log.MAX_PER_PERSON + 60),
+      "the newest line was the one dropped")
+check(talked[1].m ~= "line 1", "the oldest line was kept")
+
+-- Months are kept. Years are not.
+ns.Log:Record("Ancient", "hello from long ago", true)
+addon.db.profile.log["Ancient"][1].t = now - 86400 * 400
+ns.Log:Record("Recent", "last month", true)
+addon.db.profile.log["Recent"][1].t = now - 86400 * 60
+ns.Log:Prune()
+check(addon.db.profile.log["Ancient"] == nil, "a conversation from over a year ago was kept")
+check(addon.db.profile.log["Recent"] ~= nil, "a conversation from two months ago was dropped")
+ns.Log:Clear("Talker")
 
 -- A Battle.net friend coming online. The name there is a link too, but a
 -- different type: it carries an account id, because there may be no character

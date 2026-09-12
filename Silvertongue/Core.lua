@@ -179,6 +179,26 @@ function Silvertongue:OnEnable()
     -- Whose turn it is to be reachable changes with your selection and your
     -- group, and the window's invite and trade buttons say so.
     self:RegisterEvent("WHO_LIST_UPDATE", function() ns.ReadWhoResults() end)
+
+    -- The conversation is recorded from the events rather than from the chat
+    -- filters: a whisper counts as said whether or not it reached a chat frame
+    -- you happen to be watching.
+    self:RegisterEvent("CHAT_MSG_WHISPER", function(_, message, author)
+        ns.Whisper:Heard(author, message, true)
+    end)
+    self:RegisterEvent("CHAT_MSG_WHISPER_INFORM", function(_, message, to)
+        ns.Whisper:Heard(to, message, false)
+    end)
+    -- On Battle.net the conversation belongs to the account, which arrives as
+    -- the thirteenth argument, the same one the game's own chat code reads.
+    self:RegisterEvent("CHAT_MSG_BN_WHISPER", function(_, message, author, ...)
+        ns.Whisper:Heard(author, message, true, select(11, ...))
+    end)
+    self:RegisterEvent("CHAT_MSG_BN_WHISPER_INFORM", function(_, message, to, ...)
+        ns.Whisper:Heard(to, message, false, select(11, ...))
+    end)
+
+    ns.Log:Prune()
     ns.ChatLinks:Register()
     ns.Anchors:Refresh()
 end

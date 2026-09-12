@@ -24,10 +24,12 @@ local ADDON, ns = ...
 local Whisper = {}
 ns.Whisper = Whisper
 
-local WIDTH      = 208
+local WIDTH      = 260
 local PAD        = 10
 local ICON       = 18
 local CASCADE    = 26       -- each new window sits down and right of the last
+local HEAD_H     = 52       -- name, who they are, and the row of buttons
+local LOG_H      = 118      -- the conversation, when it is showing
 
 -- Blizzard's own mark for a whisper conversation window: FloatingChatFrame.lua
 -- puts this on the tab when the game opens one. Using anything else for the
@@ -39,6 +41,10 @@ local TRADE_ICON   = "Interface\\Icons\\INV_Misc_Coin_01"
 
 local windows = {}
 local openCount = 0
+
+-- How much of a long conversation the window holds at once. The rest is still
+-- on disk; this is what it costs to have it on screen.
+local Log_MAX_SHOWN = 300
 
 -- ---------------------------------------------------------------------------
 -- Who they are, as far as the game is willing to say.
@@ -374,13 +380,37 @@ function Whisper:Build(name, bnetID)
     frame.subtitle:SetPoint("TOPLEFT", PAD, -PAD - 17)
     frame.subtitle:SetJustifyH("LEFT")
 
-    -- The last thing they said. One line, clipped: this is a reminder of what
-    -- you are answering, not a transcript.
-    frame.said = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    frame.said:SetPoint("TOPLEFT", PAD, -PAD - 34)
-    frame.said:SetWidth(WIDTH - PAD * 2)
-    frame.said:SetJustifyH("LEFT")
-    frame.said:SetHeight(26)
+    -- The conversation. A ScrollingMessageFrame is what the game's own chat
+    -- windows are, so scrolling, wrapping and line limits come for free rather
+    -- than being rebuilt badly on top of a scroll frame.
+    local log = CreateFrame("ScrollingMessageFrame", nil, frame)
+    log:SetPoint("TOPLEFT", PAD, -HEAD_H)
+    log:SetSize(WIDTH - PAD * 2, LOG_H)
+    log:SetFontObject("GameFontHighlightSmall")
+    log:SetJustifyH("LEFT")
+    log:SetFading(false)              -- a transcript must not dissolve as you read it
+    log:SetMaxLines(Log_MAX_SHOWN)
+    log:SetInsertMode("BOTTOM")
+    log:EnableMouseWheel(true)
+    log:SetScript("OnMouseWheel", function(self, delta)
+        if delta > 0 then self:ScrollUp() else self:ScrollDown() end
+    end)
+    frame.log = log
+
+    -- Three windows open with a transcript each is most of a screen, so the
+    -- conversation folds away and the window becomes the strip it used to be.
+    local fold = CreateFrame("Button", nil, frame)
+    fold:SetSize(16, 16)
+    fold:SetPoint("TOPRIGHT", -24, -8)
+    fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
+    fold:SetScript("OnClick", function() Whisper:ToggleLog(frame) end)
+    fold:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(frame.collapsed and "Show the conversation" or "Hide the conversation")
+        GameTooltip:Show()
+    end)
+    fold:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    frame.fold = fold
 
     local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
     close:SetSize(24, 24)
@@ -458,6 +488,47 @@ function Whisper:RememberPosition(frame)
     db.profile.whisperAnchor = { point = point, x = x or 0, y = y or 0 }
 end
 
+-- Redrawn from the store rather than appended to, so a window opened now and a
+-- window opened after six weeks show the same thing.
+function Whisper:RefreshLog(frame)
+    if not frame.log then return end
+    frame.log:Clear()
+
+    local key = ns.Log:Key(frame.name, frame.bnetID)
+    local lines = ns.Log:Lines(key)
+    local me = UnitName and UnitName("player") or "you"
+
+    local from = math.max(1, #lines - Log_MAX_SHOWN + 1)
+    for i = from, #lines do
+        frame.log:AddMessage(ns.Log:Format(lines[i], frame.name, me))
+    end
+end
+
+function Whisper:Append(frame, entry)
+    if not frame.log then return end
+    local me = UnitName and UnitName("player") or "you"
+    frame.log:AddMessage(ns.Log:Format(entry, frame.name, me))
+end
+
+function Whisper:ApplyFold(frame)
+    if frame.collapsed then
+        frame.log:Hide()
+        frame:SetHeight(HEAD_H + ICON + PAD * 2)
+        frame.fold:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up")
+    else
+        frame.log:Show()
+        frame:SetHeight(HEAD_H + LOG_H + ICON + PAD * 2 + 4)
+        frame.fold:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
+    end
+end
+
+function Whisper:ToggleLog(frame)
+    frame.collapsed = not frame.collapsed
+    local db = ns.addon and ns.addon.db
+    if db then db.profile.whisperCollapsed = frame.collapsed end
+    self:ApplyFold(frame)
+end
+
 function Whisper:RefreshHeader(frame)
     frame.title:SetText(frame.name)
 
@@ -492,6 +563,8 @@ function Whisper:Open(name, said, bnetID)
     if not frame then
         openCount = openCount + 1
         frame = self:Build(name, bnetID)
+        local db = ns.addon and ns.addon.db
+        frame.collapsed = db and db.profile.whisperCollapsed or false
         windows[key] = frame
         self:PlaceNew(frame, openCount)
         -- Nothing to ask about an account: the client already knows.
@@ -499,7 +572,8 @@ function Whisper:Open(name, said, bnetID)
     end
 
     self:RefreshHeader(frame)
-    if said then frame.said:SetText("\"" .. said .. "\"") end
+    self:RefreshLog(frame)
+    self:ApplyFold(frame)
     frame:Show()
     self:UpdateActions(frame)
     return frame
@@ -539,14 +613,24 @@ function Whisper:RefreshAll()
     end
 end
 
--- A whisper from someone whose window is open updates it rather than opening
--- anything. Windows do not open themselves: a window appearing over the game
+-- Every whisper is written down, whether or not a window is open: the
+-- conversation is the record, not the window. An open one also shows the line
+-- as it arrives.
+--
+-- What this never does is open a window. A window appearing over the game
 -- because somebody typed at you is the behaviour we refused for the target
 -- board, and it is worse here because it takes a corner of the screen.
-function Whisper:Heard(name, message)
-    local frame = windows[name]
+function Whisper:Heard(name, message, incoming, bnetID)
+    if not name or not message then return false end
+
+    local key = ns.Log:Key(name, bnetID)
+    ns.Log:Record(key, message, incoming)
+
+    local frame = windows[key]
     if not frame or not frame:IsShown() then return false end
-    frame.said:SetText("\"" .. message .. "\"")
+
+    local lines = ns.Log:Lines(key)
+    self:Append(frame, lines[#lines])
     self:RefreshHeader(frame)
     return true
 end
