@@ -949,6 +949,17 @@ end
 check(channelKeys(ns.Contexts:Target()) == "SAY,YELL,WHISPER",
       "a stranger offered %s", channelKeys(ns.Contexts:Target()))
 
+-- In a group, party chat leads everywhere: it is where most of what you say
+-- while grouped is meant to land.
+group = { { name = "Altheon", className = "Priest", classToken = "PRIEST", raceName = "Troll", raceToken = "Troll" } }
+check(channelKeys(ns.Contexts:Target()) == "PARTY,SAY,YELL,WHISPER",
+      "grouped, a stranger offered %s", channelKeys(ns.Contexts:Target()))
+check(channelKeys(ns.Contexts:Player("GENERAL")) == "PARTY,SAY,YELL",
+      "grouped, your own menu offered %s", channelKeys(ns.Contexts:Player("GENERAL")))
+group = {}
+check(channelKeys(ns.Contexts:Player("GENERAL")) == "SAY,YELL",
+      "alone, your own menu offered %s", channelKeys(ns.Contexts:Player("GENERAL")))
+
 target = { name = "Aelindra", className = "Rogue", classToken = "ROGUE", raceName = "Night Elf", raceToken = "NightElf", hostile = true }
 check(channelKeys(ns.Contexts:Target()) == "SAY,YELL",
       "a hostile target offered %s", channelKeys(ns.Contexts:Target()))
@@ -963,11 +974,18 @@ for _, entry in ipairs(grouped.intents) do
     if entry ~= ns.SEP then groupedLabels[entry[3]] = true end
 end
 check(not groupedLabels["Party?"], "someone already in the group was offered Party?")
-check(channelKeys(grouped) == "SAY,PARTY,WHISPER", "a grouped target offered %s", channelKeys(grouped))
+check(channelKeys(grouped) == "PARTY,SAY,WHISPER", "a grouped target offered %s", channelKeys(grouped))
 
 -- Party contexts speak to the party without anyone choosing a channel.
 check(ns.Contexts:PartyAll().channels[1].key == "PARTY", "the group context does not default to party chat")
-check(ns.Contexts:PartyAll().channels[1].label == "Say", "the group's first button is not labelled Say")
+-- Two buttons labelled "Say" going to two places is worse than none.
+local seenLabels = {}
+for _, channel in ipairs(ns.Contexts:PartyMember("party1").channels) do
+    check(not seenLabels[channel.label], "two channel buttons are both labelled %s", channel.label)
+    seenLabels[channel.label] = true
+end
+check(ns.Contexts:PartyAll().channels[1].label == "Party", "the group's first button is labelled %s",
+      ns.Contexts:PartyAll().channels[1].label)
 check(ns.Contexts:PartyMember("party1").channels[1].key == "PARTY", "a member context does not default to party chat")
 
 -- At rest the portrait carries one bubble and nothing else. Pressing it fans
@@ -995,6 +1013,7 @@ check(not playerBoard:IsShown(), "folding the fan left its menu open")
 ns.Anchors:SetFanOpen(true)
 
 -- Your own portrait: four categories, each with its own phrases.
+group = {}
 local playerContext = ns.Contexts:Player("GENERAL")
 check(playerContext and #playerContext.intents > 0, "the General context is empty")
 check(channelKeys(playerContext) == "SAY,YELL", "your own context offered %s", channelKeys(playerContext))

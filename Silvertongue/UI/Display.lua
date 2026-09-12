@@ -101,7 +101,7 @@ function Display:Create()
 
     -- Up to three ways to say it, filled per context.
     self.channelButtons = {}
-    for i = 1, 3 do
+    for i = 1, 4 do
         local b = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
         b:SetSize(58, BUTTON_H)
         b:GetFontString():SetFontObject("GameFontHighlightSmall")

@@ -4,21 +4,34 @@
 -- what you can say to them, and how it can go out. The boards render it and the
 -- display sends it; neither decides any of this.
 --
--- The channel rule: you never pick one. You clicked in the party, so it goes to
--- the party. The primary button always says "Say" and its tooltip tells the
--- truth about where that lands. Only genuinely different intents -- yell at
--- everyone, whisper privately -- get a button of their own.
+-- The channel rule: the context decides which channels are even on offer, and
+-- in what order. While you are grouped party chat leads everywhere, because
+-- that is where most of what you say while grouped is meant to land. Each
+-- button is labelled with where it actually goes.
 
 local ADDON, ns = ...
 
 local Contexts = {}
 ns.Contexts = Contexts
 
-local SAY_TO_PARTY = { key = "PARTY", label = "Say", hint = "Goes to party chat." }
-local SAY_ALOUD    = { key = "SAY",   label = "Say", hint = "Everyone nearby hears it." }
-local YELL         = { key = "YELL",  label = "Yell", hint = "Heard far past the room." }
-local WHISPER      = { key = "WHISPER", label = "Whisper", hint = "Only they read it." }
-local TO_PARTY     = { key = "PARTY", label = "Party", hint = "Goes to party chat, wherever they are." }
+-- Each button says where it goes. An earlier version labelled the first one
+-- "Say" whatever channel it meant, which read well with one button and badly
+-- with two: a party menu showed "Say" twice, going to two different places.
+local TO_PARTY  = { key = "PARTY",   label = "Party",   hint = "Goes to party chat, wherever they are." }
+local SAY_ALOUD = { key = "SAY",     label = "Say",     hint = "Everyone nearby hears it." }
+local YELL      = { key = "YELL",    label = "Yell",    hint = "Heard far past the room." }
+local WHISPER   = { key = "WHISPER", label = "Whisper", hint = "Only they read it." }
+
+-- In a group, party chat leads. It is where almost everything said while
+-- grouped is meant to land, and it should not be the second thing you reach for.
+local function leadWithParty(channels)
+    if not IsInGroup() then return channels end
+    local out = { TO_PARTY }
+    for _, channel in ipairs(channels) do
+        if channel.key ~= "PARTY" then out[#out + 1] = channel end
+    end
+    return out
+end
 
 local function inMyGroup(unit)
     if not unit or not UnitExists(unit) then return false end
@@ -43,15 +56,12 @@ function Contexts:Target()
     end
 
     local channels = { SAY_ALOUD }
-    if grouped then
-        -- They may be across the dungeon, where saying it aloud reaches nobody.
-        channels[#channels + 1] = TO_PARTY
-    else
-        channels[#channels + 1] = YELL
-    end
+    -- Yelling at someone in your own group is shouting across a table.
+    if not grouped then channels[#channels + 1] = YELL end
     if info.isPlayer and not info.hostile then
         channels[#channels + 1] = WHISPER
     end
+    channels = leadWithParty(channels)
 
     return {
         key         = "TARGET:" .. info.name,
@@ -101,7 +111,7 @@ function Contexts:Group()
     local channels = { TO_LFG }
     if IsInGuild and IsInGuild() then channels[#channels + 1] = TO_GUILD end
     channels[#channels + 1] = SAY_ALOUD
-    if inGroup then channels[#channels + 1] = SAY_TO_PARTY end
+    if inGroup then channels[#channels + 1] = TO_PARTY end
 
     -- Which dungeon the advert names. Without one it reads "LFG anything",
     -- which is honest but finds nobody, so the nearest few to your level are
@@ -158,7 +168,7 @@ function Contexts:Player(tabKey)
         subtitle = label,
         intents  = list,
         ctx      = nil,
-        channels = { SAY_ALOUD, YELL },
+        channels = leadWithParty({ SAY_ALOUD, YELL }),
     }
 end
 
@@ -186,7 +196,7 @@ function Contexts:PartyMember(unit)
         ctx         = ctx,
         recipient   = name,
         emoteTarget = name,
-        channels    = { SAY_TO_PARTY, SAY_ALOUD, WHISPER },
+        channels    = { TO_PARTY, SAY_ALOUD, WHISPER },
         -- Unit ids shift when someone leaves; the name does not.
         rebuild     = function()
             for _, candidate in ipairs(ns.GroupUnits()) do
@@ -215,6 +225,6 @@ function Contexts:PartyAll()
         subtitle = "Your group",
         intents  = list,
         ctx      = nil,
-        channels = { SAY_TO_PARTY, SAY_ALOUD },
+        channels = { TO_PARTY, SAY_ALOUD },
     }
 end
